@@ -21,10 +21,10 @@ class GroupAdmin(admin.ModelAdmin):
 @admin.register(User)
 class UserAdmin(UserAdmin):
     list_display = [
-        'username', 'email', 'first_name', 'last_name', 'is_superuser', 'is_staff', 'is_active'
+        'username', 'email', 'first_name', 'last_name', 'is_superuser', 'is_staff', 'is_active', 'type'
     ]
     fieldsets = (
-        (None, {'fields': ('username', 'password', 'first_name', 'last_name', 'email')}),
+        (None, {'fields': ('username', 'password', 'first_name', 'last_name', 'email', 'type', 'config')}),
         ('Groups', {'fields': ('groups',)}),
         ('Status', {
             'fields': ('is_active', 'is_staff', 'is_superuser'),

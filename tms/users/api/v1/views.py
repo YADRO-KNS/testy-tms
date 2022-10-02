@@ -27,3 +27,11 @@ class UserViewSet(ModelViewSet, DtoMixin):
     def perform_create(self, serializer: UserSerializer):
         dto = self.build_dto_from_validated_data(serializer.validated_data)
         serializer.instance = UserService().user_create(dto)
+
+    def perform_update(self, serializer: UserSerializer):
+        dto = self.build_dto_from_validated_data(serializer.validated_data)
+        user = serializer.instance
+        serializer.instance = UserService().user_update(user, dto)
+
+    def perform_destroy(self, user: UserModel):
+        UserService().user_delete(user)

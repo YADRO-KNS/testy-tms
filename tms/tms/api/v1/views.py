@@ -14,6 +14,7 @@ class V1RootView(APIRootView):
             'cases': reverse('api:v1:testcase-list', request=request, format=format),
             'plans': reverse('api:v1:testplan-list', request=request, format=format),
             'tests': reverse('api:v1:test-list', request=request, format=format),
+            'results': reverse('api:v1:testresult-list', request=request, format=format),
             'parameters': reverse('api:v1:parameter-list', request=request, format=format),
             'users': reverse('api:v1:users-api:api-root', request=request, format=format),
         })
