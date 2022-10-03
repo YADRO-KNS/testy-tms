@@ -1,7 +1,7 @@
 from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
-
 from tests_description.models import TestCase, TestSuite
+
 from tms.admin import BaseAdmin
 
 
