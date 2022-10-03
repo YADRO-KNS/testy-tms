@@ -1,10 +1,11 @@
-from core.models import Project
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
-from mptt.models import MPTTModel, TreeForeignKey
-from tests_description.models import TestCase
 from django.utils.translation import gettext_lazy as _
+from mptt.models import MPTTModel, TreeForeignKey
+
+from core.models import Project
+from tests_description.models import TestCase
 from tms.models import BaseModel
 from users.models import User
 

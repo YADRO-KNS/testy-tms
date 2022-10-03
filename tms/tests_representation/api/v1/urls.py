@@ -1,6 +1,8 @@
 from rest_framework.routers import SimpleRouter
+
 from tests_representation.api.v1.views import (ParameterViewSet,
-                                               TestPlanViewSet, TestViewSet, TestResultViewSet)
+                                               TestPlanViewSet,
+                                               TestResultViewSet, TestViewSet)
 
 router = SimpleRouter()
 router.register('plans', TestPlanViewSet)

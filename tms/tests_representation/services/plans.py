@@ -3,11 +3,6 @@ from dataclasses import dataclass
 from tests_representation.models import TestPlan
 
 
-# from django.contrib.auth import get_user_model
-#
-# UserModel = get_user_model()
-
-
 @dataclass
 class TestPlanDto:
     parent: TestPlan

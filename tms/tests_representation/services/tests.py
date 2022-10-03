@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from tests_description.models import TestCase
-from tests_representation.models import TestPlan, Test
-
 from django.contrib.auth import get_user_model
+
+from tests_description.models import TestCase
+from tests_representation.models import Test, TestPlan
 
 UserModel = get_user_model()
 

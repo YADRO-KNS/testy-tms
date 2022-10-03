@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
-from tests_representation.models import Test, TestResult
 from django.contrib.auth import get_user_model
+
+from tests_representation.models import Test, TestResult
 
 UserModel = get_user_model()
 
