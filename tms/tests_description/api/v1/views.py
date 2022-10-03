@@ -1,5 +1,4 @@
 from rest_framework.viewsets import ModelViewSet
-
 from tests_description.api.v1.serializers import (TestCaseSerializer,
                                                   TestSuiteSerializer)
 from tests_description.models import TestCase, TestSuite

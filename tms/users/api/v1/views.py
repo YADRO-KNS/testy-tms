@@ -2,10 +2,10 @@ from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
 from rest_framework.routers import APIRootView
 from rest_framework.viewsets import ModelViewSet
-
-from tms.utils.mixins import DtoMixin
 from users.api.v1.serializers import UserSerializer
 from users.services.users import UserDto, UserService
+
+from tms.utils.mixins import DtoMixin
 
 UserModel = get_user_model()
 
