@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from django.contrib.auth import get_user_model
+from django.db.models import QuerySet
 from tests_description.models import TestCase
 from tests_representation.models import Test, TestPlan
 
@@ -30,7 +31,7 @@ class TestService:
         test.save()
         return test
 
-    def test_update(self, test: Test, dto: TestDto) -> UserModel:
+    def test_update(self, test: Test, dto: TestDto) -> Test:
         test.case = dto.case
         test.plan = dto.plan
         test.user = dto.user
@@ -39,12 +40,12 @@ class TestService:
         test.save()
         return test
 
-    def test_delete(self, test: Test):
+    def test_delete(self, test: Test) -> Test:
         test.delete()
         return test
 
-    def test_retrieve_all(self):
+    def test_retrieve_all(self) -> QuerySet[Test]:
         return Test.objects.all()
 
-    def test_retrieve_by_id(self, test_id: int):
+    def test_retrieve_by_id(self, test_id: int) -> Test:
         return Test.objects.get(pk=test_id)

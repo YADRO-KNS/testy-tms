@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from django.db.models import QuerySet
 from tests_representation.models import TestPlan
 
 
@@ -28,7 +29,7 @@ class TestPlanService:
         plan.save()
         return plan
 
-    def plan_update(self, plan: TestPlan, dto: TestPlanDto):
+    def plan_update(self, plan: TestPlan, dto: TestPlanDto) -> TestPlan:
         plan.parent = dto.parent
         plan.started_at = dto.started_at
         plan.due_date = dto.due_date
@@ -38,12 +39,12 @@ class TestPlanService:
         plan.save()
         return plan
 
-    def plan_delete(self, plan: TestPlan):
+    def plan_delete(self, plan: TestPlan) -> TestPlan:
         plan.delete()
         return plan
 
-    def plan_retrieve_all(self):
+    def plan_retrieve_all(self) -> QuerySet[TestPlan]:
         return TestPlan.objects.all()
 
-    def plan_retrieve_by_id(self, plan_id: int):
+    def plan_retrieve_by_id(self, plan_id: int) -> TestPlan:
         return TestPlan.objects.get(pk=plan_id)

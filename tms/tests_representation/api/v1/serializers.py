@@ -6,7 +6,7 @@ from tests_representation.models import Parameter, Test, TestPlan, TestResult
 class ParameterSerializer(ModelSerializer):
     class Meta:
         model = Parameter
-        fields = ('id', 'project', 'group_name')
+        fields = ('id', 'project', 'group_name', 'data')
 
 
 class TestPlanSerializer(ModelSerializer):

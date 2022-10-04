@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from django.contrib.auth import get_user_model
+from django.db.models import QuerySet
 
 UserModel = get_user_model()
 
@@ -43,12 +44,12 @@ class UserService:
         user.save()
         return user
 
-    def user_delete(self, user: UserModel):
+    def user_delete(self, user: UserModel) -> UserModel:
         user.delete()
         return user
 
-    def user_retrieve_all(self):
+    def user_retrieve_all(self) -> QuerySet[UserModel]:
         return UserModel.objects.all()
 
-    def user_retrieve_by_id(self, user_id):
+    def user_retrieve_by_id(self, user_id) -> UserModel:
         return UserModel.objects.get(pk=user_id)

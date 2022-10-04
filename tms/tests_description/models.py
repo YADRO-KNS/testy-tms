@@ -26,7 +26,7 @@ class TestCase(BaseModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     suite = models.ForeignKey(TestSuite, on_delete=models.CASCADE)
     setup = models.TextField()
-    scenarion = models.TextField()
+    scenario = models.TextField()
     teardown = models.TextField()
     estimate = models.PositiveIntegerField()
 
