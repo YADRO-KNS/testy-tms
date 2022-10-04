@@ -76,8 +76,8 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_NAME'),
         'USER': os.environ.get('POSTGRES_USER'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': 'db',
-        'PORT': 5432,
+        'HOST': os.environ.get('POSTGRES_SERVICE_HOST'),
+        'PORT': os.environ.get('POSTGRES_SERVICE_PORT'),
     }
 }
 
@@ -139,3 +139,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
 }
+
+# Company
+COMPANY_DOMAIN = os.environ.get('COMPANY_DOMAIN')
