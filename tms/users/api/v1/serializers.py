@@ -15,6 +15,7 @@ class UserSerializer(ModelSerializer):
             'date_joined',
         )
 
+        read_only_fields = ('date_joined',)
         extra_kwargs = {
             'password': {'write_only': True}
         }
