@@ -24,7 +24,7 @@ class UserAdmin(UserAdmin):
         'username', 'email', 'first_name', 'last_name', 'is_superuser', 'is_staff', 'is_active'
     ]
     fieldsets = (
-        (None, {'fields': ('username', 'password', 'first_name', 'last_name', 'email', 'type', 'config')}),
+        (None, {'fields': ('username', 'password', 'first_name', 'last_name', 'email')}),
         ('Groups', {'fields': ('groups',)}),
         ('Status', {
             'fields': ('is_active', 'is_staff', 'is_superuser'),
