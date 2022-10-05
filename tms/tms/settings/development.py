@@ -9,3 +9,31 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS += [  # noqa F405
     'django_extensions',
 ]
+
+log_level = "DEBUG"
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'default': {
+            'format': '%(asctime)s - %(module)s - %(levelname)s: %(message)s',
+        },
+    },
+    'handlers': {
+        'console': {
+            'formatter': 'default',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),  # noqa: F405
+        },
+        "core": {
+            "handlers": ["console"],
+            "level": os.getenv("TMS_CORE_LOG_LEVEL", log_level),  # noqa: F405
+        },
+    },
+}

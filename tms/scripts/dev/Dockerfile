@@ -11,13 +11,13 @@ RUN apk update && \
 RUN mkdir /tms
 WORKDIR /tms
 
-COPY ./dev-requirements.txt /tms/dev-requirements.txt
+COPY ./requirements/dev-requirements.txt /tms/requirements/
 
-RUN pip install -r dev-requirements.txt
+RUN pip install -r requirements/dev-requirements.txt
 
-COPY ./scripts/entrypoint.sh /tms/entrypoint.sh
-RUN chmod +x /tms/entrypoint.sh
+COPY ./scripts/entrypoint.sh /tms/scripts/entrypoint.sh
+RUN chmod +x /tms/scripts/entrypoint.sh
 
 COPY . /tms
 
-CMD ["/tms/entrypoint.sh"]
+CMD ["/tms/scripts/entrypoint.sh"]

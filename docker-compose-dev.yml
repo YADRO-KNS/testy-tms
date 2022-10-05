@@ -2,17 +2,22 @@ version: '3.9'
 services:
   tms:
     build:
-      context: .
+      context: ./tms
       dockerfile: scripts/dev/Dockerfile
     volumes:
-      - './tms:/opt/tms'
+      - './tms:/tms'
     ports:
-      - 8001:8000
+      - "8001:8000"
     environment:
       - DJANGO_SETTINGS_MODULE=tms.settings.development
-      - POSTGRES_NAME=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_NAME=${POSTGRES_NAME}
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_SERVICE_HOST=${POSTGRES_SERVICE_HOST}
+      - POSTGRES_SERVICE_PORT=${POSTGRES_SERVICE_PORT}
+      - COMPANY_DOMAIN=${COMPANY_DOMAIN}
+      - SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
+      - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
     depends_on:
       - db
   db:
@@ -20,8 +25,8 @@ services:
     volumes:
       - ./pg-data:/var/lib/postgresql/data
     ports:
-      - 5435:5435
+      - "5435:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_NAME}
