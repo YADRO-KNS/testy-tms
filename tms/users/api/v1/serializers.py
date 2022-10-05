@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
-from rest_framework.serializers import ModelSerializer, HyperlinkedIdentityField
+from rest_framework.serializers import (HyperlinkedIdentityField,
+                                        ModelSerializer)
 
 UserModel = get_user_model()
 
@@ -14,6 +15,7 @@ class UserSerializer(ModelSerializer):
             'date_joined',
         )
 
+        read_only_fields = ('date_joined',)
         extra_kwargs = {
             'password': {'write_only': True}
         }
