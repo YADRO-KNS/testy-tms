@@ -1,32 +1,33 @@
-from dataclasses import dataclass
+from typing import Any, Dict
 
 from django.contrib.auth import get_user_model
 
 UserModel = get_user_model()
 
 
-@dataclass
-class UserDto:
-    username: str
-    password: str
-    first_name: str
-    last_name: str
-    email: str
-    is_staff: bool
-    is_active: bool
-
-
 class UserService:
-    def user_create(self, dto: UserDto) -> UserModel:
-        user = UserModel(
-            username=dto.username,
-            first_name=dto.first_name,
-            last_name=dto.last_name,
-            email=dto.email,
-            is_staff=dto.is_staff,
-            is_active=dto.is_active
+    non_side_effect_fields = ['username', 'first_name', 'last_name', 'email', 'is_staff', 'is_active']
+
+    def user_create(self, data: Dict[str, Any]) -> UserModel:
+        user = UserModel.model_create(
+            fields=self.non_side_effect_fields,
+            data=data,
+            commit=False,
         )
-        user.set_password(dto.password)
+        user.set_password(data['password'])
+        user.full_clean()
+        user.save()
+        return user
+
+    def user_update(self, user: UserModel, data: Dict[str, Any]) -> UserModel:
+        user, has_updated = user.model_update(
+            fields=self.non_side_effect_fields,
+            data=data,
+            commit=False,
+        )
+        password = data.pop('password', None)
+        if password:
+            user.set_password(password)
         user.full_clean()
         user.save()
         return user
