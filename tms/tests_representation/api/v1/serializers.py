@@ -1,6 +1,7 @@
 from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.serializers import ModelSerializer
-from tests_representation.models import Parameter, Test, TestPlan, TestResult
+from tests_representation.models import (Parameter, Test, TestPlan, TestResult,
+                                         TestStatus)
 
 
 class ParameterSerializer(ModelSerializer):
@@ -31,3 +32,9 @@ class TestResultSerializer(ModelSerializer):
     class Meta:
         model = TestResult
         fields = ('id', 'test', 'status', 'comment', 'user', 'is_archive', 'url', 'created_at', 'updated_at')
+
+
+class TestStatusSerializer(ModelSerializer):
+    class Meta:
+        model = TestStatus
+        fields = ('id', 'name', 'status_code')

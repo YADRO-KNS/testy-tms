@@ -2,7 +2,6 @@ from core.models import Project
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 from tests_description.models import TestCase
 from users.models import User
@@ -10,14 +9,6 @@ from users.models import User
 from tms.models import BaseModel
 
 UserModel = get_user_model()
-
-
-class TestStatuses(models.IntegerChoices):
-    FAILED = 0, _('Failed')
-    PASSED = 1, _('Passed')
-    SKIPPED = 2, _('Skipped')
-    BROKEN = 3, _('Broken')
-    BLOCKED = 4, _('Blocked')
 
 
 class Parameter(BaseModel):
@@ -47,12 +38,23 @@ class Test(BaseModel):
         default_related_name = 'tests'
 
 
+class TestStatus(BaseModel):
+    name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
+    status_code = models.IntegerField(unique=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        default_related_name = 'statuses'
+
+
 class TestResult(BaseModel):
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
-    status = models.IntegerField(null=True, choices=TestStatuses.choices)
+    status = models.ForeignKey(TestStatus, on_delete=models.SET_NULL, null=True)
     comment = models.TextField(blank=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     is_archive = models.BooleanField(default=False)
 
     class Meta:
-        default_related_name = 'test_results'
+        default_related_name = 'results'

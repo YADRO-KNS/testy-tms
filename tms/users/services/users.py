@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
@@ -33,13 +33,8 @@ class UserService:
         return user
 
     def user_update(self, user: UserModel, dto: UserDto) -> UserModel:
-        user.username = dto.username
-        user.first_name = dto.first_name
-        user.last_name = dto.last_name
-        user.email = dto.email
-        user.is_staff = dto.is_staff
-        user.is_active = dto.is_active
-        user.set_password(dto.password)
+        for attr_name, attr_val in asdict(dto).items():
+            setattr(user, attr_name, attr_val)
         user.full_clean()
         user.save()
         return user

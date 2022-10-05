@@ -2,8 +2,10 @@ from rest_framework.viewsets import ModelViewSet
 from tests_representation.api.v1.serializers import (ParameterSerializer,
                                                      TestPlanSerializer,
                                                      TestResultSerializer,
-                                                     TestSerializer)
-from tests_representation.models import Parameter, Test, TestPlan, TestResult
+                                                     TestSerializer,
+                                                     TestStatusSerializer)
+from tests_representation.models import (Parameter, Test, TestPlan, TestResult,
+                                         TestStatus)
 from tests_representation.services.plans import TestPlanDto, TestPlanService
 from tests_representation.services.results import (TestResultDto,
                                                    TestResultService)
@@ -54,7 +56,7 @@ class TestViewSet(ModelViewSet, DtoMixin):
 
 
 class TestResultViewSet(ModelViewSet, DtoMixin):
-    queryset = TestResultViewSet = TestResult.objects.all()
+    queryset = TestResult.objects.all()
     serializer_class = TestResultSerializer
     dto_class = TestResultDto
 
@@ -69,3 +71,8 @@ class TestResultViewSet(ModelViewSet, DtoMixin):
 
     def perform_destroy(self, result: TestResult):
         TestResultService().result_delete(result)
+
+
+class TestStatusViewSet(ModelViewSet):
+    queryset = TestStatus.objects.all()
+    serializer_class = TestStatusSerializer
