@@ -1,9 +1,12 @@
+import logging
 from typing import Any, Dict, List, Tuple
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from tms.types import DjangoModelType
+
+logger = logging.getLogger(__name__)
 
 
 class ServiceModelMixin(models.Model):
@@ -22,7 +25,7 @@ class ServiceModelMixin(models.Model):
         return instance
 
     def model_update(
-        self, fields: List[str], data: Dict[str, Any], commit: bool = True
+            self, fields: List[str], data: Dict[str, Any], commit: bool = True
     ) -> Tuple[DjangoModelType, bool]:
         has_updated = False
 
@@ -37,7 +40,8 @@ class ServiceModelMixin(models.Model):
         if has_updated and commit:
             self.full_clean()
             self.save(update_fields=fields)
-
+        if not has_updated:
+            logger.error('Model was not updated.')
         return self, has_updated
 
 

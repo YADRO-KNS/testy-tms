@@ -5,9 +5,9 @@ from tests_representation.api.v1.views import (ParameterViewSet,
                                                TestStatusViewSet, TestViewSet)
 
 router = SimpleRouter()
+router.register('parameters', ParameterViewSet)
 router.register('plans', TestPlanViewSet)
 router.register('tests', TestViewSet)
-router.register('parameters', ParameterViewSet)
 router.register('results', TestResultViewSet)
 router.register('statuses', TestStatusViewSet)
 

@@ -1,44 +1,48 @@
 from rest_framework.viewsets import ModelViewSet
-from tests_description.api.v1.serializers import (TestCaseSerializer,
+from tests_description.api.v1.serializers import (HistoricalTestCaseSerializer,
+                                                  TestCaseSerializer,
                                                   TestSuiteSerializer)
-from tests_description.models import TestCase, TestSuite
-from tests_description.services.cases import TestCaseDto, TestCaseService
-from tests_description.services.suites import TestSuiteDto, TestSuiteService
-
-from tms.utils.mixins import DtoMixin
-
-
-class TestSuiteViewSet(ModelViewSet, DtoMixin):
-    queryset = TestSuite.objects.all()
-    serializer_class = TestSuiteSerializer
-    dto_class = TestSuiteDto
-
-    def perform_create(self, serializer: TestSuiteSerializer):
-        dto = self.build_dto_from_validated_data(serializer.validated_data)
-        serializer.instance = TestSuiteService().suite_create(dto)
-
-    def perform_update(self, serializer: TestSuiteSerializer):
-        dto = self.build_dto_from_validated_data(serializer.validated_data)
-        plan = serializer.instance
-        serializer.instance = TestSuiteService().suite_update(plan, dto)
-
-    def perform_destroy(self, suite: TestSuite):
-        TestSuiteService().suite_delete(suite)
+from tests_description.selectors.cases import TestCaseSelector
+from tests_description.selectors.historical_cases import \
+    HistoricalTestCaseSelector
+from tests_description.selectors.suites import TestSuiteSelector
+from tests_description.services.cases import TestCaseService
+from tests_description.services.historical_cases import \
+    HistoricalTestCaseService
+from tests_description.services.suites import TestSuiteService
 
 
-class TestCaseViewSet(ModelViewSet, DtoMixin):
-    queryset = TestCase.objects.all()
+class TestCaseViewSet(ModelViewSet):
+    queryset = TestCaseSelector().case_list()
     serializer_class = TestCaseSerializer
-    dto_class = TestCaseDto
 
     def perform_create(self, serializer: TestCaseSerializer):
-        dto = self.build_dto_from_validated_data(serializer.validated_data)
-        serializer.instance = TestCaseService().case_create(dto)
+        serializer.instance = TestCaseService().case_create(serializer.validated_data)
 
     def perform_update(self, serializer: TestCaseSerializer):
-        dto = self.build_dto_from_validated_data(serializer.validated_data)
-        case = serializer.instance
-        serializer.instance = TestCaseService().case_update(case, dto)
+        serializer.instance = TestCaseService().case_update(serializer.instance, serializer.validated_data)
 
-    def perform_destroy(self, case: TestCase):
-        TestCaseService().case_delete(case)
+
+class HistoricalTestCaseViewSet(ModelViewSet):
+    queryset = HistoricalTestCaseSelector().historical_case_list()
+    serializer_class = HistoricalTestCaseSerializer
+
+    def perform_create(self, serializer: HistoricalTestCaseSerializer):
+        serializer.instance = HistoricalTestCaseService().historical_case_create(serializer.validated_data)
+
+    def perform_update(self, serializer: HistoricalTestCaseSerializer):
+        serializer.instance = HistoricalTestCaseService().historical_case_suite_update(
+            serializer.instance,
+            serializer.validated_data
+        )
+
+
+class TestSuiteViewSet(ModelViewSet):
+    queryset = TestSuiteSelector().suite_list()
+    serializer_class = TestSuiteSerializer
+
+    def perform_create(self, serializer: TestSuiteSerializer):
+        serializer.instance = TestSuiteService().suite_create(serializer.validated_data)
+
+    def perform_update(self, serializer: TestSuiteSerializer):
+        serializer.instance = TestSuiteService().suite_update(serializer.instance, serializer.validated_data)

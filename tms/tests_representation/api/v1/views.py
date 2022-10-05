@@ -4,75 +4,68 @@ from tests_representation.api.v1.serializers import (ParameterSerializer,
                                                      TestResultSerializer,
                                                      TestSerializer,
                                                      TestStatusSerializer)
-from tests_representation.models import (Parameter, Test, TestPlan, TestResult,
-                                         TestStatus)
-from tests_representation.services.plans import TestPlanDto, TestPlanService
-from tests_representation.services.results import (TestResultDto,
-                                                   TestResultService)
-from tests_representation.services.tests import TestDto, TestService
-
-from tms.utils.mixins import DtoMixin
+from tests_representation.selectors.parameters import ParameterSelector
+from tests_representation.selectors.plans import TestPlanSelector
+from tests_representation.selectors.results import TestResultSelector
+from tests_representation.selectors.statuses import TestStatusSelector
+from tests_representation.selectors.tests import TestSelector
+from tests_representation.services.parameters import ParameterService
+from tests_representation.services.plans import TestPlanService
+from tests_representation.services.results import TestResultService
+from tests_representation.services.statuses import TestStatusService
+from tests_representation.services.tests import TestService
 
 
 class ParameterViewSet(ModelViewSet):
-    queryset = Parameter.objects.all()
+    queryset = ParameterSelector().parameter_list()
     serializer_class = ParameterSerializer
 
-
-class TestPlanViewSet(ModelViewSet, DtoMixin):
-    queryset = TestPlan.objects.all()
-    serializer_class = TestPlanSerializer
-    dto_class = TestPlanDto
-
-    def perform_create(self, serializer: TestPlanSerializer):
-        dto = self.build_dto_from_validated_data(serializer.validated_data)
-        serializer.instance = TestPlanService().plan_create(dto)
+    def perform_create(self, serializer: ParameterSerializer):
+        serializer.instance = ParameterService().parameter_create(serializer.validated_data)
 
     def perform_update(self, serializer: TestPlanSerializer):
-        dto = self.build_dto_from_validated_data(serializer.validated_data)
-        plan = serializer.instance
-        serializer.instance = TestPlanService().plan_update(plan, dto)
-
-    def perform_destroy(self, plan: TestPlan):
-        TestPlanService().plan_delete(plan)
+        serializer.instance = ParameterService().parameter_update(serializer.instance, serializer.validated_data)
 
 
-class TestViewSet(ModelViewSet, DtoMixin):
-    queryset = Test.objects.all()
+class TestPlanViewSet(ModelViewSet):
+    queryset = TestPlanSelector().plan_list()
+    serializer_class = TestPlanSerializer
+
+    def perform_create(self, serializer: TestPlanSerializer):
+        serializer.instance = TestPlanService().plan_create(serializer.validated_data)
+
+    def perform_update(self, serializer: TestPlanSerializer):
+        serializer.instance = TestPlanService().plan_update(serializer.instance, serializer.validated_data)
+
+
+class TestViewSet(ModelViewSet):
+    queryset = TestSelector().test_list()
     serializer_class = TestSerializer
-    dto_class = TestDto
 
     def perform_create(self, serializer: TestSerializer):
-        dto = self.build_dto_from_validated_data(serializer.validated_data)
-        serializer.instance = TestService().test_create(dto)
+        serializer.instance = TestService().test_create(serializer.validated_data)
 
     def perform_update(self, serializer: TestSerializer):
-        dto = self.build_dto_from_validated_data(serializer.validated_data)
-        test = serializer.instance
-        serializer.instance = TestService().test_update(test, dto)
-
-    def perform_destroy(self, test: Test):
-        TestService().test_delete(test)
+        serializer.instance = TestService().test_update(serializer.instance, serializer.validated_data)
 
 
-class TestResultViewSet(ModelViewSet, DtoMixin):
-    queryset = TestResult.objects.all()
+class TestResultViewSet(ModelViewSet):
+    queryset = TestResultSelector().result_list()
     serializer_class = TestResultSerializer
-    dto_class = TestResultDto
 
-    def perform_create(self, serializer: TestPlanSerializer):
-        dto = self.build_dto_from_validated_data(serializer.validated_data)
-        serializer.instance = TestResultService().result_create(dto)
+    def perform_create(self, serializer: TestResultSerializer):
+        serializer.instance = TestResultService().result_create(serializer.validated_data)
 
-    def perform_update(self, serializer: TestPlanSerializer):
-        dto = self.build_dto_from_validated_data(serializer.validated_data)
-        result = serializer.instance
-        serializer.instance = TestResultService().result_update(result, dto)
-
-    def perform_destroy(self, result: TestResult):
-        TestResultService().result_delete(result)
+    def perform_update(self, serializer: TestResultSerializer):
+        serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
 
 
 class TestStatusViewSet(ModelViewSet):
-    queryset = TestStatus.objects.all()
+    queryset = TestStatusSelector().status_list()
     serializer_class = TestStatusSerializer
+
+    def perform_create(self, serializer: TestStatusSerializer):
+        serializer.instance = TestStatusService().status_create(serializer.validated_data)
+
+    def perform_update(self, serializer: TestStatusSerializer):
+        serializer.instance = TestStatusService().status_update(serializer.instance, serializer.validated_data)

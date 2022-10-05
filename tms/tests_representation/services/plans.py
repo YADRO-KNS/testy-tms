@@ -1,50 +1,23 @@
-from dataclasses import dataclass
+from typing import Any, Dict
 
-from django.db.models import QuerySet
-from tests_representation.models import TestPlan
-
-
-@dataclass
-class TestPlanDto:
-    parent: TestPlan
-    started_at: str
-    due_date: str
-    finished_at: str
-    is_archive: bool
-    created_at: str = None
-    updated_at: str = None
+from tests_representation.models import TestPlan, TestResult
 
 
 class TestPlanService:
+    non_side_effect_fields = ['parent', 'due_date', 'finished_at', 'is_archive', 'level', 'started_at', 'lft', 'rght',
+                              'parameters', 'tree_id']
 
-    def plan_create(self, dto: TestPlanDto) -> TestPlan:
-        plan = TestPlan(
-            parent=dto.parent,
-            started_at=dto.started_at,
-            due_date=dto.due_date,
-            finished_at=dto.finished_at,
-            is_archive=dto.is_archive
+    def plan_create(self, data: Dict[str, Any]) -> TestPlan:
+        return TestPlan.model_create(
+            fields=self.non_side_effect_fields,
+            data=data,
+            commit=True,
         )
-        plan.full_clean()
-        plan.save()
+
+    def plan_update(self, plan: TestResult, data: Dict[str, Any]) -> TestPlan:
+        plan, has_updated = plan.model_update(
+            fields=self.non_side_effect_fields,
+            data=data,
+            commit=True,
+        )
         return plan
-
-    def plan_update(self, plan: TestPlan, dto: TestPlanDto) -> TestPlan:
-        plan.parent = dto.parent
-        plan.started_at = dto.started_at
-        plan.due_date = dto.due_date
-        plan.finished_at = dto.finished_at
-        plan.is_archive = dto.is_archive
-        plan.full_clean()
-        plan.save()
-        return plan
-
-    def plan_delete(self, plan: TestPlan) -> TestPlan:
-        plan.delete()
-        return plan
-
-    def plan_retrieve_all(self) -> QuerySet[TestPlan]:
-        return TestPlan.objects.all()
-
-    def plan_retrieve_by_id(self, plan_id: int) -> TestPlan:
-        return TestPlan.objects.get(pk=plan_id)

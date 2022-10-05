@@ -1,43 +1,22 @@
-from dataclasses import dataclass
+from typing import Any, Dict
 
-from core.models import Project
-from django.db.models import QuerySet
 from tests_description.models import TestSuite
 
 
-@dataclass
-class TestSuiteDto:
-    name: str
-    project: Project
-    parent: TestSuite
-
-
 class TestSuiteService:
+    non_side_effect_fields = ['parent', 'project', 'name', 'level', 'lft', 'rght', 'tree_id']
 
-    def suite_create(self, dto: TestSuiteDto) -> TestSuite:
-        suite = TestSuite(
-            name=dto.name,
-            project=dto.project,
-            parent=dto.parent
+    def suite_create(self, data: Dict[str, Any]) -> TestSuite:
+        return TestSuite.model_create(
+            fields=self.non_side_effect_fields,
+            data=data,
+            commit=True,
         )
-        suite.full_clean()
-        suite.save()
+
+    def suite_update(self, suite: TestSuite, data: Dict[str, Any]) -> TestSuite:
+        suite, has_updated = suite.model_update(
+            fields=self.non_side_effect_fields,
+            data=data,
+            commit=True,
+        )
         return suite
-
-    def suite_update(self, suite: TestSuite, dto: TestSuiteDto) -> TestSuite:
-        suite.name = dto.name
-        suite.project = dto.project
-        suite.parent = dto.parent
-        suite.full_clean()
-        suite.save()
-        return suite
-
-    def suite_delete(self, suite: TestSuite) -> TestSuite:
-        suite.delete()
-        return suite
-
-    def suite_retrieve_all(self) -> QuerySet[TestSuite]:
-        return TestSuite.objects.all()
-
-    def suite_retrieve_by_id(self, suite_id: int) -> TestSuite:
-        return TestSuite.objects.get(pk=suite_id)
