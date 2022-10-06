@@ -1,13 +1,14 @@
+from core.models import Project
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
-
-from core.models import Project
 from tests_description.models import TestCase
-from tms.models import BaseModel
+from tests_representation.choices import TestStatuses
 from users.models import User
+
+from tms.models import BaseModel
 
 UserModel = get_user_model()
 
@@ -43,19 +44,8 @@ class Test(BaseModel):
         default_related_name = 'tests'
 
 
-class TestStatus(BaseModel):
-    name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
-    code = models.IntegerField(unique=True)
-
-    class Meta:
-        default_related_name = 'test_statuses'
-
-    def __str__(self) -> str:
-        return self.name
-
-
 class TestResult(BaseModel):
-    status = models.ForeignKey(TestStatus, on_delete=models.SET_NULL, null=True)
+    status = models.IntegerField(choices=TestStatuses, default=TestStatuses.UNTESTED)
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     comment = models.TextField(blank=True)
