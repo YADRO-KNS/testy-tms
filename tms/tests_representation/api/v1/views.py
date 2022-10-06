@@ -1,7 +1,5 @@
 from rest_framework.viewsets import ModelViewSet
-from tests_representation.api.v1.serializers import (ParameterSerializer,
-                                                     TestResultSerializer,
-                                                     TestSerializer)
+from tests_representation.api.v1.serializers import ParameterSerializer, TestResultSerializer, TestSerializer
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.results import TestResultSelector
 from tests_representation.selectors.tests import TestSelector
