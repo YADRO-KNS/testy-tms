@@ -1,9 +1,9 @@
-from core.models import Project
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
+from core.models import Project
 from tms.models import BaseModel
 
 UserModel = get_user_model()

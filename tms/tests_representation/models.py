@@ -1,13 +1,13 @@
-from core.models import Project
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
-from tests_description.models import TestCase
-from users.models import User
 
+from core.models import Project
+from tests_description.models import TestCase
 from tms.models import BaseModel
+from users.models import User
 
 UserModel = get_user_model()
 

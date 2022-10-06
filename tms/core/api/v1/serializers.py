@@ -1,6 +1,7 @@
-from core.models import Project
 from rest_framework.serializers import (HyperlinkedIdentityField,
                                         ModelSerializer)
+
+from core.models import Project
 
 __all__ = (
     'ProjectSerializer'

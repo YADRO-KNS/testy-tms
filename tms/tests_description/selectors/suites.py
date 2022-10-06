@@ -1,4 +1,5 @@
 from django.db.models import QuerySet
+
 from tests_description.models import TestSuite
 
 

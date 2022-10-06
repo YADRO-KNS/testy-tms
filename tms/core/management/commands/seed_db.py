@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.management.base import BaseCommand
 from django.core.validators import validate_email
+
 from tests_representation.models import TestStatus
 
 logger = logging.getLogger(__name__)

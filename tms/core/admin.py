@@ -1,6 +1,6 @@
-from core.models import Project
 from django.contrib import admin
 
+from core.models import Project
 from tms.admin import BaseAdmin
 
 
