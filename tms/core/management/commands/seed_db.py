@@ -73,5 +73,5 @@ class Command(BaseCommand):
                 )
                 TestStatus.objects.create(
                     name=status.name,
-                    status_code=status.value
+                    code=status.value
                 )

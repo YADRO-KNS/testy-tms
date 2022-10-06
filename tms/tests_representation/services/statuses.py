@@ -4,7 +4,7 @@ from tests_representation.models import TestStatus
 
 
 class TestStatusService:
-    non_side_effect_fields = ['name', 'status_code']
+    non_side_effect_fields = ['name', 'code']
 
     def status_create(self, data: Dict[str, Any]) -> TestStatus:
         return TestStatus.model_create(

@@ -26,12 +26,8 @@ class TestPlan(MPTTModel, BaseModel):
     due_date = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
     is_archive = models.BooleanField(default=False)
-    level = models.PositiveIntegerField(null=True, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)
-    lft = models.PositiveIntegerField(null=True, blank=True)
     parameters = ArrayField(models.PositiveIntegerField(null=True, blank=True), null=True, blank=True)
-    rght = models.PositiveIntegerField(null=True, blank=True)
-    tree_id = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         default_related_name = 'test_plans'
@@ -49,7 +45,7 @@ class Test(BaseModel):
 
 class TestStatus(BaseModel):
     name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
-    status_code = models.IntegerField(unique=True)
+    code = models.IntegerField(unique=True)
 
     class Meta:
         default_related_name = 'test_statuses'

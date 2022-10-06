@@ -1,16 +1,13 @@
 from rest_framework.viewsets import ModelViewSet
 from tests_representation.api.v1.serializers import (ParameterSerializer,
-                                                     TestPlanSerializer,
                                                      TestResultSerializer,
                                                      TestSerializer,
                                                      TestStatusSerializer)
 from tests_representation.selectors.parameters import ParameterSelector
-from tests_representation.selectors.plans import TestPlanSelector
 from tests_representation.selectors.results import TestResultSelector
 from tests_representation.selectors.statuses import TestStatusSelector
 from tests_representation.selectors.tests import TestSelector
 from tests_representation.services.parameters import ParameterService
-from tests_representation.services.plans import TestPlanService
 from tests_representation.services.results import TestResultService
 from tests_representation.services.statuses import TestStatusService
 from tests_representation.services.tests import TestService
@@ -25,17 +22,6 @@ class ParameterViewSet(ModelViewSet):
 
     def perform_update(self, serializer: TestPlanSerializer):
         serializer.instance = ParameterService().parameter_update(serializer.instance, serializer.validated_data)
-
-
-class TestPlanViewSet(ModelViewSet):
-    queryset = TestPlanSelector().plan_list()
-    serializer_class = TestPlanSerializer
-
-    def perform_create(self, serializer: TestPlanSerializer):
-        serializer.instance = TestPlanService().plan_create(serializer.validated_data)
-
-    def perform_update(self, serializer: TestPlanSerializer):
-        serializer.instance = TestPlanService().plan_update(serializer.instance, serializer.validated_data)
 
 
 class TestViewSet(ModelViewSet):

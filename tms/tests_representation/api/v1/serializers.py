@@ -12,15 +12,6 @@ class ParameterSerializer(ModelSerializer):
         fields = ('id', 'project', 'data', 'group_name', 'url')
 
 
-class TestPlanSerializer(ModelSerializer):
-    url = HyperlinkedIdentityField(view_name='api:v1:testplan-detail')
-
-    class Meta:
-        model = TestPlan
-        fields = ('id', 'parent', 'due_date', 'finished_at', 'is_archive', 'level', 'started_at', 'lft', 'rght',
-                  'parameters', 'tree_id', 'created_at', 'updated_at', 'url')
-
-
 class TestSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:test-detail')
 
