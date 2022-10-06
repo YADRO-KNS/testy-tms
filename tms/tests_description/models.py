@@ -1,13 +1,10 @@
 from core.models import Project
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 from simple_history.models import HistoricalRecords
 
 from tms.models import BaseModel
-
-UserModel = get_user_model()
 
 
 class TestSuite(MPTTModel, BaseModel):
@@ -29,10 +26,10 @@ class TestCase(BaseModel):
     name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     suite = models.ForeignKey(TestSuite, on_delete=models.CASCADE)
-    setup = models.TextField()
+    setup = models.TextField(blank=True)
     scenario = models.TextField()
-    teardown = models.TextField()
-    estimate = models.PositiveIntegerField()
+    teardown = models.TextField(blank=True)
+    estimate = models.PositiveIntegerField(null=True)
     history = HistoricalRecords()
 
     class Meta:

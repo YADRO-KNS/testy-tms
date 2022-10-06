@@ -20,16 +20,17 @@ class Parameter(BaseModel):
 
     class Meta:
         default_related_name = 'parameters'
+        unique_together = ('group_name', 'data',)
 
 
 class TestPlan(MPTTModel, BaseModel):
     name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_test_planes')
-    due_date = models.DateTimeField(null=True, blank=True)
+    parameters = ArrayField(models.PositiveIntegerField(null=True, blank=True), null=True, blank=True)
+    started_at = models.DateTimeField()
+    due_date = models.DateTimeField()
     finished_at = models.DateTimeField(null=True, blank=True)
     is_archive = models.BooleanField(default=False)
-    started_at = models.DateTimeField(null=True, blank=True)
-    parameters = ArrayField(models.PositiveIntegerField(null=True, blank=True), null=True, blank=True)
 
     class Meta:
         default_related_name = 'test_plans'
@@ -51,7 +52,7 @@ class TestResult(BaseModel):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     comment = models.TextField(blank=True)
     is_archive = models.BooleanField(default=False)
-    test_case_version = models.PositiveIntegerField(null=True)
+    test_case_version = models.PositiveIntegerField()
 
     class Meta:
         default_related_name = 'test_results'
