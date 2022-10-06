@@ -20,7 +20,7 @@ class ParameterViewSet(ModelViewSet):
     def perform_create(self, serializer: ParameterSerializer):
         serializer.instance = ParameterService().parameter_create(serializer.validated_data)
 
-    def perform_update(self, serializer: TestPlanSerializer):
+    def perform_update(self, serializer: ParameterSerializer):
         serializer.instance = ParameterService().parameter_update(serializer.instance, serializer.validated_data)
 
 

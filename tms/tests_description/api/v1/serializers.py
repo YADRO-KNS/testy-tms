@@ -1,6 +1,6 @@
 from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.serializers import ModelSerializer
-from tests_description.models import HistoricalTestCase, TestCase, TestSuite
+from tests_description.models import TestCase, TestSuite
 
 
 class TestSuiteSerializer(ModelSerializer):
