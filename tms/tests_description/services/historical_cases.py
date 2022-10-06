@@ -5,7 +5,7 @@ from tests_description.models import HistoricalTestCase
 
 class HistoricalTestCaseService:
     non_side_effect_fields = ['history_user', 'project', 'suite', 'estimate', 'history_change_reason', 'history_date',
-                              'history_type', 'id', 'name', 'scenario', 'setup', 'teardown']
+                              'history_type', 'name', 'scenario', 'setup', 'teardown']
 
     def historical_case_create(self, data: Dict[str, Any]) -> HistoricalTestCase:
         return HistoricalTestCase.model_create(

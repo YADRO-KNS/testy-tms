@@ -52,7 +52,7 @@ class TestStatus(BaseModel):
     status_code = models.IntegerField(unique=True)
 
     class Meta:
-        default_related_name = 'statuses'
+        default_related_name = 'test_statuses'
 
     def __str__(self) -> str:
         return self.name

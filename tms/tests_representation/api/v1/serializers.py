@@ -9,7 +9,7 @@ class ParameterSerializer(ModelSerializer):
 
     class Meta:
         model = Parameter
-        fields = ('id', 'project', 'data', 'group_name')
+        fields = ('id', 'project', 'data', 'group_name', 'url')
 
 
 class TestPlanSerializer(ModelSerializer):

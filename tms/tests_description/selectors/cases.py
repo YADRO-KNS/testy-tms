@@ -4,4 +4,4 @@ from tests_description.models import TestCase
 
 class TestCaseSelector:
     def case_list(self) -> QuerySet[TestCase]:
-        return QuerySet(model=TestCase).prefetch_related('test_cases').order_by('id')
+        return TestCase.objects.all()
