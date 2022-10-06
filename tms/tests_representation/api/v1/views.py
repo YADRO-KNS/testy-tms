@@ -1,8 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from tests_representation.api.v1.serializers import (ParameterSerializer,
                                                      TestResultSerializer,
-                                                     TestSerializer,
-                                                     TestStatusSerializer)
+                                                     TestSerializer)
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.results import TestResultSelector
 from tests_representation.selectors.tests import TestSelector
@@ -42,5 +41,3 @@ class TestResultViewSet(ModelViewSet):
 
     def perform_update(self, serializer: TestResultSerializer):
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
-
-

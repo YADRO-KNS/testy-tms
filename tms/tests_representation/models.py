@@ -23,6 +23,7 @@ class Parameter(BaseModel):
 
 
 class TestPlan(MPTTModel, BaseModel):
+    name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_test_planes')
     due_date = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
@@ -45,7 +46,7 @@ class Test(BaseModel):
 
 
 class TestResult(BaseModel):
-    status = models.IntegerField(choices=TestStatuses, default=TestStatuses.UNTESTED)
+    status = models.IntegerField(choices=TestStatuses.choices, default=TestStatuses.UNTESTED)
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     comment = models.TextField(blank=True)

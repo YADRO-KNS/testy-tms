@@ -1,6 +1,6 @@
 from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.serializers import ModelSerializer
-from tests_representation.models import Parameter, Test, TestResult, TestStatus
+from tests_representation.models import Parameter, Test, TestResult
 
 
 class ParameterSerializer(ModelSerializer):
@@ -17,14 +17,6 @@ class TestSerializer(ModelSerializer):
     class Meta:
         model = Test
         fields = ('id', 'case', 'plan', 'user', 'is_archive', 'created_at', 'updated_at', 'url')
-
-
-class TestStatusSerializer(ModelSerializer):
-    url = HyperlinkedIdentityField(view_name='api:v1:teststatus-detail')
-
-    class Meta:
-        model = TestStatus
-        fields = ('id', 'name', 'status_code', 'url')
 
 
 class TestResultSerializer(ModelSerializer):
