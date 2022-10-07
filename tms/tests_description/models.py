@@ -1,7 +1,6 @@
-from django.core.validators import MinValueValidator
-
 from core.models import Project
 from django.conf import settings
+from django.core.validators import MinValueValidator
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 from simple_history.models import HistoricalRecords
