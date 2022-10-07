@@ -1,3 +1,5 @@
+from django.core.validators import MinValueValidator
+
 from core.models import Project
 from django.conf import settings
 from django.db import models
@@ -29,7 +31,7 @@ class TestCase(BaseModel):
     setup = models.TextField(blank=True)
     scenario = models.TextField()
     teardown = models.TextField(blank=True)
-    estimate = models.PositiveIntegerField(null=True)
+    estimate = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
     history = HistoricalRecords()
 
     class Meta:
