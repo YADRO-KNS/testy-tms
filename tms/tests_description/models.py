@@ -1,5 +1,6 @@
 from core.models import Project
 from django.conf import settings
+from django.core.validators import MinValueValidator
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 from simple_history.models import HistoricalRecords
@@ -29,7 +30,8 @@ class TestCase(BaseModel):
     setup = models.TextField(blank=True)
     scenario = models.TextField()
     teardown = models.TextField(blank=True)
-    estimate = models.PositiveIntegerField(null=True)
+    estimate = models.IntegerField(null=True, blank=True, validators=[
+                                   MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)])
     history = HistoricalRecords()
 
     class Meta:

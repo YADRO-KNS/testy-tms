@@ -10,13 +10,11 @@ class TestSuiteService:
         return TestSuite.model_create(
             fields=self.non_side_effect_fields,
             data=data,
-            commit=True,
         )
 
     def suite_update(self, suite: TestSuite, data: Dict[str, Any]) -> TestSuite:
-        suite, has_updated = suite.model_update(
+        suite, _ = suite.model_update(
             fields=self.non_side_effect_fields,
             data=data,
-            commit=True,
         )
         return suite

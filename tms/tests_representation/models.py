@@ -2,6 +2,7 @@ from core.models import Project
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
+from django.core.validators import MinValueValidator
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 from tests_description.models import TestCase
@@ -52,7 +53,8 @@ class TestResult(BaseModel):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     comment = models.TextField(blank=True)
     is_archive = models.BooleanField(default=False)
-    test_case_version = models.PositiveIntegerField()
+    test_case_version = models.IntegerField(null=True, blank=True, validators=[
+                                            MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)])
 
     class Meta:
         default_related_name = 'test_results'

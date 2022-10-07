@@ -10,13 +10,11 @@ class ParameterService:
         return Parameter.model_create(
             fields=self.non_side_effect_fields,
             data=data,
-            commit=True,
         )
 
     def parameter_update(self, parameter: Parameter, data: Dict[str, Any]) -> Parameter:
-        parameter, has_updated = parameter.model_update(
+        parameter, _ = parameter.model_update(
             fields=self.non_side_effect_fields,
             data=data,
-            commit=True,
         )
         return parameter

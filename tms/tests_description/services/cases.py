@@ -10,13 +10,11 @@ class TestCaseService:
         return TestCase.model_create(
             fields=self.non_side_effect_fields,
             data=data,
-            commit=True,
         )
 
     def case_update(self, case: TestCase, data: Dict[str, Any]) -> TestCase:
-        case, has_updated = case.model_update(
+        case, _ = case.model_update(
             fields=self.non_side_effect_fields,
             data=data,
-            commit=True,
         )
         return case
