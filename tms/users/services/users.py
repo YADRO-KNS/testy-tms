@@ -20,7 +20,7 @@ class UserService:
         return user
 
     def user_update(self, user: UserModel, data: Dict[str, Any]) -> UserModel:
-        user, has_updated = user.model_update(
+        user, _ = user.model_update(
             fields=self.non_side_effect_fields,
             data=data,
             commit=False,
