@@ -14,14 +14,14 @@ class TestResultView:
 
     def test_result_retrieve(self, api_client, authorized_superuser):
         number_of_results = 10
-        expected_results_names_list = []
+        expected_results_ids = []
         for _ in range(number_of_results):
-            expected_results_names_list.append(TestResultFactory.create().id)
+            expected_results_ids.append(TestResultFactory.create().id)
 
         response = api_client.get(constants.RESULTS_URL)
         for result in json.loads(response.content):
-            assert result.get('id') in expected_results_names_list, f'Name "{result.get("id")}" was not in' \
-                                                                    'list of expected names'
+            assert result.get('id') in expected_results_ids, f'Id "{result.get("id")}" was not in' \
+                                                             'list of expected ids'
         assert response.status_code == HTTPStatus.OK, f'Expected response code "{HTTPStatus.OK}", ' \
                                                       f'actual: "{response.status_code}"'
 
