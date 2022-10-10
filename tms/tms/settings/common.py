@@ -130,6 +130,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
 CHAR_FIELD_MAX_LEN = 255
+MIN_VALUE_POSITIVE_INTEGER = 0
 
 # Django REST framework (API)
 REST_FRAMEWORK = {

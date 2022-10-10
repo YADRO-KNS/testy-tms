@@ -30,7 +30,8 @@ class TestCase(BaseModel):
     setup = models.TextField(blank=True)
     scenario = models.TextField()
     teardown = models.TextField(blank=True)
-    estimate = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
+    estimate = models.IntegerField(null=True, blank=True, validators=[
+                                   MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)])
     history = HistoricalRecords()
 
     class Meta:
