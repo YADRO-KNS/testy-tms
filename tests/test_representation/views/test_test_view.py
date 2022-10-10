@@ -7,6 +7,7 @@ from factories import TestFactory, UserFactory
 from tests_representation.models import Test
 
 
+# TODO: currently not working
 @pytest.mark.django_db
 class TestTestView:
 
