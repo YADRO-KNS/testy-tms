@@ -10,13 +10,11 @@ class TestService:
         return Test.model_create(
             fields=self.non_side_effect_fields,
             data=data,
-            commit=True,
         )
 
     def test_update(self, test: Test, data: Dict[str, Any]) -> Test:
-        test, has_updated = test.model_update(
+        test, _ = test.model_update(
             fields=self.non_side_effect_fields,
             data=data,
-            commit=True,
         )
         return test

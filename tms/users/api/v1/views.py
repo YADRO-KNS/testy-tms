@@ -1,23 +1,12 @@
 from django.contrib.auth import get_user_model
-from rest_framework.routers import APIRootView
 from rest_framework.viewsets import ModelViewSet
-from users.api.v1.serializers import UserSerializer, GroupSerializer
-from users.models import Group
+from users.api.v1.serializers import GroupSerializer, UserSerializer
 from users.selectors.groups import GroupSelector
 from users.selectors.users import UserSelector
 from users.services.groups import GroupService
 from users.services.users import UserService
 
 UserModel = get_user_model()
-
-
-class UsersRootView(APIRootView):
-    """
-    Users API root view
-    """
-
-    def get_view_name(self) -> str:
-        return 'Users'
 
 
 class GroupViewSet(ModelViewSet):
