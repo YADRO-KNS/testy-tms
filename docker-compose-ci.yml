@@ -1,0 +1,6 @@
+version: '3.9'
+services:
+  tms-ci:
+    build:
+      context: .
+      dockerfile: tms/scripts/ci/Dockerfile
