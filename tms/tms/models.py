@@ -15,7 +15,7 @@ class ServiceModelMixin(models.Model):
 
     @classmethod
     def model_create(cls, fields: List[str], data: Dict[str, Any], commit: bool = True) -> DjangoModelType:
-        actually_fields = {key: data[key] for key in fields}
+        actually_fields = {key: data[key] for key in fields if key in data}
         instance = cls(**actually_fields)
 
         if commit:

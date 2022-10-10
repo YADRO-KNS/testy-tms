@@ -28,3 +28,5 @@ class TestResultSerializer(ModelSerializer):
             'id', 'status', 'test', 'user', 'comment', 'is_archive', 'test_case_version', 'created_at', 'updated_at',
             'url'
         )
+
+        read_only_fields = ('test_case_version',)

@@ -1,9 +1,20 @@
+from django.urls import path
 from rest_framework.routers import SimpleRouter
-from tests_representation.api.v1.views import ParameterViewSet, TestResultViewSet, TestViewSet
+from tests_representation.api.v1 import views
 
 router = SimpleRouter()
-router.register('parameters', ParameterViewSet)
-router.register('tests', TestViewSet)
-router.register('results', TestResultViewSet)
+router.register('parameters', views.ParameterViewSet)
+router.register('results', views.TestResultViewSet)
 
-urlpatterns = router.urls
+test_lists = views.TestListViewSet.as_view({'get': 'list'})
+test_detail = views.TestDetailViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'partial_update',
+})
+
+urlpatterns = [
+    path('tests/', test_lists, name='test-list'),
+    path('tests/<int:pk>/', test_detail, name='test-detail'),
+]
+urlpatterns += router.urls
