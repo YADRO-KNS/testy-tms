@@ -4,6 +4,9 @@
 fails=""
 
 inspect() {
+  # Usage: inspect $? lint
+  # * param1: job result code
+  # * param2: job name
   if [ $1 -ne 0 ]; then
     fails="${fails} $2"
   fi
