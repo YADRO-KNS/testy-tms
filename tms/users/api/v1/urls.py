@@ -1,10 +1,9 @@
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 from users.api.v1 import views
 
-router = DefaultRouter()
-router.APIRootView = views.UsersRootView
+router = SimpleRouter()
 
 router.register('users', views.UserViewSet)
+router.register('groups', views.GroupViewSet)
 
-app_name = 'users-api'
 urlpatterns = router.urls

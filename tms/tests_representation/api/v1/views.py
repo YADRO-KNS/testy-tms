@@ -1,20 +1,50 @@
-from rest_framework.viewsets import ModelViewSet
-from tests_representation.api.v1.serializers import (ParameterSerializer,
-                                                     TestPlanSerializer,
-                                                     TestSerializer)
-from tests_representation.models import Parameter, Test, TestPlan
+from rest_framework import mixins
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from tests_representation.api.v1.serializers import ParameterSerializer, TestResultSerializer, TestSerializer
+from tests_representation.selectors.parameters import ParameterSelector
+from tests_representation.selectors.results import TestResultSelector
+from tests_representation.selectors.tests import TestSelector
+from tests_representation.services.parameters import ParameterService
+from tests_representation.services.results import TestResultService
+from tests_representation.services.tests import TestService
 
 
 class ParameterViewSet(ModelViewSet):
-    queryset = Parameter.objects.all()
+    queryset = ParameterSelector().parameter_list()
     serializer_class = ParameterSerializer
 
+    def perform_create(self, serializer: ParameterSerializer):
+        serializer.instance = ParameterService().parameter_create(serializer.validated_data)
 
-class TestPlanViewSet(ModelViewSet):
-    queryset = TestPlan.objects.all()
-    serializer_class = TestPlanSerializer
+    def perform_update(self, serializer: ParameterSerializer):
+        serializer.instance = ParameterService().parameter_update(serializer.instance, serializer.validated_data)
 
 
-class TestViewSet(ModelViewSet):
-    queryset = Test.objects.all()
+class TestListViewSet(mixins.ListModelMixin, GenericViewSet):
+    queryset = TestSelector().test_list()
     serializer_class = TestSerializer
+
+    def get_view_name(self):
+        return "Test List"
+
+    def perform_update(self, serializer: TestSerializer):
+        serializer.instance = TestService().test_update(serializer.instance, serializer.validated_data)
+
+
+class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericViewSet):
+    queryset = TestSelector().test_list()
+    serializer_class = TestSerializer
+
+    def get_view_name(self):
+        return "Test Instance"
+
+
+class TestResultViewSet(ModelViewSet):
+    queryset = TestResultSelector().result_list()
+    serializer_class = TestResultSerializer
+
+    def perform_create(self, serializer: TestResultSerializer):
+        serializer.instance = TestResultService().result_create(serializer.validated_data)
+
+    def perform_update(self, serializer: TestResultSerializer):
+        serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)

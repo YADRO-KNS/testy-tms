@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'users',
     'tests_description',
     'tests_representation',
+    'simple_history',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +48,7 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'tms.urls'
@@ -128,6 +130,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
 CHAR_FIELD_MAX_LEN = 255
+MIN_VALUE_POSITIVE_INTEGER = 0
 
 # Django REST framework (API)
 REST_FRAMEWORK = {

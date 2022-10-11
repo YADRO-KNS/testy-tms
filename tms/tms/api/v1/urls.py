@@ -11,7 +11,7 @@ urlpatterns = [
     path('', include('core.api.v1.urls')),
     path('', include('tests_description.api.v1.urls')),
     path('', include('tests_representation.api.v1.urls')),
-    path('users/', include('users.api.v1.urls', namespace='users-api')),
+    path('', include('users.api.v1.urls')),
 ]
 
 urlpatterns += router.urls
