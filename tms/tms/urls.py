@@ -16,8 +16,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from django.contrib.auth import views as auth_views
+
+import views
 
 urlpatterns = [
+    path('', views.IndexView.as_view(), name='index'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+
     # API
     path('api/', include('tms.api.urls', namespace='api')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
