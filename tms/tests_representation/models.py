@@ -53,8 +53,9 @@ class TestResult(BaseModel):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     comment = models.TextField(blank=True)
     is_archive = models.BooleanField(default=False)
-    test_case_version = models.IntegerField(null=True, blank=True, validators=[
-                                            MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)])
+    test_case_version = models.IntegerField(
+        null=True, blank=True, validators=[MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)]
+    )
 
     class Meta:
         default_related_name = 'test_results'

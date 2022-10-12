@@ -1,4 +1,3 @@
-import constants
 from core.models import Project
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
@@ -7,6 +6,9 @@ from factory.django import DjangoModelFactory
 from tests_description.models import TestCase, TestSuite
 from tests_representation.choices import TestStatuses
 from tests_representation.models import Parameter, Test, TestPlan, TestResult
+from users.models import Group
+
+import tests.constants as constants
 
 UserModel = get_user_model()
 
@@ -42,6 +44,9 @@ class UserFactory(DjangoModelFactory):
 
 
 class GroupFactory(DjangoModelFactory):
+    class Meta:
+        model = Group
+
     name = Sequence(lambda n: f'{constants.GROUP_NAME}{n}')
 
 
@@ -98,3 +103,4 @@ class TestResultFactory(DjangoModelFactory):
 
     test = SubFactory(TestFactory)
     status = TestStatuses.UNTESTED
+    comment = constants.TEST_COMMENT
