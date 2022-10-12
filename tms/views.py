@@ -1,10 +1,10 @@
+from core.selectors.projects import ProjectSelector
 from django.contrib.auth import login
 from django.contrib.auth.forms import AuthenticationForm
-from django.shortcuts import render, redirect, resolve_url
-
-from core.selectors.projects import ProjectSelector
-from tms.settings.common import LOGIN_REDIRECT_URL
+from django.shortcuts import redirect, render, resolve_url
 from django.views import View
+
+from tms.settings.common import LOGIN_REDIRECT_URL
 
 
 class IndexView(View):
