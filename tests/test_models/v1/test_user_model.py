@@ -1,0 +1,44 @@
+import pytest
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+
+from tests.error_messages import NOT_NULL_ERR_MSG, UNIQUE_KEY_ERR_MSG
+
+UserModel = get_user_model()
+
+
+@pytest.mark.django_db
+class TestUserModel:
+    relation_name = UserModel._meta.label_lower.replace('.', '_')
+
+    @pytest.mark.parametrize('parameter_name', ['username', 'password', 'is_active', 'is_staff', 'is_superuser'])
+    def test_not_null_constraint(self, parameter_name, user_factory):
+        with pytest.raises(IntegrityError) as err:
+            user_factory(**{parameter_name: None})
+        assert NOT_NULL_ERR_MSG.format(relation=self.relation_name, column=parameter_name) in str(err.value), \
+            'Expected error message was not found.'
+
+    @pytest.mark.parametrize(
+        'parameter_name, incorrect_value, error_type', [
+            ('is_superuser', 'abc', ValidationError),
+            ('is_active', 'abc', ValidationError),
+            ('is_staff', 'abc', ValidationError)
+        ]
+    )
+    def test_fields_type_constraint(self, parameter_name, incorrect_value, error_type, user_factory):
+        with pytest.raises(error_type):
+            user_factory(**{parameter_name: incorrect_value})
+
+    def test_duplicate_username_not_allowed(self, user, user_factory):
+        with pytest.raises(IntegrityError) as err:
+            user_factory(username=user.username)
+        assert UNIQUE_KEY_ERR_MSG.format(
+            column_name='username', column_value=user.username
+        ) in str(err.value), f'Expected error message was not found. Expected message: {UNIQUE_KEY_ERR_MSG}'
+
+    def test_valid_model_creation(self, user):
+        assert UserModel.objects.count() == 1
+        assert UserModel.objects.get(id=user.id) == user
+
+    # TODO: Добавить валидацию пароль и почты в юзеров и после добавить негативные тесты на эти кейсы
