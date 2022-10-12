@@ -1,6 +1,5 @@
-from django.db.models import QuerySet
-
 from core.models import Project
+from django.db.models import QuerySet
 
 
 class ProjectSelector:

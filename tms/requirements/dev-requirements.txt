@@ -35,10 +35,10 @@ djangorestframework-simplejwt==5.2.0
     # via -r requirements.in
 flake8==5.0.4
     # via
-    #   -r dev-requirements.in
+    #   -r ci-requirements.in
     #   flake8-isort
 flake8-isort==4.2.0
-    # via -r dev-requirements.in
+    # via -r ci-requirements.in
 iniconfig==1.1.1
     # via pytest
 isort==5.10.1
