@@ -4,6 +4,8 @@
 #
 #    pip-compile ci-requirements.in
 #
+ansi2html==1.8.0
+    # via -r ci-requirements.in
 flake8==5.0.4
     # via
     #   -r ci-requirements.in
