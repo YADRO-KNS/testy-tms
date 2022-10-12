@@ -1,0 +1,27 @@
+{% load static %}
+
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'tms/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'tms/css/bootstrap-grid.min.css' %}">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'tms/css/base.css' %}">
+    <title>TMS | {% block title %}Base template{% endblock %}</title>
+</head>
+<body>
+    {% block header %}{% endblock %}
+    <div class="content-wrap">
+        {% block content %}{% endblock %}
+    </div>
+    {% block javascripts %}
+        <script src="{% static 'tms/js/bootstrap.bundle.min.js' %}"></script>
+    {% endblock %}
+</body>
+</html>
