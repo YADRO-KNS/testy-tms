@@ -1,8 +1,8 @@
 import pytest
 from django.db import IntegrityError
+from users.models import Group
 
 from tests.error_messages import NOT_NULL_ERR_MSG
-from users.models import Group
 
 
 @pytest.mark.django_db
