@@ -35,10 +35,11 @@ def superuser(user_factory):
     def make_user(**kwargs):
         return user_factory(is_staff=True, is_superuser=True, **kwargs)
 
-    return make_user()
+    return make_user
 
 
 @pytest.fixture
 def authorized_superuser(api_client, superuser):
-    api_client.force_login(superuser)
-    return superuser
+    user = superuser()
+    api_client.force_login(user)
+    return user
