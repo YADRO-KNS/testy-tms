@@ -2,7 +2,7 @@ import pytest
 from django.db import IntegrityError
 from tests_representation.models import Parameter
 
-from tests.error_messages import NOT_NULL_ERR_MSG
+from tests.error_messages import NOT_NULL_ERR_MSG, ALREADY_EXISTS_ERR_MSG
 
 
 @pytest.mark.django_db
@@ -25,3 +25,11 @@ class TestParameterModel:
     def test_valid_model_creation(self, parameter):
         assert Parameter.objects.count() == 1
         assert Parameter.objects.get(id=parameter.id) == parameter
+
+    def test_unique_together_constraint(self, parameter, parameter_factory):
+        with pytest.raises(IntegrityError) as err:
+            parameter_factory(group_name=parameter.group_name, data=parameter.data)
+        assert ALREADY_EXISTS_ERR_MSG.format(
+            column_name='group_name, data',
+            column_value=f'{parameter.group_name}, {parameter.data}'
+        ) in str(err.value)

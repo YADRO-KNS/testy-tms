@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
-from tests.error_messages import NOT_NULL_ERR_MSG, UNIQUE_KEY_ERR_MSG
+from tests.error_messages import NOT_NULL_ERR_MSG, ALREADY_EXISTS_ERR_MSG
 
 UserModel = get_user_model()
 
@@ -33,9 +33,9 @@ class TestUserModel:
     def test_duplicate_username_not_allowed(self, user, user_factory):
         with pytest.raises(IntegrityError) as err:
             user_factory(username=user.username)
-        assert UNIQUE_KEY_ERR_MSG.format(
+        assert ALREADY_EXISTS_ERR_MSG.format(
             column_name='username', column_value=user.username
-        ) in str(err.value), f'Expected error message was not found. Expected message: {UNIQUE_KEY_ERR_MSG}'
+        ) in str(err.value), f'Expected error message was not found. Expected message: {ALREADY_EXISTS_ERR_MSG}'
 
     def test_valid_model_creation(self, user):
         assert UserModel.objects.count() == 1
