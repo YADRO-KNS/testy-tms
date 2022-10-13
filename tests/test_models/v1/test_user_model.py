@@ -41,4 +41,3 @@ class TestUserModel:
         assert UserModel.objects.count() == 1
         assert UserModel.objects.get(id=user.id) == user
 
-    # TODO: Добавить валидацию пароль и почты в юзеров и после добавить негативные тесты на эти кейсы
