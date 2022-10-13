@@ -14,12 +14,14 @@ from tests.commons import RequestType
 
 @pytest.mark.django_db
 class TestUserEndpoints:
+    view_name_list = 'api:v1:user-list'
+    view_name_detail = 'api:v1:user-detail'
 
     def test_list(self, api_client, authorized_superuser, user_factory):
         expected_instances = [self._form_dict_user_model(authorized_superuser)]
         for _ in range(constants.NUMBER_OF_OBJECTS_TO_CREATE):
             expected_instances.append(self._form_dict_user_model(user_factory()))
-        response = api_client.send_request('api:v1:user-list')
+        response = api_client.send_request(self.view_name_list)
 
         for instance_dict in json.loads(response.content):
             instance_dict.pop('url')
@@ -27,7 +29,7 @@ class TestUserEndpoints:
 
     def test_retrieve(self, api_client, authorized_superuser, user):
         expected_dict = self._form_dict_user_model(user)
-        response = api_client.send_request('api:v1:user-detail', reverse_kwargs={'pk': user.pk})
+        response = api_client.send_request(self.view_name_detail, reverse_kwargs={'pk': user.pk})
         actual_dict = json.loads(response.content)
         actual_dict.pop('url')
         assert actual_dict == expected_dict, 'Actual model dict is different from expected'
@@ -42,7 +44,7 @@ class TestUserEndpoints:
             'password': constants.PASSWORD,
             'email': constants.USER_EMAIL
         }
-        api_client.send_request('api:v1:user-list', user_dict, HTTPStatus.CREATED, RequestType.POST)
+        api_client.send_request(self.view_name_list, user_dict, HTTPStatus.CREATED, RequestType.POST)
         assert User.objects.count() == expected_users_num, f'Expected number of users "{expected_users_num}"' \
                                                            f'actual: "{User.objects.count()}"'
 
@@ -53,7 +55,7 @@ class TestUserEndpoints:
             'username': new_name,
         }
         api_client.send_request(
-            'api:v1:user-detail',
+            self.view_name_detail,
             user_dict,
             request_type=RequestType.PATCH,
             reverse_kwargs={'pk': user.pk}
@@ -64,20 +66,14 @@ class TestUserEndpoints:
     @pytest.mark.parametrize('expected_status', [HTTPStatus.OK, HTTPStatus.BAD_REQUEST])
     def test_update(self, api_client, authorized_superuser, user, expected_status):
         new_name = 'new_expected_username'
+        user_dict = {
+            'id': user.id,
+            'username': new_name,
+        }
         if expected_status == HTTPStatus.OK:
-            user_dict = {
-                'id': user.id,
-                'username': new_name,
-                'password': user.password
-            }
-        else:
-            user_dict = {
-                'id': user.id,
-                'username': new_name,
-            }
-
+            user_dict['password'] = user.password
         response = api_client.send_request(
-            'api:v1:user-detail',
+            self.view_name_detail,
             user_dict,
             request_type=RequestType.PUT,
             expected_status=expected_status,
@@ -93,7 +89,7 @@ class TestUserEndpoints:
     def test_delete(self, api_client, authorized_superuser, user):
         assert User.objects.count() == 2, 'User was not created'
         api_client.send_request(
-            'api:v1:user-detail',
+            self.view_name_detail,
             expected_status=HTTPStatus.NO_CONTENT,
             request_type=RequestType.DELETE,
             reverse_kwargs={'pk': user.pk}
@@ -103,7 +99,7 @@ class TestUserEndpoints:
     def test_unauthorized_access(self, api_client):
         for request_type in RequestType:
             response = api_client.send_request(
-                'api:v1:user-list',
+                self.view_name_list,
                 expected_status=HTTPStatus.UNAUTHORIZED,
                 request_type=request_type
             )
@@ -118,7 +114,7 @@ class TestUserEndpoints:
             'password': constants.PASSWORD,
             'email': constants.INVALID_EMAIL
         }
-        response = api_client.send_request('api:v1:user-list', user_dict, HTTPStatus.BAD_REQUEST, RequestType.POST)
+        response = api_client.send_request(self.view_name_list, user_dict, HTTPStatus.BAD_REQUEST, RequestType.POST)
         received_dict = json.loads(response.content)
         assert received_dict['email'][0] == INVALID_EMAIL_MSG, 'Validation email error was not found in response.' \
                                                                f'Request type: {RequestType.POST.value}'
@@ -129,7 +125,7 @@ class TestUserEndpoints:
         }
         for request_type in update_types:
             response = api_client.send_request(
-                'api:v1:user-detail',
+                self.view_name_detail,
                 data=user_dict_update,
                 expected_status=HTTPStatus.BAD_REQUEST,
                 request_type=request_type,
