@@ -32,7 +32,7 @@ class TestCaseEndpoints:
 
     def test_creation(self, api_client, authorized_superuser, project, test_suite):
         expected_number_of_cases = 1
-        case_json = {
+        case_dict = {
             'name': constants.TEST_CASE_NAME,
             'project': project.id,
             'suite': test_suite.id,
@@ -41,20 +41,20 @@ class TestCaseEndpoints:
             'teardown': constants.TEARDOWN,
             'estimate': constants.ESTIMATE
         }
-        api_client.send_request('api:v1:testcase-list', case_json, HTTPStatus.CREATED, RequestType.POST)
+        api_client.send_request('api:v1:testcase-list', case_dict, HTTPStatus.CREATED, RequestType.POST)
         assert TestCase.objects.count() == expected_number_of_cases, f'Expected number of users ' \
                                                                      f'"{expected_number_of_cases}"' \
                                                                      f'actual: "{TestCase.objects.count()}"'
 
     def test_partial_update(self, api_client, authorized_superuser, test_case):
         new_name = 'new_expected_test_case_name'
-        case_json = {
+        case_dict = {
             'id': test_case.id,
             'name': new_name
         }
         api_client.send_request(
             'api:v1:testcase-detail',
-            case_json,
+            case_dict,
             request_type=RequestType.PATCH,
             reverse_kwargs={'pk': test_case.pk}
         )

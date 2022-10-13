@@ -31,24 +31,24 @@ class TestSuiteEndpoints:
 
     def test_creation(self, api_client, authorized_superuser, project):
         expected_number_of_suites = 1
-        suite_json = {
+        suite_dict = {
             'name': constants.TEST_CASE_NAME,
             'project': project.id,
         }
-        api_client.send_request('api:v1:testsuite-list', suite_json, HTTPStatus.CREATED, RequestType.POST)
+        api_client.send_request('api:v1:testsuite-list', suite_dict, HTTPStatus.CREATED, RequestType.POST)
         assert TestSuite.objects.count() == expected_number_of_suites, f'Expected number of users ' \
                                                                        f'"{expected_number_of_suites}"' \
                                                                        f'actual: "{TestSuite.objects.count()}"'
 
     def test_partial_update(self, api_client, authorized_superuser, test_suite):
         new_name = 'new_expected_test_case_name'
-        suite_json = {
+        suite_dict = {
             'id': test_suite.id,
             'name': new_name
         }
         api_client.send_request(
             'api:v1:testsuite-detail',
-            suite_json,
+            suite_dict,
             request_type=RequestType.PATCH,
             reverse_kwargs={'pk': test_suite.pk}
         )

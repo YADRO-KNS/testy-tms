@@ -32,12 +32,12 @@ class TestParameterEndpoints:
 
     def test_creation(self, api_client, authorized_superuser, project):
         expected_number_of_parameters = 1
-        parameter_json = {
+        parameter_dict = {
             'group_name': constants.PARAMETER_GROUP_NAME,
             'project': project.id,
             'data': constants.PARAMETER_DATA
         }
-        api_client.send_request('api:v1:parameter-list', parameter_json, HTTPStatus.CREATED, RequestType.POST)
+        api_client.send_request('api:v1:parameter-list', parameter_dict, HTTPStatus.CREATED, RequestType.POST)
         assert Parameter.objects.count() == expected_number_of_parameters, f'Expected number of parameters is ' \
                                                                            f'"{expected_number_of_parameters}"' \
                                                                            f'actual: "{Parameter.objects.count()}"'

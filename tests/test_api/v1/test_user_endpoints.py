@@ -4,6 +4,8 @@ from typing import Any, Dict
 
 import pytest
 from django.forms import model_to_dict
+
+from tests.error_messages import INVALID_EMAIL_MSG, UNAUTHORIZED_MSG, REQUIRED_FIELD_MSG
 from users.models import User
 
 from tests import constants
@@ -33,32 +35,60 @@ class TestUserEndpoints:
     def test_creation(self, api_client, authorized_superuser):
         expected_users_num = 2
         assert User.objects.count() == 1, 'Extra users were found.'
-        user_json = {
+        user_dict = {
             'username': constants.USERNAME,
             'first_name': constants.FIRST_NAME,
             'last_name': constants.LAST_NAME,
             'password': constants.PASSWORD,
             'email': constants.USER_EMAIL
         }
-        api_client.send_request('api:v1:user-list', user_json, HTTPStatus.CREATED, RequestType.POST)
+        api_client.send_request('api:v1:user-list', user_dict, HTTPStatus.CREATED, RequestType.POST)
         assert User.objects.count() == expected_users_num, f'Expected number of users "{expected_users_num}"' \
                                                            f'actual: "{User.objects.count()}"'
 
     def test_partial_update(self, api_client, authorized_superuser, user):
         new_name = 'new_expected_username'
-        user_json = {
+        user_dict = {
             'id': user.id,
             'username': new_name,
-            'password': user.password
         }
         api_client.send_request(
             'api:v1:user-detail',
-            user_json,
+            user_dict,
             request_type=RequestType.PATCH,
             reverse_kwargs={'pk': user.pk}
         )
         actual_name = User.objects.get(pk=user.id).username
         assert actual_name == new_name, f'Username does not match. Expected name "{actual_name}", actual: "{new_name}"'
+
+    @pytest.mark.parametrize('expected_status', [HTTPStatus.OK, HTTPStatus.BAD_REQUEST])
+    def test_update(self, api_client, authorized_superuser, user, expected_status):
+        new_name = 'new_expected_username'
+        if expected_status == HTTPStatus.OK:
+            user_dict = {
+                'id': user.id,
+                'username': new_name,
+                'password': user.password
+            }
+        else:
+            user_dict = {
+                'id': user.id,
+                'username': new_name,
+            }
+
+        response = api_client.send_request(
+            'api:v1:user-detail',
+            user_dict,
+            request_type=RequestType.PUT,
+            expected_status=expected_status,
+            reverse_kwargs={'pk': user.pk}
+        )
+        if expected_status == HTTPStatus.OK:
+            actual_name = User.objects.get(pk=user.id).username
+            assert actual_name == new_name, f'Username does not match. Expected name "{actual_name}", ' \
+                                            f'actual: "{new_name}"'
+        else:
+            assert json.loads(response.content)['password'][0] == REQUIRED_FIELD_MSG
 
     def test_delete(self, api_client, authorized_superuser, user):
         assert User.objects.count() == 2, 'User was not created'
@@ -69,6 +99,45 @@ class TestUserEndpoints:
             reverse_kwargs={'pk': user.pk}
         )
         assert User.objects.count() == 1, f'User with id "{user.id}" was not deleted.'
+
+    def test_unauthorized_access(self, api_client):
+        for request_type in RequestType:
+            response = api_client.send_request(
+                'api:v1:user-list',
+                expected_status=HTTPStatus.UNAUTHORIZED,
+                request_type=request_type
+            )
+            received_dict = json.loads(response.content)
+            assert received_dict['detail'] == UNAUTHORIZED_MSG, 'Expected message was not found in response.' \
+                                                                f'Request type: {RequestType.POST.value}'
+
+    def test_email_validation(self, api_client, authorized_superuser, user):
+        update_types = [RequestType.PUT, RequestType.PATCH]
+        user_dict = {
+            'username': constants.USERNAME,
+            'password': constants.PASSWORD,
+            'email': constants.INVALID_EMAIL
+        }
+        response = api_client.send_request('api:v1:user-list', user_dict, HTTPStatus.BAD_REQUEST, RequestType.POST)
+        received_dict = json.loads(response.content)
+        assert received_dict['email'][0] == INVALID_EMAIL_MSG, 'Validation email error was not found in response.' \
+                                                               f'Request type: {RequestType.POST.value}'
+        user_dict_update = {
+            'username': constants.USERNAME,
+            'password': constants.PASSWORD,
+            'email': constants.INVALID_EMAIL
+        }
+        for request_type in update_types:
+            response = api_client.send_request(
+                'api:v1:user-detail',
+                data=user_dict_update,
+                expected_status=HTTPStatus.BAD_REQUEST,
+                request_type=request_type,
+                reverse_kwargs={'pk': user.pk}
+            )
+            received_dict = json.loads(response.content)
+            assert received_dict['email'][0] == INVALID_EMAIL_MSG, 'Validation email error was not found in response.' \
+                                                                   f'Request type: {request_type.value}'
 
     @staticmethod
     def _form_dict_user_model(user: User) -> Dict[str, Any]:

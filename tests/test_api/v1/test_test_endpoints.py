@@ -29,13 +29,13 @@ class TestTestEndpoints:
         assert actual_dict == expected_dict, 'Actual model dict is different from expected'
 
     def test_partial_update(self, api_client, authorized_superuser, test, user):
-        result_json = {
+        result_dict = {
             'id': test.id,
             'user': user.id
         }
         api_client.send_request(
             'api:v1:test-detail',
-            result_json,
+            result_dict,
             request_type=RequestType.PATCH,
             reverse_kwargs={'pk': test.pk}
         )

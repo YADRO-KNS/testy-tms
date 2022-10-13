@@ -40,7 +40,8 @@ class CustomAPIClient(APIClient):
             raise TypeError('Request type is not known')
 
         assert response.status_code == expected_status, f'Expected response code "{expected_status}", ' \
-                                                        f'actual: "{response.status_code}"'
+                                                        f'actual: "{response.status_code}"' \
+                                                        f'Request type: {request_type.value}'
         return response
 
 

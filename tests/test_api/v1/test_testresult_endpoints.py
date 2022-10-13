@@ -35,26 +35,26 @@ class TestResultEndpoints:
 
     def test_creation(self, api_client, authorized_superuser, test, user):
         expected_number_of_results = 1
-        result_json = {
+        result_dict = {
             'status': TestStatuses.UNTESTED,
             'test': test.id,
             'user': user.id,
             'comment': constants.TEST_COMMENT,
         }
-        api_client.send_request('api:v1:testresult-list', result_json, HTTPStatus.CREATED, RequestType.POST)
+        api_client.send_request('api:v1:testresult-list', result_dict, HTTPStatus.CREATED, RequestType.POST)
         assert TestResult.objects.count() == expected_number_of_results, f'Expected number of users ' \
                                                                          f'"{expected_number_of_results}"' \
                                                                          f'actual: "{TestResult.objects.count()}"'
 
     def test_partial_update(self, api_client, authorized_superuser, test_result, user_factory):
         new_user = user_factory()
-        result_json = {
+        result_dict = {
             'id': test_result.id,
             'user': new_user.id
         }
         api_client.send_request(
             'api:v1:testresult-detail',
-            result_json,
+            result_dict,
             request_type=RequestType.PATCH,
             reverse_kwargs={'pk': test_result.pk}
         )

@@ -32,18 +32,18 @@ class TestGroupEndpoints:
 
     def test_creation(self, api_client, authorized_superuser):
         expected_number_of_parameters = 1
-        group_json = {
+        group_dict = {
             'name': constants.PARAMETER_GROUP_NAME,
             'permissions': []
         }
-        api_client.send_request('api:v1:group-list', group_json, HTTPStatus.CREATED, RequestType.POST)
+        api_client.send_request('api:v1:group-list', group_dict, HTTPStatus.CREATED, RequestType.POST)
         assert Group.objects.count() == expected_number_of_parameters, f'Expected number of groups is ' \
                                                                        f'"{expected_number_of_parameters}"' \
                                                                        f'actual: "{Parameter.objects.count()}"'
 
     def test_partial_update(self, api_client, authorized_superuser, group):
         new_name = 'new_name'
-        group_json = {
+        group_dict = {
             'id': group.id,
             'name': new_name,
         }
@@ -51,7 +51,7 @@ class TestGroupEndpoints:
             'api:v1:group-detail',
             reverse_kwargs={'pk': group.pk},
             request_type=RequestType.PATCH,
-            data=group_json
+            data=group_dict
         )
         actual_name = Group.objects.get(pk=group.id).name
         assert actual_name == new_name, f'New name does not match. Expected data "{new_name}", actual: "{actual_name}"'
