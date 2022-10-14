@@ -18,6 +18,8 @@ class TestSerializer(ModelSerializer):
         model = Test
         fields = ('id', 'case', 'plan', 'user', 'is_archive', 'created_at', 'updated_at', 'url')
 
+        read_only_fields = ('project',)
+
 
 class TestResultSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:testresult-detail')
@@ -29,4 +31,4 @@ class TestResultSerializer(ModelSerializer):
             'url'
         )
 
-        read_only_fields = ('test_case_version',)
+        read_only_fields = ('test_case_version', 'project',)
