@@ -4,12 +4,11 @@ from typing import Any, Dict
 
 import pytest
 from django.forms import model_to_dict
-
-from tests.error_messages import INVALID_EMAIL_MSG, UNAUTHORIZED_MSG, REQUIRED_FIELD_MSG
 from users.models import User
 
 from tests import constants
 from tests.commons import RequestType
+from tests.error_messages import INVALID_EMAIL_MSG, REQUIRED_FIELD_MSG, UNAUTHORIZED_MSG
 
 
 @pytest.mark.django_db

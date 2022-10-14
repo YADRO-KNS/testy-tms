@@ -3,12 +3,11 @@ from http import HTTPStatus
 
 import pytest
 from django.forms import model_to_dict
-
-from tests.error_messages import REQUIRED_FIELD_MSG
 from tests_description.models import TestSuite
 
 from tests import constants
 from tests.commons import RequestType
+from tests.error_messages import REQUIRED_FIELD_MSG
 
 
 @pytest.mark.django_db

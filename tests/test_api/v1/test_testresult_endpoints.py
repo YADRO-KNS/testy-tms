@@ -2,13 +2,12 @@ import json
 from http import HTTPStatus
 
 import pytest
-
-from tests.error_messages import REQUIRED_FIELD_MSG
 from tests_representation.choices import TestStatuses
 from tests_representation.models import TestResult
 
 from tests import constants
 from tests.commons import RequestType, model_with_base_to_dict
+from tests.error_messages import REQUIRED_FIELD_MSG
 
 
 @pytest.mark.django_db(reset_sequences=True)
