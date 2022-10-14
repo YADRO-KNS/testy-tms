@@ -1,0 +1,29 @@
+{% extends 'tms/base_page.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block page-content-header %}
+<h4 class="fw-light mx-3 py-4">
+    <span> Profile settings </span>
+</h4>
+{% endblock %}
+
+{% block page-content-tabs %}
+    {% include "tms/components/tabs.html" with tabs=tabs active=active_tab %}
+{% endblock %}
+
+{% block page-content %}
+<div class="content col-8 p-3">
+    <div class="card bg-white border-0 pt-3">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %} alert-{% if 'error' in message.tags %}danger{% else %}{{ message.tags }}{% endif %} {% endif %}"
+             role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+        <form action="{% url active_tab %}" method="post">
+            {% crispy form form.helper %}
+        </form>
+    </div>
+</div>
+{% endblock %}
