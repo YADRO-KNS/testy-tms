@@ -16,6 +16,7 @@ class TestResultService:
             commit=False,
         )
 
+        test_result.project = test_result.test.case.project
         test_result.test_case_version = TestCaseSelector().case_version(test_result.test.case)
         test_result.full_clean()
         test_result.save()
