@@ -16,5 +16,6 @@ test_detail = views.TestDetailViewSet.as_view({
 urlpatterns = [
     path('tests/', test_lists, name='test-list'),
     path('tests/<int:pk>/', test_detail, name='test-detail'),
+    path('test_results/<int:test_id>/', views.TestResultByTest.as_view())
 ]
 urlpatterns += router.urls

@@ -1,4 +1,5 @@
 from rest_framework import mixins
+from rest_framework.generics import ListAPIView
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from tests_representation.api.v1.serializers import ParameterSerializer, TestResultSerializer, TestSerializer
 from tests_representation.selectors.parameters import ParameterSelector
@@ -48,3 +49,10 @@ class TestResultViewSet(ModelViewSet):
 
     def perform_update(self, serializer: TestResultSerializer):
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
+
+
+class TestResultByTest(ListAPIView):
+    serializer_class = TestResultSerializer
+
+    def get_queryset(self):
+        return TestResultSelector().result_list_by_test_id(self.kwargs.get('test_id'))
