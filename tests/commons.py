@@ -26,18 +26,10 @@ class CustomAPIClient(APIClient):
 
     ):
         url = reverse(view_name, kwargs=reverse_kwargs)
-        if request_type == RequestType.GET:
-            response = self.get(url)
-        elif request_type == RequestType.POST:
-            response = self.post(url, data=data)
-        elif request_type == RequestType.PATCH:
-            response = self.patch(url, data=data)
-        elif request_type == RequestType.PUT:
-            response = self.put(url, data=data)
-        elif request_type == RequestType.DELETE:
-            response = self.delete(url)
-        else:
+        http_request = getattr(self, request_type.value, None)
+        if not http_request:
             raise TypeError('Request type is not known')
+        response = http_request(url, data=data)
 
         assert response.status_code == expected_status, f'Expected response code "{expected_status}", ' \
                                                         f'actual: "{response.status_code}"'
