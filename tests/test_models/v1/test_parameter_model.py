@@ -2,7 +2,7 @@ import pytest
 from django.db import IntegrityError
 from tests_representation.models import Parameter
 
-from tests.error_messages import NOT_NULL_ERR_MSG, ALREADY_EXISTS_ERR_MSG
+from tests.error_messages import ALREADY_EXISTS_ERR_MSG, NOT_NULL_ERR_MSG
 
 
 @pytest.mark.django_db

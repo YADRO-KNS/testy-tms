@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
-from tests.error_messages import NOT_NULL_ERR_MSG, ALREADY_EXISTS_ERR_MSG
+from tests.error_messages import ALREADY_EXISTS_ERR_MSG, NOT_NULL_ERR_MSG
 
 UserModel = get_user_model()
 
@@ -40,4 +40,3 @@ class TestUserModel:
     def test_valid_model_creation(self, user):
         assert UserModel.objects.count() == 1
         assert UserModel.objects.get(id=user.id) == user
-
