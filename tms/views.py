@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from core.mixins.views import ViewTabMixin
 from core.selectors.projects import ProjectSelector
 from django.contrib import messages
@@ -8,14 +10,22 @@ from django.shortcuts import redirect, render, resolve_url
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import View
-from django.views.generic import UpdateView
-from django.views.generic.edit import FormView
+from django.views.generic import FormView, UpdateView
 from forms import ProfilePasswordChangeForm, UserDetailsForm
 from users.services.users import UserService
 
 from tms.settings.common import LOGIN_REDIRECT_URL
 
 UserModel = get_user_model()
+
+CHANGES_SAVED_SUCCESSFULLY = _('Changes was saved successfully!')
+
+
+@dataclass
+class Tab:
+    name: str
+    href: str
+    args: str = None
 
 
 class IndexView(View):
@@ -40,12 +50,12 @@ class IndexView(View):
 
 
 class UserProfileBaseView(ViewTabMixin):
-    tabs = {
-        'General settings': 'user_profile',
-        'Change password': 'user_change_password'
-    }
+    tabs = [
+        Tab(name='General settings', href='user_profile'),
+        Tab(name='Change password', href='user_change_password')
+    ]
     template_name = 'tms/user_profile.html'
-    success_message = _('Changes was saved successfully!')
+    success_message = CHANGES_SAVED_SUCCESSFULLY
 
     def get_object(self, queryset=None):
         return self.request.user

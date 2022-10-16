@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'simple_history',
     'crispy_forms',
     'crispy_bootstrap5',
+    'django_tables2'
 ]
 
 MIDDLEWARE = [
@@ -161,3 +162,6 @@ COMPANY_DOMAIN = os.environ.get('COMPANY_DOMAIN')
 # Django Crispy forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
+
+# Django tables forms
+DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'

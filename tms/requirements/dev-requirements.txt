@@ -19,7 +19,9 @@ django==3.2
     #   -r requirements.in
     #   crispy-bootstrap5
     #   django-extensions
+    #   django-filter
     #   django-js-asset
+    #   django-tables2
     #   djangorestframework
     #   djangorestframework-simplejwt
 django-crispy-forms==1.14.0
@@ -28,11 +30,15 @@ django-crispy-forms==1.14.0
     #   crispy-bootstrap5
 django-extensions==3.2.1
     # via -r dev-requirements.in
+django-filter==22.1
+    # via -r requirements.in
 django-js-asset==2.0.0
     # via django-mptt
 django-mptt==0.13.4
     # via -r requirements.in
 django-simple-history==3.1.1
+    # via -r requirements.in
+django-tables2==2.4.1
     # via -r requirements.in
 djangorestframework==3.13.1
     # via

@@ -1,0 +1,22 @@
+{% extends 'tms/base_page.html' %}
+
+
+{% block page-content-header %}
+<h4 class="fw-light mx-3 pt-4"><span>Администрирование</span></h4>
+{% endblock %}
+
+{% block page-content-breadcrumbs %}
+<nav aria-label="breadcrumb pb-4">
+    <ol class="breadcrumb mx-3">
+        {% block breadcrumb %}
+        <li class="breadcrumb-item" aria-current="page"><a class="fs-12 text-primary" href="{% url 'admin_overview' %}">Администрирование</a></li>
+        {% endblock %}
+    </ol>
+</nav>
+{% endblock %}
+
+{% block page-content-tabs %}
+    {% include "tms/components/tabs.html" with tabs=tabs active_tab=active_tab %}
+{% endblock %}
+
+{% block page-content %}{% endblock %}

@@ -6,3 +6,12 @@
 .icon {
     color: #FFF;
 }
+
+.card-button {
+    z-index: 2;
+    position: relative;
+}
+
+.text-small {
+    font-size: 0.875rem;
+}

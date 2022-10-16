@@ -1,0 +1,37 @@
+{% extends 'tms/admin_page.html' %}
+
+{% load render_table from django_tables2 %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block page-content-header %}
+<h4 class="fw-light mx-3 pt-4"><span>Проекты</span></h4>
+{% endblock %}
+
+{% block breadcrumb %}
+    {{ block.super }}
+    <li class="breadcrumb-item active" aria-current="page">Проекты</li>
+{% endblock %}
+
+{% block page-content %}
+    <div class="content">
+        <div class="container-fluid">
+            <div class="row">
+                {% include "tms/components/alerts.html" with messages=messages %}
+                <div class="col-12">
+                    <div class="text-end py-2">
+                        <a href="{% url 'admin_project_add' %}" class="btn btn-secondary">
+                            <img class="pe-1" src="{% static 'tms/images/plus-circle.svg' %}">
+                            Добавить проект
+                        </a>
+                    </div>
+                    <div class="card mt-3 mb-5 px-3">
+                        <div class="card-body text-center px-0">
+                            {% render_table table %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
