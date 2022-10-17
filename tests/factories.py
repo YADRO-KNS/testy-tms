@@ -106,3 +106,4 @@ class TestResultFactory(DjangoModelFactory):
     test = SubFactory(TestFactory)
     status = TestStatuses.UNTESTED
     comment = constants.TEST_COMMENT
+    project = SubFactory(ProjectFactory)

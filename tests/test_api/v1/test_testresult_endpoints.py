@@ -88,9 +88,57 @@ class TestResultEndpoints:
     def test_delete(self, api_client, authorized_superuser, test_result):
         assert TestResult.objects.count() == 1, 'Test result was not created'
         api_client.send_request(
-            'api:v1:testcase-detail',
+            self.view_name_detail,
             expected_status=HTTPStatus.NO_CONTENT,
             request_type=RequestType.DELETE,
             reverse_kwargs={'pk': test_result.pk}
         )
         assert not TestResult.objects.count(), f'Test result with id "{test_result.id}" was not deleted.'
+
+    def test_add_results_to_test(self, api_client, authorized_superuser, user, test_factory):
+        tests = [test_factory(), test_factory()]
+        for test in tests:
+            result_dict = {
+                'status': TestStatuses.UNTESTED,
+                'test': test.id,
+                'user': user.id,
+                'comment': constants.TEST_COMMENT,
+            }
+            api_client.send_request(
+                'api:v1:result-add',
+                expected_status=HTTPStatus.CREATED,
+                request_type=RequestType.POST,
+                data=result_dict,
+                reverse_kwargs={'test_id': test.id}
+            )
+        assert TestResult.objects.count() == 2, 'Expected number of results was not created.'
+        assert TestResult.objects.filter(test=tests[0]).count() == 1, f'Only 1 result should be on a test "{tests[0]}"'
+        assert TestResult.objects.filter(test=tests[1]).count() == 1, f'Only 1 result should be on a test "{tests[1]}"'
+
+    def test_get_results_by_test(self, api_client, test_result_factory, test_factory, authorized_superuser):
+        test1 = test_factory()
+        test2 = test_factory()
+        dicts_test1 = []
+        dicts_test2 = []
+        for _ in range(constants.NUMBER_OF_OBJECTS_TO_CREATE):
+            dicts_test1.append(model_with_base_to_dict(test_result_factory(test=test1)))
+            dicts_test2.append(model_with_base_to_dict(test_result_factory(test=test2)))
+        response_test1 = api_client.send_request(
+            'api:v1:results-by-test',
+            expected_status=HTTPStatus.OK,
+            request_type=RequestType.GET,
+            reverse_kwargs={'test_id': test1.id}
+        )
+        response_test2 = api_client.send_request(
+            'api:v1:results-by-test',
+            expected_status=HTTPStatus.OK,
+            request_type=RequestType.GET,
+            reverse_kwargs={'test_id': test2.id}
+        )
+        actual_results1 = json.loads(response_test1.content)
+        actual_results2 = json.loads(response_test2.content)
+        for result_test1, result_test2 in zip(actual_results1, actual_results2):
+            result_test1.pop('url')
+            result_test2.pop('url')
+        assert actual_results1 == dicts_test1, 'Response is different from expected one'
+        assert actual_results2 == dicts_test2, 'Response is different from expected one'
