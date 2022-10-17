@@ -55,6 +55,7 @@ class TestPlanFactory(DjangoModelFactory):
         model = TestPlan
 
     name = Sequence(lambda n: f'{constants.TEST_PLAN_NAME}{n}')
+    project = SubFactory(ProjectFactory)
     started_at = constants.DATE
     due_date = constants.DATE
     finished_at = constants.DATE
@@ -94,6 +95,7 @@ class TestFactory(DjangoModelFactory):
     case = SubFactory(TestCaseFactory)
     plan = SubFactory(TestPlanFactory)
     user = SubFactory(UserFactory)
+    project = SubFactory(ProjectFactory)
     is_archive = False
 
 

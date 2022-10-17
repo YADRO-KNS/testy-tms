@@ -1,7 +1,9 @@
-from rest_framework import mixins
-from rest_framework.generics import ListAPIView
+from rest_framework import mixins, status
+from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from tests_representation.api.v1.serializers import ParameterSerializer, TestResultSerializer, TestSerializer
+from tests_representation.models import Test
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.results import TestResultSelector
 from tests_representation.selectors.tests import TestSelector
@@ -49,6 +51,25 @@ class TestResultViewSet(ModelViewSet):
 
     def perform_update(self, serializer: TestResultSerializer):
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
+
+
+class AddTestResultToTest(CreateAPIView):
+    serializer_class = TestResultSerializer
+
+    def post(self, request, *args, **kwargs):
+        test_id = kwargs['test_id']
+        if not Test.objects.get(pk=test_id):
+            return Response(
+                {'message': f'No test with id "{test_id}" was found'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        request.data._mutable = True
+        request.data.update({'test': kwargs['test_id']})
+        request.data._mutable = False
+        return self.create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        serializer.instance = TestResultService().result_create(serializer.validated_data)
 
 
 class TestResultByTest(ListAPIView):
