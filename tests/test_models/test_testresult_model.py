@@ -21,10 +21,10 @@ class TestResultModel:
     @pytest.mark.parametrize(
         'parameter_name, incorrect_value, error_type, err_msg', [
             ('status', 'abc', ValueError, INT_VALUE_ERR_MSG.format(column='status', value='abc')),
-            ('test', 'abc', ValueError,
-             MODEL_VALUE_ERR_MSG.format(value='abc', model_name='TestResult', column_name='test', column_model='Test')),
-            ('user', 'abc', ValueError,
-             MODEL_VALUE_ERR_MSG.format(value='abc', model_name='TestResult', column_name='user', column_model='User')),
+            ('test', 'abc', ValueError, MODEL_VALUE_ERR_MSG.format(value='abc', model_name='TestResult',
+                                                                   column_name='test', column_model='Test')),
+            ('user', 'abc', ValueError, MODEL_VALUE_ERR_MSG.format(value='abc', model_name='TestResult',
+                                                                   column_name='user', column_model='User')),
             ('is_archive', 'abc', ValidationError, BOOL_VALUE_ERR_MSG.format(value='abc'))
         ]
     )
