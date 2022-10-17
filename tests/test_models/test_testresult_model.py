@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from tests_representation.models import TestResult
 
-from tests.error_messages import NOT_NULL_ERR_MSG, INT_VALUE_ERR_MSG, MODEL_VALUE_ERR_MSG, BOOL_VALUE_ERR_MSG
+from tests.error_messages import BOOL_VALUE_ERR_MSG, INT_VALUE_ERR_MSG, MODEL_VALUE_ERR_MSG, NOT_NULL_ERR_MSG
 
 
 @pytest.mark.django_db

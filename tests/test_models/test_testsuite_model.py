@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from tests_description.models import TestSuite
 
-from tests.error_messages import NOT_NULL_ERR_MSG, MODEL_VALUE_ERR_MSG
+from tests.error_messages import MODEL_VALUE_ERR_MSG, NOT_NULL_ERR_MSG
 
 UserModel = get_user_model()
 

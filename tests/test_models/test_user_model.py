@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
-from tests.error_messages import ALREADY_EXISTS_ERR_MSG, NOT_NULL_ERR_MSG, BOOL_VALUE_ERR_MSG
+from tests.error_messages import ALREADY_EXISTS_ERR_MSG, BOOL_VALUE_ERR_MSG, NOT_NULL_ERR_MSG
 
 UserModel = get_user_model()
 
