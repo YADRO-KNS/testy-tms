@@ -2,7 +2,7 @@ import pytest
 from django.db import IntegrityError
 from tests_representation.models import Parameter
 
-from tests.error_messages import ALREADY_EXISTS_ERR_MSG, NOT_NULL_ERR_MSG
+from tests.error_messages import ALREADY_EXISTS_ERR_MSG, NOT_NULL_ERR_MSG, MODEL_VALUE_ERR_MSG
 
 
 @pytest.mark.django_db
@@ -17,10 +17,12 @@ class TestParameterModel:
         assert NOT_NULL_ERR_MSG.format(relation=self.relation_name, column=parameter_name) in str(err.value), \
             'Expected error message was not found.'
 
-    @pytest.mark.parametrize('parameter_name, incorrect_value, error_type', [('project', 1, ValueError)])
-    def test_fields_type_constraint(self, parameter_name, incorrect_value, error_type, parameter_factory):
-        with pytest.raises(error_type):
-            parameter_factory(**{parameter_name: incorrect_value})
+    def test_fields_type_constraint(self, parameter_factory):
+        invalid_value = 'abc'
+        with pytest.raises(ValueError) as err:
+            parameter_factory(project=invalid_value)
+        assert MODEL_VALUE_ERR_MSG.format(value=invalid_value, model_name='Parameter', column_name='project',
+                                          column_model='Project') == str(err.value)
 
     def test_valid_model_creation(self, parameter):
         assert Parameter.objects.count() == 1

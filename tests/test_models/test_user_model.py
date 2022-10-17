@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
-from tests.error_messages import ALREADY_EXISTS_ERR_MSG, NOT_NULL_ERR_MSG
+from tests.error_messages import ALREADY_EXISTS_ERR_MSG, NOT_NULL_ERR_MSG, BOOL_VALUE_ERR_MSG
 
 UserModel = get_user_model()
 
@@ -20,15 +20,16 @@ class TestUserModel:
             'Expected error message was not found.'
 
     @pytest.mark.parametrize(
-        'parameter_name, incorrect_value, error_type', [
-            ('is_superuser', 'abc', ValidationError),
-            ('is_active', 'abc', ValidationError),
-            ('is_staff', 'abc', ValidationError)
+        'parameter_name, incorrect_value', [
+            ('is_superuser', 'abc'),
+            ('is_active', 'abc'),
+            ('is_staff', 'abc')
         ]
     )
-    def test_fields_type_constraint(self, parameter_name, incorrect_value, error_type, user_factory):
-        with pytest.raises(error_type):
+    def test_fields_type_constraint(self, parameter_name, incorrect_value, user_factory):
+        with pytest.raises(ValidationError) as err:
             user_factory(**{parameter_name: incorrect_value})
+        assert BOOL_VALUE_ERR_MSG.format(value=incorrect_value) in str(err.value)
 
     def test_duplicate_username_not_allowed(self, user, user_factory):
         with pytest.raises(IntegrityError) as err:

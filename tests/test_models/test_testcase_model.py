@@ -2,7 +2,7 @@ import pytest
 from django.db import IntegrityError
 from tests_description.models import TestCase
 
-from tests.error_messages import NOT_NULL_ERR_MSG
+from tests.error_messages import NOT_NULL_ERR_MSG, MODEL_VALUE_ERR_MSG, INT_VALUE_ERR_MSG
 
 
 @pytest.mark.django_db
@@ -19,15 +19,18 @@ class TestCaseModel:
             'Expected error message was not found.'
 
     @pytest.mark.parametrize(
-        'parameter_name, incorrect_value, error_type', [
-            ('project', 1, ValueError),
-            ('suite', 1, ValueError),
-            ('estimate', 'abc', ValueError),
+        'parameter_name, incorrect_value, err_msg', [
+            ('project', 'abc', MODEL_VALUE_ERR_MSG.format(value='abc', model_name='TestCase', column_name='project',
+                                                          column_model='Project')),
+            ('suite', 'abc', MODEL_VALUE_ERR_MSG.format(value='abc', model_name='TestCase', column_name='suite',
+                                                        column_model='TestSuite')),
+            ('estimate', 'abc', INT_VALUE_ERR_MSG.format(column='estimate', value='abc')),
         ]
     )
-    def test_fields_type_constraint(self, parameter_name, incorrect_value, error_type, test_case_factory):
-        with pytest.raises(error_type):
+    def test_fields_type_constraint(self, parameter_name, incorrect_value, err_msg, test_case_factory):
+        with pytest.raises(ValueError) as err:
             test_case_factory(**{parameter_name: incorrect_value})
+        assert err_msg == str(err.value)
 
     def test_valid_model_creation(self, test_case):
         assert TestCase.objects.count() == 1

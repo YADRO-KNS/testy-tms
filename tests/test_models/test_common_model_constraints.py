@@ -31,7 +31,7 @@ class TestCommonConstraints:
     def test_char_length_constraint(self, instance, column_name):
         with pytest.raises(DataError) as err:
             instance.create(**{column_name: constants.EXCEEDING_CHAR_FIELD})
-        assert CHAR_LENGTH_ERR_MSG in str(err.value), f'Char field length was exceeded in model "{instance}".'
+        assert CHAR_LENGTH_ERR_MSG == str(err.value), f'Char field length was exceeded in model "{instance}".'
 
     @pytest.mark.parametrize(
         'child_factory, parent_factory, model, parameter_name', [
