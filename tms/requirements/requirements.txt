@@ -6,11 +6,18 @@
 #
 asgiref==3.5.2
     # via django
+crispy-bootstrap5==0.7
+    # via -r requirements.in
 django==3.2
     # via
     #   -r requirements.in
+    #   crispy-bootstrap5
     #   djangorestframework
     #   djangorestframework-simplejwt
+django-crispy-forms==1.14.0
+    # via
+    #   -r requirements.in
+    #   crispy-bootstrap5
 django-js-asset==2.0.0
     # via django-mptt
 django-mptt==0.13.4

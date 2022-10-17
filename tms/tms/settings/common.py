@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'tests_description',
     'tests_representation',
     'simple_history',
+    'crispy_forms',
+    'crispy_bootstrap5',
 ]
 
 MIDDLEWARE = [
@@ -155,3 +157,7 @@ REST_FRAMEWORK = {
 
 # Company
 COMPANY_DOMAIN = os.environ.get('COMPANY_DOMAIN')
+
+# Django Crispy forms
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'

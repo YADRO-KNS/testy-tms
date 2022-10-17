@@ -16,11 +16,16 @@ Including another URLconf
 import views
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import login_required
 from django.urls import include, path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
+    path('profile/', login_required(views.UserProfileView.as_view()), name='user_profile'),
+    path('profile/change-password/', login_required(views.UserChangePasswordView.as_view()),
+         name='user_change_password'),
+
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
     # API
