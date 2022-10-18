@@ -36,19 +36,6 @@ class TestResultEndpoints:
         actual_dict.pop('url')
         assert actual_dict == expected_dict, 'Actual model dict is different from expected'
 
-    def test_creation(self, api_client, authorized_superuser, test, user):
-        expected_number_of_results = 1
-        result_dict = {
-            'status': TestStatuses.UNTESTED,
-            'test': test.id,
-            'user': user.id,
-            'comment': constants.TEST_COMMENT,
-        }
-        api_client.send_request(self.view_name_list, result_dict, HTTPStatus.CREATED, RequestType.POST)
-        assert TestResult.objects.count() == expected_number_of_results, f'Expected number of users ' \
-                                                                         f'"{expected_number_of_results}"' \
-                                                                         f'actual: "{TestResult.objects.count()}"'
-
     def test_partial_update(self, api_client, authorized_superuser, test_result, user):
         result_dict = {
             'id': test_result.id,
@@ -100,7 +87,6 @@ class TestResultEndpoints:
         for test in tests:
             result_dict = {
                 'status': TestStatuses.UNTESTED,
-                'test': test.id,
                 'user': user.id,
                 'comment': constants.TEST_COMMENT,
             }
@@ -109,7 +95,7 @@ class TestResultEndpoints:
                 expected_status=HTTPStatus.CREATED,
                 request_type=RequestType.POST,
                 data=result_dict,
-                reverse_kwargs={'test_id': test.id}
+                reverse_kwargs={'pk': test.id}
             )
         assert TestResult.objects.count() == 2, 'Expected number of results was not created.'
         assert TestResult.objects.filter(test=tests[0]).count() == 1, f'Only 1 result should be on a test "{tests[0]}"'
@@ -127,13 +113,13 @@ class TestResultEndpoints:
             'api:v1:results-by-test',
             expected_status=HTTPStatus.OK,
             request_type=RequestType.GET,
-            reverse_kwargs={'test_id': test1.id}
+            reverse_kwargs={'pk': test1.id}
         )
         response_test2 = api_client.send_request(
             'api:v1:results-by-test',
             expected_status=HTTPStatus.OK,
             request_type=RequestType.GET,
-            reverse_kwargs={'test_id': test2.id}
+            reverse_kwargs={'pk': test2.id}
         )
         actual_results1 = json.loads(response_test1.content)
         actual_results2 = json.loads(response_test2.content)

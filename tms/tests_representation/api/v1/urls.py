@@ -13,10 +13,31 @@ test_detail = views.TestDetailViewSet.as_view({
     'patch': 'partial_update',
 })
 
+result_detail = views.TestResultViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'partial_update'
+})
+
+result_list = views.TestResultViewSet.as_view({
+    'get': 'list'
+})
+
+results_by_test = views.TestResultViewSet.as_view({
+    'get': 'results_by_test'
+})
+
+add_result_to_test = views.TestResultViewSet.as_view({
+    'post': 'add_result'
+})
+
 urlpatterns = [
     path('tests/', test_lists, name='test-list'),
     path('tests/<int:pk>/', test_detail, name='test-detail'),
-    path('get_results/<int:test_id>/', views.TestResultByTest.as_view(), name='results-by-test'),
-    path('add_result/<int:test_id>/', views.AddTestResultToTest.as_view(), name='result-add')
+    path('tests/<int:pk>/results/', add_result_to_test, name='result-add'),
+    path('tests/<int:pk>/results/', views.TestResultsByTest.as_view(), name='results-by-test'),
+    path('results/', result_list, name='result-list'),
+    path('results/<int>:pk/', result_detail, name='result-detail'),
+
 ]
 urlpatterns += router.urls
