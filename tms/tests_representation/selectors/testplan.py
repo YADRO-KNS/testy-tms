@@ -1,9 +1,8 @@
+import logging
 from typing import Optional
 
 from django.db.models import QuerySet
-
 from tests_representation.models import TestPlan
-import logging
 
 logger = logging.getLogger(__name__)
 

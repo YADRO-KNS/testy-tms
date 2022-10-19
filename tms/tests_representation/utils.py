@@ -1,5 +1,5 @@
 from itertools import product
-from typing import List, Dict, Tuple
+from typing import List, Tuple
 
 from tests_representation.models import Parameter
 

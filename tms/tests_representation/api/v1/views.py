@@ -1,14 +1,17 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from rest_framework import mixins, status
-from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from rest_framework.settings import api_settings
 from rest_framework.views import APIView
-from rest_framework.viewsets import GenericViewSet, ModelViewSet, ViewSetMixin, ViewSet, ReadOnlyModelViewSet
-from tests_representation.api.v1.serializers import ParameterSerializer, TestResultSerializer, TestSerializer, \
-    TestPlanOutputSerializer, TestPlanInputSerializer, TestPlanUpdateSerializer
-from tests_representation.models import TestPlan
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from tests_representation.api.v1.serializers import (
+    ParameterSerializer,
+    TestPlanInputSerializer,
+    TestPlanOutputSerializer,
+    TestPlanUpdateSerializer,
+    TestResultSerializer,
+    TestSerializer,
+)
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.results import TestResultSelector
 from tests_representation.selectors.testplan import TestPlanSelector
