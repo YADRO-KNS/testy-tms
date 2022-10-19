@@ -1,9 +1,7 @@
 from rest_framework import mixins
 from rest_framework.decorators import action
-from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
-
 from tests_representation.api.v1.serializers import ParameterSerializer, TestResultSerializer, TestSerializer
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.results import TestResultSelector
