@@ -40,7 +40,7 @@ class TestPlan(MPTTModel, BaseModel):
 class Test(BaseModel):
     case = models.ForeignKey(TestCase, on_delete=models.CASCADE)
     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE)
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, null=True, blank=True)
     is_archive = models.BooleanField(default=False)
 
     class Meta:
