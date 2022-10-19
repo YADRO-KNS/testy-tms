@@ -1,9 +1,8 @@
-from typing import Dict, Any, List
-from django.db import transaction
+from typing import Any, Dict, List
 
+from django.db import transaction
 from tests_representation.models import TestPlan
 from tests_representation.services.tests import TestService
-
 from tests_representation.utils import combination_parameters
 
 

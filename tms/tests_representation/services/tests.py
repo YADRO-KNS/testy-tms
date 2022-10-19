@@ -1,7 +1,7 @@
 from typing import Any, Dict
+
 from django.db import transaction
 from django.db.models import QuerySet
-
 from tests_description.models import TestCase
 from tests_representation.models import Test, TestPlan
 

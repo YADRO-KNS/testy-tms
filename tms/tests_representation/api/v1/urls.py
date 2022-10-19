@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 from tests_representation.api.v1 import views
-from tests_representation.api.v1.views import TestPLanListView, TestPLanDetailView
+from tests_representation.api.v1.views import TestPLanDetailView, TestPLanListView
 
 router = SimpleRouter()
 router.register('parameters', views.ParameterViewSet)

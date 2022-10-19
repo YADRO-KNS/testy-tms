@@ -1,8 +1,7 @@
 from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
 from rest_framework.serializers import ModelSerializer
-
 from tests_description.selectors.cases import TestCaseSelector
-from tests_representation.models import Parameter, Test, TestResult, TestPlan
+from tests_representation.models import Parameter, Test, TestPlan, TestResult
 from tests_representation.selectors.parameters import ParameterSelector
 
 
