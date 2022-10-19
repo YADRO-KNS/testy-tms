@@ -91,7 +91,7 @@ class TestResultEndpoints:
                 'comment': constants.TEST_COMMENT,
             }
             api_client.send_request(
-                'api:v1:result-add',
+                'api:v1:results-by-test',
                 expected_status=HTTPStatus.CREATED,
                 request_type=RequestType.POST,
                 data=result_dict,

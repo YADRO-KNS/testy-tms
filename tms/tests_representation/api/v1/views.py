@@ -59,9 +59,14 @@ class TestResultViewSet(ModelViewSet):
         request.data['test'] = pk
         return self.create(request)
 
+    @action(detail=False)
+    def results_by_test(self, request, pk):
+        queryset = self.filter_queryset(TestResultSelector().result_list_by_test_id(pk))
 
-class TestResultsByTest(ListAPIView):
-    serializer_class = TestResultSerializer
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
-    def get_queryset(self):
-        return TestResultSelector().result_list_by_test_id(self.kwargs.get('test_id'))
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
