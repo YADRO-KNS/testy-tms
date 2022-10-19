@@ -7,7 +7,6 @@ from tests_representation.models import TestResult
 
 from tests import constants
 from tests.commons import RequestType, model_with_base_to_dict
-from tests.error_messages import REQUIRED_FIELD_MSG
 
 
 @pytest.mark.django_db(reset_sequences=True)
@@ -51,26 +50,20 @@ class TestResultEndpoints:
         assert result_user == user, f'Result users do not match. Expected user "{user}", ' \
                                     f'actual: "{result_user}"'
 
-    @pytest.mark.parametrize('expected_status', [HTTPStatus.OK, HTTPStatus.BAD_REQUEST])
-    def test_update(self, api_client, authorized_superuser, expected_status, test_result, user, test):
+    def test_update(self, api_client, authorized_superuser, test_result, user):
         result_dict = {
             'id': test_result.id,
             'user': user.id
         }
-        if expected_status == HTTPStatus.OK:
-            result_dict['test'] = test.id
-        response = api_client.send_request(
+        api_client.send_request(
             self.view_name_detail,
             reverse_kwargs={'pk': test_result.pk},
             request_type=RequestType.PUT,
-            expected_status=expected_status,
+            expected_status=HTTPStatus.OK,
             data=result_dict
         )
-        if expected_status == HTTPStatus.OK:
-            result_user = TestResult.objects.get(pk=test_result.id).user
-            assert result_user == user, f'Result users do not match. Expected user "{user}", actual: "{result_user}"'
-        else:
-            assert json.loads(response.content)['test'][0] == REQUIRED_FIELD_MSG
+        result_user = TestResult.objects.get(pk=test_result.id).user
+        assert result_user == user, f'Result users do not match. Expected user "{user}", actual: "{result_user}"'
 
     def test_delete(self, api_client, authorized_superuser, test_result):
         assert TestResult.objects.count() == 1, 'Test result was not created'
