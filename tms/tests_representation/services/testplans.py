@@ -53,7 +53,6 @@ class TestPLanService:
         )
 
         if (test_cases := data.get('test_cases', None)) is not None:
-
             old_test_case_ids = set(TestService().get_testcase_ids_by_testplan(test_plan))
             new_test_case_ids = {tc.id for tc in test_cases}
 
@@ -63,10 +62,8 @@ class TestPLanService:
 
             # creating tests
             if create_test_case_ids := new_test_case_ids - old_test_case_ids:
-                TestService().bulk_test_create(
-                    [test_plan],
-                    [tc for tc in data['test_cases'] if tc.id in create_test_case_ids],
-                )
+                cases = [tc for tc in data['test_cases'] if tc.id in create_test_case_ids]
+                TestService().bulk_test_create((test_plan,), cases)
 
         return test_plan
 

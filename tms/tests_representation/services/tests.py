@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Iterable
 
 from django.db import transaction
 from django.db.models import QuerySet
@@ -32,7 +32,7 @@ class TestService:
         Test.objects.filter(plan=test_plan).filter(case__in=test_case_ids).delete()
 
     @transaction.atomic
-    def bulk_test_create(self, test_plans: list[TestPlan], cases: list[TestCase]):
+    def bulk_test_create(self, test_plans: Iterable[TestPlan], cases: list[TestCase]):
         test_objects = [self._make_test_model({'case': case, 'plan': tp}) for tp in test_plans for case in cases]
         return Test.objects.bulk_create(test_objects)
 
