@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from django.db import transaction
 from tests_description.selectors.cases import TestCaseSelector
-from tests_representation.models import TestResult, Test
+from tests_representation.models import Test, TestResult
 
 
 class TestResultService:
