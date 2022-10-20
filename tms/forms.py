@@ -25,14 +25,20 @@ class UserDetailsForm(forms.ModelForm):
         self.helper.form_tag = False
         self.helper.use_custom_control = False
         self.helper.layout = Layout(
-            Div(UneditableField('username', css_class='form-control', help_text=None), css_class='row mb-1'),
-            Div('first_name', css_class='row mb-1'),
-            Div('last_name', css_class='row mb-1'),
-            Div('email', css_class='row mb-1'),
-            HTML("""<hr class="mt-0">"""),
+            Div(
+                Div(
+                    Div(UneditableField('username', css_class='form-control', help_text=None), css_class='row'),
+                    Div('first_name', css_class='row'),
+                    Div('last_name', css_class='row'),
+                    Div('email', css_class='row'),
+                    css_class="col-md-6"
+                ),
+                css_class="row justify-content-start"
+            ),
+            HTML('<hr class="mt-0">'),
             FormActions(
-                Submit('Save', 'Save changes', css_class='btn-secondary'),
-            )
+                Submit('Save', 'Save changes', css_class='btn-primary'),
+            ),
         )
 
 
@@ -47,11 +53,17 @@ class ProfilePasswordChangeForm(PasswordChangeForm):
         self.helper.form_tag = False
         self.helper.use_custom_control = False
         self.helper.layout = Layout(
-            Div('old_password', css_class='row mb-1'),
-            Div('new_password1', css_class='row mb-1'),
-            Div('new_password2', css_class='row mb-1'),
-            HTML("""<hr class="mt-0">"""),
+            Div(
+                Div(
+                    Div('old_password', css_class='row'),
+                    Div('new_password1', css_class='row'),
+                    Div('new_password2', css_class='row'),
+                    css_class="col-md-6"
+                ),
+                css_class="row justify-content-start"
+            ),
+            HTML('<hr class="mt-0">'),
             FormActions(
-                Submit('Save', 'Change password', css_class='btn-secondary'),
+                Submit('Save', 'Change password', css_class='btn-primary'),
             )
         )
