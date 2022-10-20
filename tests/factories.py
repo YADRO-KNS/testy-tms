@@ -26,7 +26,7 @@ class ParameterFactory(DjangoModelFactory):
         model = Parameter
 
     project = SubFactory(ProjectFactory)
-    data = constants.PARAMETER_DATA
+    data = Sequence(lambda n: f'{constants.PARAMETER_DATA}{n}')
     group_name = Sequence(lambda n: f'{constants.PARAMETER_GROUP_NAME}{n}')
 
 
