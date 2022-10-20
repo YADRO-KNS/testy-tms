@@ -65,16 +65,6 @@ class TestResultEndpoints:
         result_user = TestResult.objects.get(pk=test_result.id).user
         assert result_user == user, f'Result users do not match. Expected user "{user}", actual: "{result_user}"'
 
-    def test_delete(self, api_client, authorized_superuser, test_result):
-        assert TestResult.objects.count() == 1, 'Test result was not created'
-        api_client.send_request(
-            self.view_name_detail,
-            expected_status=HTTPStatus.NO_CONTENT,
-            request_type=RequestType.DELETE,
-            reverse_kwargs={'pk': test_result.pk}
-        )
-        assert not TestResult.objects.count(), f'Test result with id "{test_result.id}" was not deleted.'
-
     def test_add_results_to_test(self, api_client, authorized_superuser, user, test_factory):
         tests = [test_factory(), test_factory()]
         for test in tests:

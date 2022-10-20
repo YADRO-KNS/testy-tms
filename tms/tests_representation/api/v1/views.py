@@ -60,7 +60,7 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
         return Response(serializer.data)
 
 
-class TestResultViewSet(ModelViewSet):
+class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
     queryset = TestResultSelector().result_list()
     serializer_class = TestResultSerializer
 
