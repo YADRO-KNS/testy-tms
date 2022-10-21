@@ -59,6 +59,7 @@ class TestPlanFactory(DjangoModelFactory):
     started_at = constants.DATE
     due_date = constants.DATE
     finished_at = constants.DATE
+    project = SubFactory(ProjectFactory)
     is_archive = False
 
 
