@@ -36,7 +36,6 @@ class TestService:
         test_objects = [self._make_test_model({'case': case, 'plan': tp}) for tp in test_plans for case in cases]
         return Test.objects.bulk_create(test_objects)
 
-
     def test_update(self, test: Test, data: Dict[str, Any]) -> Test:
         test, _ = test.model_update(
             fields=self.non_side_effect_fields,
