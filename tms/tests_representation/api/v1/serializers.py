@@ -31,4 +31,4 @@ class TestResultSerializer(ModelSerializer):
             'updated_at', 'url'
         )
 
-        read_only_fields = ('test_case_version', 'project',)
+        read_only_fields = ('test_case_version', 'project', 'test')
