@@ -1,6 +1,8 @@
-from rest_framework.relations import HyperlinkedIdentityField
+from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
 from rest_framework.serializers import ModelSerializer
-from tests_representation.models import Parameter, Test, TestResult
+from tests_description.selectors.cases import TestCaseSelector
+from tests_representation.models import Parameter, Test, TestPlan, TestResult
+from tests_representation.selectors.parameters import ParameterSelector
 
 
 class ParameterSerializer(ModelSerializer):
@@ -9,6 +11,38 @@ class ParameterSerializer(ModelSerializer):
     class Meta:
         model = Parameter
         fields = ('id', 'project', 'data', 'group_name', 'url')
+
+
+class TestPlanUpdateSerializer(ModelSerializer):
+    test_cases = PrimaryKeyRelatedField(queryset=TestCaseSelector().case_list(), many=True, required=False)
+
+    class Meta:
+        model = TestPlan
+        fields = (
+            'id', 'name', 'parent', 'test_cases', 'started_at', 'due_date', 'finished_at', 'is_archive',
+        )
+
+
+class TestPlanInputSerializer(ModelSerializer):
+    test_cases = PrimaryKeyRelatedField(queryset=TestCaseSelector().case_list(), many=True, required=False)
+    parameters = PrimaryKeyRelatedField(queryset=ParameterSelector().parameter_list(), many=True, required=False)
+
+    class Meta:
+        model = TestPlan
+        fields = (
+            'id', 'name', 'parent', 'test_cases', 'parameters', 'started_at', 'due_date', 'finished_at', 'is_archive',
+        )
+
+
+class TestPlanOutputSerializer(ModelSerializer):
+    url = HyperlinkedIdentityField(view_name='api:v1:testplan-detail')
+
+    class Meta:
+        model = TestPlan
+        fields = (
+            'id', 'name', 'parent', 'parameters', 'started_at', 'due_date', 'finished_at', 'is_archive',
+            'url', 'child_test_plans', 'tests'
+        )
 
 
 class TestSerializer(ModelSerializer):
