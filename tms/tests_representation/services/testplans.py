@@ -7,7 +7,7 @@ from tests_representation.utils import combination_parameters
 
 
 class TestPLanService:
-    non_side_effect_fields = ['name', 'parent', 'started_at', 'due_date', 'finished_at', 'is_archive',]
+    non_side_effect_fields = ['name', 'parent', 'started_at', 'due_date', 'finished_at', 'is_archive', ]
 
     def _make_testplan_model(self, data, parameters=None):
         testplan = TestPlan.model_create(
@@ -51,8 +51,8 @@ class TestPLanService:
             fields=self.non_side_effect_fields,
             data=data,
         )
-
-        if test_cases := data.get('test_cases'):
+        test_cases = data.get('test_cases')
+        if test_cases or test_cases == []:
             old_test_case_ids = set(TestService().get_testcase_ids_by_testplan(test_plan))
             new_test_case_ids = {tc.id for tc in test_cases}
 

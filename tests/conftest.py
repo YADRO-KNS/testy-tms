@@ -1,10 +1,10 @@
 import json
+from http import HTTPStatus
 
 import pytest
 from pytest_factoryboy import register
 
 from tests import constants
-from http import HTTPStatus
 from tests.commons import CustomAPIClient, RequestType
 from tests.factories import (
     GroupFactory,
@@ -50,19 +50,9 @@ def authorized_superuser(api_client, superuser):
 
 
 @pytest.fixture
-def test_plan_by_api(api_client, authorized_superuser, parameter_factory):
-    parameters = []
-    for _ in range(3):
-        parameters.append(parameter_factory(group_name='os').id)
-
-    testplan_dict = {
-        "name": f"Test plan",
-        "due_date": constants.DATE,
-        "started_at": constants.DATE,
-        "parameters": parameters
-    }
-    response = api_client.send_request('api:v1:testplan-list', testplan_dict, HTTPStatus.CREATED, RequestType.POST)
-    return json.loads(response.content)[0]
+def test_plan_from_api(api_client, authorized_superuser, test_plan):
+    response = api_client.send_request('api:v1:testplan-detail', reverse_kwargs={'pk': test_plan.id})
+    return json.loads(response.content)
 
 
 @pytest.fixture
@@ -78,13 +68,13 @@ def combined_parameters(number_of_param_groups, number_of_entities_in_group, par
 
 
 @pytest.fixture
-def several_test_plans_by_api(api_client, authorized_superuser, parameter_factory, number_of_instances):
+def several_test_plans_from_api(api_client, authorized_superuser, parameter_factory):
     parameters = []
     for _ in range(3):
         parameters.append(parameter_factory().id)
 
     test_plans = []
-    for idx in range(number_of_instances):
+    for idx in range(constants.NUMBER_OF_OBJECTS_TO_CREATE):
         testplan_dict = {
             "name": f"Test plan {idx}",
             "due_date": constants.DATE,

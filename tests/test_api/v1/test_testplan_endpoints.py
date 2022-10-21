@@ -2,12 +2,11 @@ import json
 from http import HTTPStatus
 
 import pytest
-from django.forms import model_to_dict
+from tests_description.models import TestCase
+from tests_representation.models import Test, TestPlan, TestResult
 
 from tests import constants
 from tests.commons import RequestType
-from tests.error_messages import REQUIRED_FIELD_MSG
-from tests_representation.models import TestPlan, Test
 
 
 @pytest.mark.django_db
@@ -15,34 +14,33 @@ class TestPlanEndpoints:
     view_name_detail = 'api:v1:testplan-detail'
     view_name_list = 'api:v1:testplan-list'
 
-    @pytest.mark.parametrize('number_of_instances', [constants.NUMBER_OF_OBJECTS_TO_CREATE])
-    def test_list(self, api_client, authorized_superuser, several_test_plans_by_api):
-        expected_instances = several_test_plans_by_api
+    def test_list(self, api_client, authorized_superuser, several_test_plans_from_api):
+        expected_instances = several_test_plans_from_api
         response = api_client.send_request(self.view_name_list)
 
         for instance_dict in json.loads(response.content):
             assert instance_dict in expected_instances, f'{instance_dict} was not found in expected instances.'
 
-    def test_retrieve(self, api_client, authorized_superuser, test_plan_by_api):
-        response = api_client.send_request(self.view_name_detail, reverse_kwargs={'pk': test_plan_by_api.get('id')})
+    def test_retrieve(self, api_client, authorized_superuser, test_plan_from_api):
+        response = api_client.send_request(self.view_name_detail, reverse_kwargs={'pk': test_plan_from_api.get('id')})
         actual_dict = json.loads(response.content)
-        assert actual_dict == test_plan_by_api, 'Actual model dict is different from expected'
+        assert actual_dict == test_plan_from_api, 'Actual model dict is different from expected'
 
     @pytest.mark.parametrize('number_of_param_groups, number_of_entities_in_group', [(1, 3), (2, 2), (3, 4)])
     def test_creation(self, api_client, authorized_superuser, combined_parameters):
         parameters, expected_number_of_plans = combined_parameters
         testplan_dict = {
-            "name": f"Test plan",
-            "due_date": constants.DATE,
-            "started_at": constants.DATE,
-            "parameters": parameters
+            'name': 'Test plan',
+            'due_date': constants.DATE,
+            'started_at': constants.DATE,
+            'parameters': parameters
         }
         response = api_client.send_request(self.view_name_list, testplan_dict, HTTPStatus.CREATED, RequestType.POST)
         endpoint_plans = json.loads(response.content)
         actual_parameters_combinations = []
         for plan in endpoint_plans:
             params_from_plan = plan.get('parameters').sort
-            assert params_from_plan not in actual_parameters_combinations, f'Found duplicate params in TestPlans'
+            assert params_from_plan not in actual_parameters_combinations, 'Found duplicate params in TestPlans'
             actual_parameters_combinations.append(plan.get('parameters'))
         assert TestPlan.objects.count() == expected_number_of_plans, f'Expected number of test plans ' \
                                                                      f'"{expected_number_of_plans}"' \
@@ -52,79 +50,115 @@ class TestPlanEndpoints:
                                                                 f'actual: "{len(endpoint_plans)}"'
 
     @pytest.mark.parametrize('number_of_param_groups, number_of_entities_in_group', [(1, 3), (2, 2), (3, 4)])
-    def test_tests_generated(self, api_client, authorized_superuser, combined_parameters, test_case_factory):
+    def test_tests_generated_on_create(self, api_client, authorized_superuser, combined_parameters, test_case_factory):
         number_of_cases = 5
         case_ids = [test_case_factory().id for _ in range(number_of_cases)]
         parameters, expected_number_of_plans = combined_parameters
         number_of_tests = number_of_cases * expected_number_of_plans
         testplan_dict = {
-            "name": f"Test plan",
-            "due_date": constants.DATE,
-            "started_at": constants.DATE,
-            "parameters": parameters,
-            "test_cases": case_ids
+            'name': 'Test plan',
+            'due_date': constants.DATE,
+            'started_at': constants.DATE,
+            'parameters': parameters,
+            'test_cases': case_ids
         }
         response = api_client.send_request(self.view_name_list, testplan_dict, HTTPStatus.CREATED, RequestType.POST)
-        endpoint_plans = json.loads(response.content)
+        test_plans = json.loads(response.content)
         assert Test.objects.count() == number_of_tests
-
-    def test_partial_update(self, api_client, authorized_superuser, test_case):
-        new_name = 'new_expected_test_case_name'
-        case_dict = {
-            'id': test_case.id,
-            'name': new_name
+        assert TestCase.objects.count() == number_of_cases
+        update_dict = {
+            'test_cases': case_ids[:-1],
         }
         api_client.send_request(
             self.view_name_detail,
-            case_dict,
-            request_type=RequestType.PATCH,
-            reverse_kwargs={'pk': test_case.pk}
+            update_dict,
+            HTTPStatus.OK,
+            RequestType.PATCH,
+            reverse_kwargs={'pk': test_plans[0].get('id')}
         )
-        actual_name = TestCase.objects.get(pk=test_case.id).name
-        assert actual_name == new_name, f'Names do not match. Expected name "{actual_name}", actual: "{new_name}"'
+        assert Test.objects.count() == number_of_tests - 1, 'More then one test was deleted by updating'
+        test_ids = []
+        for plan in test_plans:
+            test_ids.extend(plan.get('tests'))
+        assert len(set(test_ids)) == len(test_ids), 'Test ids from testplans were not unique.'
 
-    @pytest.mark.parametrize('expected_status', [HTTPStatus.OK, HTTPStatus.BAD_REQUEST])
-    def test_update(self, api_client, authorized_superuser, expected_status, test_case, project, test_suite):
-        new_name = 'new_expected_test_case_name'
-        case_dict = {
-            'id': test_case.id,
-            'name': new_name
+    def test_tests_generated_deleted_on_partial_update(self, api_client, authorized_superuser, test_plan_from_api,
+                                                       test_case_factory):
+        number_of_cases = 5
+        case_ids = [test_case_factory().id for _ in range(number_of_cases)]
+        assert not Test.objects.count()
+        assert TestCase.objects.count() == number_of_cases
+        update_dict = {
+            'test_cases': case_ids,
         }
-        if expected_status == HTTPStatus.OK:
-            case_dict['project'] = project.id
-            case_dict['suite'] = test_suite.id
-            case_dict['scenario'] = constants.SCENARIO
+        api_client.send_request(
+            self.view_name_detail,
+            update_dict,
+            HTTPStatus.OK,
+            RequestType.PATCH,
+            reverse_kwargs={'pk': test_plan_from_api.get('id')}
+        )
+        assert Test.objects.count() == number_of_cases, 'Number of created tests does not match with added cases.'
+        update_dict = {
+            'test_cases': case_ids[:1],
+        }
+        api_client.send_request(
+            self.view_name_detail,
+            update_dict,
+            HTTPStatus.OK,
+            RequestType.PATCH,
+            reverse_kwargs={'pk': test_plan_from_api.get('id')}
+        )
+        assert Test.objects.count() == len(case_ids[:1]), 'Tests were not deleted'
+        api_client.send_request(
+            self.view_name_detail,
+            update_dict,
+            HTTPStatus.OK,
+            RequestType.PATCH,
+            reverse_kwargs={'pk': test_plan_from_api.get('id')}
+        )
+        assert not Test.objects.count(), 'Tests exist after test plan updated to [] tests'
+
+    def test_plan_behaviour_on_update(self, api_client, authorized_superuser, test_case_factory, parameter_factory,
+                                      test_result_factory):
+        number_of_cases = 5
+        case_ids = [test_case_factory().id for _ in range(number_of_cases)]
+        parameters = [parameter_factory(group_name='os').id for _ in range(3)]
+        testplan_dict = {
+            'name': 'Test plan',
+            'due_date': constants.DATE,
+            'started_at': constants.DATE,
+            'parameters': parameters,
+            'test_cases': case_ids
+        }
+        response = api_client.send_request(self.view_name_list, testplan_dict, HTTPStatus.CREATED, RequestType.POST)
+        test_plans = json.loads(response.content)
+        test_ids = json.loads(response.content)[0].get('tests')
+        result_ids = [test_result_factory(test_id=test_ids[0]).id for _ in range(3)]
+        expected_number_of_tests = Test.objects.count()
+        update_dict = {
+            'test_cases': case_ids
+        }
         response = api_client.send_request(
             self.view_name_detail,
-            reverse_kwargs={'pk': test_case.pk},
-            request_type=RequestType.PUT,
-            expected_status=expected_status,
-            data=case_dict
+            update_dict,
+            HTTPStatus.OK,
+            RequestType.PATCH,
+            reverse_kwargs={'pk': test_plans[0].get('id')}
         )
-        if expected_status == HTTPStatus.OK:
-            actual_name = TestCase.objects.get(pk=test_case.id).name
-            assert actual_name == new_name, f'Username does not match. Expected name "{actual_name}", ' \
-                                            f'actual: "{new_name}"'
-        else:
-            assert json.loads(response.content)['project'][0] == REQUIRED_FIELD_MSG
-            assert json.loads(response.content)['suite'][0] == REQUIRED_FIELD_MSG
-            assert json.loads(response.content)['scenario'][0] == REQUIRED_FIELD_MSG
+        plan = json.loads(response.content)
+        actual_results = []
+        for res in TestResult.objects.filter(test=plan.get('tests')[0]):
+            actual_results.append(res.id)
+        assert actual_results == result_ids, f'Results changed for test with id: {plan.get("tests")[0]}'
+        assert Test.objects.count() == expected_number_of_tests, 'After update number of tests should not change'
 
-    def test_delete(self, api_client, authorized_superuser, test_case):
-        assert TestCase.objects.count() == 1, 'Test case was not created'
+    def test_delete(self, api_client, authorized_superuser, test_plan):
+        assert TestPlan.objects.count() == 1, 'Test case was not created'
         api_client.send_request(
             self.view_name_detail,
             expected_status=HTTPStatus.NO_CONTENT,
             request_type=RequestType.DELETE,
-            reverse_kwargs={'pk': test_case.pk}
+            reverse_kwargs={'pk': test_plan.pk}
         )
-        assert not TestCase.objects.count(), f'TestCase with id "{test_case.id}" was not deleted.'
-
-
-test_plan = {
-    "name": "Test plan",
-    "due_date": "2012-04-23T18:25:43.511Z",
-    "started_at": "2012-04-23T18:25:43.511Z",
-    "parameters": [1, 2, 3]
-}
-update = {"tests": [1, 2, 3]}
+        assert not TestPlan.objects.count(), f'Test plan with id "{test_plan.id}" was not deleted.'
