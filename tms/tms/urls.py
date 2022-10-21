@@ -14,7 +14,6 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 import views
-from core.views import ProjectOverviewView, ProjectPlansView, ProjectSuitesView
 from administration.views import (
     AdministrationNewUserView,
     AdministrationOverviewView,
@@ -26,6 +25,7 @@ from administration.views import (
     AdministrationUserProfileView,
     AdministrationUsersView,
 )
+from core.views import ProjectOverviewView, ProjectPlansView, ProjectSuitesView
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
