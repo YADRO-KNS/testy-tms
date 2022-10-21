@@ -1,0 +1,26 @@
+header {
+  background-color: var(--bs-gray-800);
+
+  .navbar-brand {
+    color: var(--bs-gray-200);
+
+    &:hover {
+      color: var(--bs-gray-200);
+      opacity: 0.9;
+    }
+  }
+
+  .navbar-nav {
+    .nav-link {
+      color: var(--bs-gray-300);
+
+      &:hover {
+        color: var(--bs-gray-100);
+      }
+
+      &.active {
+        color: var(--bs-gray-100);
+      }
+    }
+  }
+}

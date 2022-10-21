@@ -5,17 +5,16 @@
 {% endblock %}
 
 {% block content %}
-    <div class="content p-2">
-        <div class="page-content-header">
-            {% block page-content-header %}{% endblock %}
-        </div>
 
-        <div class="page-content-tabs">
-            {% block page-content-tabs %}{% endblock %}
-        </div>
+    {% block page-content-header %}{% endblock %}
 
-        <div class="page-content-body p-2">
-            {% block page-content %}{% endblock %}
-        </div>
+    <div class="content">
+        {% block page-content-tabs %}{% endblock %}
+        {% block page-content %}{% endblock %}
     </div>
+
+{% endblock %}
+
+{% block footer %}
+    {% include "tms/components/footer.html" %}
 {% endblock %}
