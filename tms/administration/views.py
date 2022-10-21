@@ -56,7 +56,7 @@ class AdministrationUsersView(AdministrationBaseView, ViewTabMixin, SingleTableM
     active_tab = 'admin_users'
 
 
-class AdministrationUserProfileView(AdministrationBaseView, UpdateView):
+class AdministrationUserProfileView(AdministrationBaseView, ViewTabMixin, UpdateView):
     model = UserModel
     form_class = UserDetailsForm
     active_tab = 'admin_users'

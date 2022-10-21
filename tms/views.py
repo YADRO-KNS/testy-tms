@@ -12,6 +12,8 @@ from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import FormView, UpdateView
 from forms import ProfilePasswordChangeForm, UserDetailsForm
+from tests_representation.selectors.tests import TestSelector
+from users.selectors.users import UserSelector
 from users.services.users import UserService
 
 from tms.settings.common import LOGIN_REDIRECT_URL
@@ -36,9 +38,11 @@ class IndexView(View):
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return render(request, self.auth_template)
-
-        projects = ProjectSelector.project_list()
-        return render(request, self.dashboard_template, {'projects': projects})
+        ctx = {}
+        ctx['projects'] = ProjectSelector.project_list()
+        ctx['users_count'] = UserSelector().user_list().count()
+        ctx['tests_count'] = TestSelector().test_list().count()
+        return render(request, self.dashboard_template, ctx)
 
     def post(self, request, *args, **kwargs):
         login_form = self.form_class(request=request, data=request.POST)

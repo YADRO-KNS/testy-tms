@@ -2,36 +2,31 @@
 
 {% load crispy_forms_tags %}
 
-{% block page-content-header %}
-<h4 class="fw-light mx-3 pt-4"><span>Добавление нового пользователя</span></h4>
-{% endblock %}
-
 {% block breadcrumb %}
     {{ block.super }}
-    <li class="breadcrumb-item" aria-current="page"><a class="fs-12 text-primary" href="{% url 'admin_users' %}">Пользователи</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Новый пользователь</li>
+    <li class="breadcrumb-item" aria-current="page">
+        <a class="link-dark text-decoration-none" href="{% url 'admin_users' %}">Users</a>
+    </li>
+    <li class="breadcrumb-item active link-secondary" aria-current="page">New user</li>
 {% endblock %}
 
-
-{% block page-content-tabs %}
-    {% include "tms/components/tabs.html" with tabs=tabs active_tab=active_tab %}
+{% block page-content-header %}
+    <div class="content-title p-3">
+        <div id="content-title">
+            <h1 class="h2 w-100">New user</h1>
+        </div>
+    </div>
 {% endblock %}
-
 
 {% block page-content %}
-<div class="content py-2">
-    <div class="row gx-3">
+    <div class="tab-content p-3">
         {% include "tms/components/alerts.html" with messages=messages %}
-        <div class="col-8">
-            <div class="card bg-white p-3">
-                <div class="card-header bg-white px-0"><h5>Новый пользователь</h5></div>
-                <div class="card-body pt-3 px-0">
-                    <form action="{% url 'admin_new_user' %}" method="post" class="m-0">
-                        {% crispy form form.helper %}
-                    </form>
-                </div>
+        <div class="card">
+            <div class="card-body">
+                <form action="{% url 'admin_new_user' %}" method="post" class="m-0">
+                    {% crispy form form.helper %}
+                </form>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

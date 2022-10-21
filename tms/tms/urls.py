@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 import views
+from core.views import ProjectOverviewView, ProjectPlansView, ProjectSuitesView
 from administration.views import (
     AdministrationNewUserView,
     AdministrationOverviewView,
@@ -33,12 +34,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-
-    # User profile
-    path('user-profile/', login_required(views.UserProfileView.as_view()), name='user_profile'),
-    path('user-profile/change-password/', login_required(views.UserChangePasswordView.as_view()),
+    path('profile/', login_required(views.UserProfileView.as_view()), name='user_profile'),
+    path('profile/change-password/', login_required(views.UserChangePasswordView.as_view()),
          name='user_change_password'),
+
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
     # Administration
     path('administration/', login_required(AdministrationOverviewView.as_view()), name='admin_overview'),
@@ -59,6 +59,11 @@ urlpatterns = [
          name='admin_user_profile'),
     path('administration/users/<int:pk>/delete', login_required(AdministrationUserDeleteView.as_view()),
          name='admin_user_delete'),
+
+    # Project
+    path('project/<int:pk>', login_required(ProjectOverviewView.as_view()), name='project_details'),
+    path('project/<int:pk>/suites', login_required(ProjectSuitesView.as_view()), name='project_suites'),
+    path('project/<int:pk>/runs', login_required(ProjectPlansView.as_view()), name='project_runs'),
 
     # API
     path('api/', include('tms.api.urls', namespace='api')),

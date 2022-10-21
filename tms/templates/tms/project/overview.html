@@ -1,8 +1,8 @@
-{% extends 'tms/admin_page.html' %}
+{% extends 'tms/project_page.html' %}
 
 {% block breadcrumb %}
     {{ block.super }}
-    <li class="breadcrumb-item active link-secondary" aria-current="page">Overview</li>
+    <li class="breadcrumb-item active" aria-current="page">{{project.name}}</li>
 {% endblock %}
 
 {% block page-content %}

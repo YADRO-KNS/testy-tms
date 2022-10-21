@@ -7,7 +7,7 @@ class ProjectTable(tables.Table):
                                    {% load static %}
                                    <span>
                                         <a href="{% url 'admin_project_delete' record.id %}">
-                                            <img src="{% static 'tms/images/trash.svg' %}">
+                                            <i class="bi bi-trash" style="color: #000"></i>
                                         </a>
                                    </span>
                                    """,
@@ -22,8 +22,11 @@ class ProjectTable(tables.Table):
         attrs = {
             'class': 'table table-hover text-small',
             'thead': {
-                'class': 'table-light'
-            }
+                'class': 'border-bottom',
+            },
+            'tbody': {
+                'class': 'border-light fw-light h6',
+            },
         }
 
     def __init__(self, *args, **kwargs):

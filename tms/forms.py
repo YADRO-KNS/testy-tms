@@ -36,7 +36,9 @@ class UserDetailsForm(forms.ModelForm):
                 css_class="row justify-content-start"
             ),
             HTML('<hr class="mt-0">'),
-            FormActions(Submit('Save', 'Save changes', css_class='btn-primary'), css_class='mb-0'),
+            FormActions(
+                Submit('Save', 'Save changes', css_class='btn-primary'),
+            ),
         )
 
 
