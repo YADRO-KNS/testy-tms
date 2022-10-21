@@ -2,29 +2,30 @@
 
 <html lang="en">
 <head>
-    <!-- Required meta tags -->
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
     {% block stylesheets %}
-        <!-- Bootstrap CSS -->
-        <link rel="stylesheet" type="text/css" href="{% static 'tms/css/bootstrap.min.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'tms/css/bootstrap-grid.min.css' %}">
-        <!-- Custom CSS -->
-        <link rel="stylesheet" type="text/css" href="{% static 'tms/css/base.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/tms.min.css' %}">
     {% endblock %}
+
     <title>TMS | {% block title %}Base template{% endblock %}</title>
 </head>
-<body>
+<body class="d-flex flex-column h-100">
+
 {% block header %}{% endblock %}
-<div class="content-wrap">
+
+<main class="flex-shrink-0">
     {% block content %}{% endblock %}
-</div>
+</main>
+
+{% block footer %}{% endblock %}
+
 {% block javascripts %}
-    <script src="{% static 'tms/js/bootstrap.min.js' %}"></script>
-    <script src="{% static 'tms/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/tms.min.js' %}"></script>
 {% endblock %}
+
 </body>
 </html>
