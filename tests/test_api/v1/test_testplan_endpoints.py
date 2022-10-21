@@ -7,7 +7,7 @@ from django.forms import model_to_dict
 from tests import constants
 from tests.commons import RequestType
 from tests.error_messages import REQUIRED_FIELD_MSG
-from tests_representation.models import TestPlan
+from tests_representation.models import TestPlan, Test
 
 
 @pytest.mark.django_db
@@ -56,6 +56,7 @@ class TestPlanEndpoints:
         number_of_cases = 5
         case_ids = [test_case_factory().id for _ in range(number_of_cases)]
         parameters, expected_number_of_plans = combined_parameters
+        number_of_tests = number_of_cases * expected_number_of_plans
         testplan_dict = {
             "name": f"Test plan",
             "due_date": constants.DATE,
@@ -65,6 +66,7 @@ class TestPlanEndpoints:
         }
         response = api_client.send_request(self.view_name_list, testplan_dict, HTTPStatus.CREATED, RequestType.POST)
         endpoint_plans = json.loads(response.content)
+        assert Test.objects.count() == number_of_tests
 
     def test_partial_update(self, api_client, authorized_superuser, test_case):
         new_name = 'new_expected_test_case_name'
