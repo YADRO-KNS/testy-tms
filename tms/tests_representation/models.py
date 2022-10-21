@@ -27,7 +27,7 @@ class Parameter(BaseModel):
 class TestPlan(MPTTModel, BaseModel):
     name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_test_planes')
+    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_test_plans')
     parameters = ArrayField(models.PositiveIntegerField(null=True, blank=True), null=True, blank=True)
     started_at = models.DateTimeField()
     due_date = models.DateTimeField()

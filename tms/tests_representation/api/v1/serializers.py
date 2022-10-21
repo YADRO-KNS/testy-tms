@@ -41,7 +41,7 @@ class TestPlanOutputSerializer(ModelSerializer):
         model = TestPlan
         fields = (
             'id', 'name', 'parent', 'parameters', 'started_at', 'due_date', 'finished_at', 'is_archive',
-            'url', 'child_test_planes', 'tests'
+            'url', 'child_test_plans', 'tests'
         )
 
 
