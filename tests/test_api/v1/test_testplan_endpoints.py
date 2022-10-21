@@ -33,18 +33,38 @@ class TestPlanEndpoints:
         parameters, expected_number_of_plans = combined_parameters
         testplan_dict = {
             "name": f"Test plan",
-            "due_date": constants.DATE.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "started_at": constants.DATE.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "due_date": constants.DATE,
+            "started_at": constants.DATE,
             "parameters": parameters
         }
         response = api_client.send_request(self.view_name_list, testplan_dict, HTTPStatus.CREATED, RequestType.POST)
         endpoint_plans = json.loads(response.content)
+        actual_parameters_combinations = []
+        for plan in endpoint_plans:
+            params_from_plan = plan.get('parameters').sort
+            assert params_from_plan not in actual_parameters_combinations, f'Found duplicate params in TestPlans'
+            actual_parameters_combinations.append(plan.get('parameters'))
         assert TestPlan.objects.count() == expected_number_of_plans, f'Expected number of test plans ' \
                                                                      f'"{expected_number_of_plans}"' \
                                                                      f'actual: "{TestPlan.objects.count()}"'
         assert len(endpoint_plans) == expected_number_of_plans, f'Expected number of test plans from endpoint ' \
                                                                 f'"{expected_number_of_plans}"' \
                                                                 f'actual: "{len(endpoint_plans)}"'
+
+    @pytest.mark.parametrize('number_of_param_groups, number_of_entities_in_group', [(1, 3), (2, 2), (3, 4)])
+    def test_tests_generated(self, api_client, authorized_superuser, combined_parameters, test_case_factory):
+        number_of_cases = 5
+        case_ids = [test_case_factory().id for _ in range(number_of_cases)]
+        parameters, expected_number_of_plans = combined_parameters
+        testplan_dict = {
+            "name": f"Test plan",
+            "due_date": constants.DATE,
+            "started_at": constants.DATE,
+            "parameters": parameters,
+            "test_cases": case_ids
+        }
+        response = api_client.send_request(self.view_name_list, testplan_dict, HTTPStatus.CREATED, RequestType.POST)
+        endpoint_plans = json.loads(response.content)
 
     def test_partial_update(self, api_client, authorized_superuser, test_case):
         new_name = 'new_expected_test_case_name'

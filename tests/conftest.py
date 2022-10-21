@@ -69,12 +69,10 @@ def test_plan_by_api(api_client, authorized_superuser, parameter_factory):
 def combined_parameters(number_of_param_groups, number_of_entities_in_group, parameter_factory):
     parameters = []
     for _ in range(number_of_param_groups):
-        # params = []
         src_param = parameter_factory()
         parameters.append(src_param.id)
         for _ in range(number_of_entities_in_group - 1):
             parameters.append(parameter_factory(group_name=src_param.group_name).id)
-        # param_groups.append(params)
     number_of_combinations = pow(number_of_entities_in_group, number_of_param_groups)
     return parameters, number_of_combinations
 
