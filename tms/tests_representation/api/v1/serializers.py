@@ -41,7 +41,7 @@ class TestPlanOutputSerializer(ModelSerializer):
         model = TestPlan
         fields = (
             'id', 'name', 'parent', 'parameters', 'started_at', 'due_date', 'finished_at', 'is_archive',
-            'url', 'child_test_planes', 'tests'
+            'url', 'child_test_plans', 'tests'
         )
 
 
@@ -50,7 +50,9 @@ class TestSerializer(ModelSerializer):
 
     class Meta:
         model = Test
-        fields = ('id', 'case', 'plan', 'user', 'is_archive', 'created_at', 'updated_at', 'url')
+        fields = ('id', 'project', 'case', 'plan', 'user', 'is_archive', 'created_at', 'updated_at', 'url')
+
+        read_only_fields = ('project',)
 
 
 class TestResultSerializer(ModelSerializer):
@@ -59,8 +61,8 @@ class TestResultSerializer(ModelSerializer):
     class Meta:
         model = TestResult
         fields = (
-            'id', 'status', 'test', 'user', 'comment', 'is_archive', 'test_case_version', 'created_at', 'updated_at',
-            'url'
+            'id', 'project', 'status', 'test', 'user', 'comment', 'is_archive', 'test_case_version', 'created_at',
+            'updated_at', 'url'
         )
 
-        read_only_fields = ('test_case_version',)
+        read_only_fields = ('test_case_version', 'project',)

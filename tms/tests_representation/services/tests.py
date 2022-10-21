@@ -16,6 +16,17 @@ class TestService:
             commit=False
         )
 
+    def test_create(self, data: Dict[str, Any]) -> Test:
+        test = Test.model_create(
+            fields=self.non_side_effect_fields,
+            data=data,
+            commit=False
+        )
+        test.project = test.case.project
+        test.full_clean()
+        test.save()
+        return test
+
     @transaction.atomic
     def test_delete_by_test_case_ids(self, test_plan: TestPlan, test_case_ids: list[int]) -> None:
         Test.objects.filter(plan=test_plan).filter(case__in=test_case_ids).delete()

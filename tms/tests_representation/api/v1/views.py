@@ -72,7 +72,7 @@ class TestPLanDetailView(APIView):
         serializer.is_valid(raise_exception=True)
         test_plan = TestPLanService().testplan_update(test_plan=test_plan, data=serializer.validated_data)
         return Response(TestPlanOutputSerializer(test_plan, context={'request': request}).data,
-                        status=status.HTTP_201_CREATED)
+                        status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
         test_plan = self.get_object(pk)

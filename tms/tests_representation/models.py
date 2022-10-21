@@ -26,7 +26,8 @@ class Parameter(BaseModel):
 
 class TestPlan(MPTTModel, BaseModel):
     name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
-    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_test_planes')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_test_plans')
     parameters = ArrayField(models.PositiveIntegerField(null=True, blank=True), null=True, blank=True)
     started_at = models.DateTimeField()
     due_date = models.DateTimeField()
@@ -38,6 +39,7 @@ class TestPlan(MPTTModel, BaseModel):
 
 
 class Test(BaseModel):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     case = models.ForeignKey(TestCase, on_delete=models.CASCADE)
     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE)
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, null=True, blank=True)
@@ -48,13 +50,16 @@ class Test(BaseModel):
 
 
 class TestResult(BaseModel):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     status = models.IntegerField(choices=TestStatuses.choices, default=TestStatuses.UNTESTED)
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     comment = models.TextField(blank=True)
     is_archive = models.BooleanField(default=False)
     test_case_version = models.IntegerField(
-        null=True, blank=True, validators=[MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)]
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)]
     )
 
     class Meta:

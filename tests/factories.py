@@ -58,6 +58,7 @@ class TestPlanFactory(DjangoModelFactory):
     started_at = constants.DATE
     due_date = constants.DATE
     finished_at = constants.DATE
+    project = SubFactory(ProjectFactory)
     is_archive = False
 
 
@@ -94,6 +95,7 @@ class TestFactory(DjangoModelFactory):
     case = SubFactory(TestCaseFactory)
     plan = SubFactory(TestPlanFactory)
     user = SubFactory(UserFactory)
+    project = SubFactory(ProjectFactory)
     is_archive = False
 
 
@@ -104,3 +106,4 @@ class TestResultFactory(DjangoModelFactory):
     test = SubFactory(TestFactory)
     status = TestStatuses.UNTESTED
     comment = constants.TEST_COMMENT
+    project = SubFactory(ProjectFactory)
