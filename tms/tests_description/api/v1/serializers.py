@@ -17,3 +17,18 @@ class TestCaseSerializer(ModelSerializer):
     class Meta:
         model = TestCase
         fields = ('id', 'name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'url')
+
+
+def serializable_object(node):
+    obj = {
+        "text": node.name,
+        "id": node.id,
+        "nodes": [serializable_object(ch) for ch in node.get_children()]
+    }
+    if not obj["nodes"]:
+        obj = {
+            "text": node.name,
+            "id": node.id,
+            "icon": "bi bi-folder"
+        }
+    return obj

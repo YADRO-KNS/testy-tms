@@ -14,3 +14,12 @@ a {
     z-index: 2;
     position: relative;
 }
+
+.collapsing.width  {
+    width: 0;
+    height: auto;
+}
+
+.bstreeview .list-group-item {
+    background-color: #F6F6F6;
+}

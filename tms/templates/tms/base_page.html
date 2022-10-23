@@ -9,9 +9,11 @@
     {% block page-content-breadcrumbs %}{% endblock %}
     {% block page-content-header %}{% endblock %}
 
-    <div class="content">
+    <div class="content d-flex flex-column h-100">
         {% block page-content-tabs %}{% endblock %}
+        <div class="page-content-body d-flex flex-column h-100">
         {% block page-content %}{% endblock %}
+        </div>
     </div>
 
 {% endblock %}

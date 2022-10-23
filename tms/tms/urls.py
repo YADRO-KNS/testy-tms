@@ -31,6 +31,15 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.urls import include, path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from tests_description.views import (
+    TestCaseCreateView,
+    TestCaseDeleteView,
+    TestCaseEditView,
+    TestCaseView,
+    TestSuiteCreateView,
+    TestSuiteDeleteView,
+    TestSuiteView,
+)
 
 urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
@@ -73,4 +82,15 @@ urlpatterns = [
 
     # Admin
     path('admin/', admin.site.urls),
+
+    # AJAX
+    path('suite_cases_list', login_required(TestSuiteView.as_view()), name='suite_cases_list'),
+    path('test_test_case', login_required(TestCaseView.as_view()), name='test_test_case'),
+
+    path('test_case_edit', login_required(TestCaseEditView.as_view()), name='test_case_edit'),
+    path('test_case_add', login_required(TestCaseCreateView.as_view()), name='test_case_add'),
+    path('test_case_delete', login_required(TestCaseDeleteView.as_view()), name='test_case_remove'),
+
+    path('test_suite_delete', login_required(TestSuiteDeleteView.as_view()), name='test_suite_delete'),
+    path('test_suite_create', login_required(TestSuiteCreateView.as_view()), name='test_suite_create'),
 ]
