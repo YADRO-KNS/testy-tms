@@ -19,7 +19,7 @@ class TestPlanUpdateSerializer(ModelSerializer):
     class Meta:
         model = TestPlan
         fields = (
-            'id', 'name', 'parent', 'test_cases', 'started_at', 'due_date', 'finished_at', 'is_archive',
+            'id', 'name', 'parent', 'test_cases', 'started_at', 'due_date', 'finished_at', 'is_archive', 'project',
         )
 
 
@@ -31,6 +31,7 @@ class TestPlanInputSerializer(ModelSerializer):
         model = TestPlan
         fields = (
             'id', 'name', 'parent', 'test_cases', 'parameters', 'started_at', 'due_date', 'finished_at', 'is_archive',
+            'project',
         )
 
 
@@ -41,7 +42,7 @@ class TestPlanOutputSerializer(ModelSerializer):
         model = TestPlan
         fields = (
             'id', 'name', 'parent', 'parameters', 'started_at', 'due_date', 'finished_at', 'is_archive',
-            'url', 'child_test_plans', 'tests'
+            'url', 'child_test_plans', 'tests', 'project',
         )
 
 
@@ -65,4 +66,4 @@ class TestResultSerializer(ModelSerializer):
             'updated_at', 'url'
         )
 
-        read_only_fields = ('test_case_version', 'project',)
+        read_only_fields = ('test_case_version', 'project', 'test')

@@ -1,0 +1,23 @@
+.content-title {
+  background-color: var(--bs-white);
+}
+
+.content {
+  .nav-tabs {
+    background-color: var(--bs-white);
+
+    .nav-item {
+      cursor: pointer;
+
+      .nav-link {
+        color: var(--bs-gray-500);
+
+        &.active {
+          cursor: default;
+          background-color: var(--bs-gray-100);
+          border-bottom-color: var(--bs-gray-100);
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable
+from typing import Any, Dict
 
 from django.db import transaction
 from django.db.models import QuerySet
@@ -7,7 +7,7 @@ from tests_representation.models import Test, TestPlan
 
 
 class TestService:
-    non_side_effect_fields = ['case', 'plan', 'user', 'is_archive']
+    non_side_effect_fields = ['case', 'plan', 'user', 'is_archive', 'project']
 
     def _make_test_model(self, data):
         return Test.model_create(
@@ -32,8 +32,9 @@ class TestService:
         Test.objects.filter(plan=test_plan).filter(case__in=test_case_ids).delete()
 
     @transaction.atomic
-    def bulk_test_create(self, test_plans: Iterable[TestPlan], cases: list[TestCase]):
-        test_objects = [self._make_test_model({'case': case, 'plan': tp}) for tp in test_plans for case in cases]
+    def bulk_test_create(self, test_plans: list[TestPlan], cases: list[TestCase]):
+        test_objects = [self._make_test_model({'case': case, 'plan': tp, 'project': tp.project}) for tp in test_plans
+                        for case in cases]
         return Test.objects.bulk_create(test_objects)
 
     def test_update(self, test: Test, data: Dict[str, Any]) -> Test:
