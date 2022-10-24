@@ -8,7 +8,7 @@ import mptt.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tests_representation', '0002_make_user_nullable'),
+        ('tests_representation', '0003_make_user_nullable'),
     ]
 
     operations = [
