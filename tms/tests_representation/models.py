@@ -2,7 +2,7 @@ from core.models import Project
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, FileExtensionValidator
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 from tests_description.models import TestCase
@@ -64,3 +64,19 @@ class TestResult(BaseModel):
 
     class Meta:
         default_related_name = 'test_results'
+
+
+class Attachments(BaseModel):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
+    filename = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
+    content_type = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
+    size = models.IntegerField(max_length=11)
+    case = models.ForeignKey(TestCase, on_delete=models.CASCADE, null=True)
+    result = models.ForeignKey(TestResult, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, null=True)
+    file = models.FileField(
+        max_length=150,
+        blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'txt', 'png', 'jpg', 'jpeg'])]
+    )
