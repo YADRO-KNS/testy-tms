@@ -17,4 +17,5 @@ class V1RootView(APIRootView):
             'parameters': reverse('api:v1:parameter-list', request=request, format=format),
             'users': reverse('api:v1:user-list', request=request, format=format),
             'groups': reverse('api:v1:group-list', request=request, format=format),
+            'attachments': reverse('api:v1:attachment-list', request=request, format=format)
         })

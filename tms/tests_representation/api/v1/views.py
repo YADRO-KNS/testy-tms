@@ -1,9 +1,17 @@
+from typing import Dict
+
 from django.forms import model_to_dict
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
-from tests_representation.api.v1.serializers import ParameterSerializer, TestResultSerializer, TestSerializer
+from tests_representation.api.v1.serializers import (
+    AttachmentSerializer,
+    ParameterSerializer,
+    TestResultSerializer,
+    TestSerializer,
+)
+from tests_representation.selectors.attachments import AttachmentSelector
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.results import TestResultSelector
 from tests_representation.selectors.tests import TestSelector
@@ -66,3 +74,46 @@ class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixi
 
     def perform_update(self, serializer: TestResultSerializer):
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
+
+
+class AttachmentsViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
+    queryset = AttachmentSelector().attachment_list()
+    serializer_class = AttachmentSerializer
+
+    def create(self, request, *args, **kwargs):
+        formatted_file_dicts = []
+        for file in request.FILES.getlist('file'):
+            formatted_data = {
+                'filename': file.get('name'),
+                'content_type': file.get('content_type'),
+                'size': file.get('size'),
+                'user': request.user,
+                'file': file
+            }
+            verified_result = self._verify_parents(file)
+            if isinstance(verified_result, Response):
+                return verified_result
+            formatted_file_dicts.append(formatted_data.update(verified_result))
+
+        for file_dict in formatted_file_dicts:
+            serializer = self.get_serializer(data=file_dict)
+            serializer.is_valid(raise_exception=True)
+
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def _verify_parents(self, file: Dict):
+        parent_field_names = ['case', 'result', 'test_plan']
+        parent_dict = {}
+        for field_name in parent_field_names:
+            field_value = file.get(field_name)
+            if field_value:
+                parent_dict[field_name] = field_value
+                if len(parent_dict):
+                    return Response(
+                        {'details': 'Only one parent allowed case/result/plan'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+        if not parent_dict:
+            return Response({'details': 'No parent was provided(case/result/plan)'}, status=status.HTTP_400_BAD_REQUEST)
+        return parent_dict

@@ -1,6 +1,6 @@
 from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.serializers import ModelSerializer
-from tests_representation.models import Parameter, Test, TestResult
+from tests_representation.models import Attachment, Parameter, Test, TestResult
 
 
 class ParameterSerializer(ModelSerializer):
@@ -32,3 +32,13 @@ class TestResultSerializer(ModelSerializer):
         )
 
         read_only_fields = ('test_case_version', 'project', 'test')
+
+
+class AttachmentSerializer(ModelSerializer):
+    url = HyperlinkedIdentityField(view_name='api:v1:attachment-detail')
+
+    class Meta:
+        model = Attachment
+        fields = ('project', 'name', 'filename', 'content_type', 'size', 'case', 'result', 'user', 'file', 'url')
+
+        # read_only_fields = ('project',)

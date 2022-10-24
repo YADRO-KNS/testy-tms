@@ -5,6 +5,7 @@ from tests_representation.api.v1 import views
 router = SimpleRouter()
 router.register('parameters', views.ParameterViewSet)
 router.register('results', views.TestResultViewSet)
+router.register('attachments', views.AttachmentsViewSet)
 
 test_lists = views.TestListViewSet.as_view({'get': 'list'})
 test_detail = views.TestDetailViewSet.as_view({
