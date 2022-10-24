@@ -1,12 +1,11 @@
+from core.models import Project
+from core.selectors.projects import ProjectSelector
 from crispy_forms.utils import render_crispy_form
 from django.db.models import QuerySet
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.views import View
-from django.views.generic import UpdateView, CreateView, DeleteView
-
-from core.models import Project
-from core.selectors.projects import ProjectSelector
+from django.views.generic import CreateView, DeleteView, UpdateView
 from tests_description.forms import TestCaseForm, TestSuiteForm
 from tests_description.models import TestCase, TestSuite
 from tests_description.selectors.cases import TestCaseSelector
