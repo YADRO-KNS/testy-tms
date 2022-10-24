@@ -68,7 +68,7 @@ def combined_parameters(number_of_param_groups, number_of_entities_in_group, par
 
 
 @pytest.fixture
-def several_test_plans_from_api(api_client, authorized_superuser, parameter_factory):
+def several_test_plans_from_api(api_client, authorized_superuser, parameter_factory, project):
     parameters = []
     for _ in range(3):
         parameters.append(parameter_factory().id)
@@ -76,10 +76,11 @@ def several_test_plans_from_api(api_client, authorized_superuser, parameter_fact
     test_plans = []
     for idx in range(constants.NUMBER_OF_OBJECTS_TO_CREATE):
         testplan_dict = {
-            "name": f"Test plan {idx}",
-            "due_date": constants.DATE,
-            "started_at": constants.DATE,
-            "parameters": parameters
+            'name': f'Test plan {idx}',
+            'due_date': constants.DATE,
+            'started_at': constants.DATE,
+            'parameters': parameters,
+            'project': project.id
         }
         response = api_client.send_request('api:v1:testplan-list', testplan_dict, HTTPStatus.CREATED, RequestType.POST)
         test_plans.append(json.loads(response.content)[0])
