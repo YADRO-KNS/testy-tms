@@ -50,7 +50,7 @@ class TestPLanService:
             data=data,
         )
 
-        if test_cases := data.get('test_cases'):
+        if (test_cases := data.get('test_cases')) is not None:  # test_cases may be empty list
             old_test_case_ids = set(TestService().get_testcase_ids_by_testplan(test_plan))
             new_test_case_ids = {tc.id for tc in test_cases}
 
