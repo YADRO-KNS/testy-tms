@@ -7,7 +7,7 @@ from tests_representation.utils import combination_parameters
 
 
 class TestPLanService:
-    non_side_effect_fields = ('name', 'parent', 'started_at', 'due_date', 'finished_at', 'is_archive',)
+    non_side_effect_fields = ('name', 'parent', 'started_at', 'due_date', 'finished_at', 'is_archive', 'project',)
 
     def _make_testplan_model(self, data, parameters=None):
         testplan = TestPlan.model_create(
@@ -30,9 +30,7 @@ class TestPLanService:
         testplan_objects = []
 
         if parameters := data.get('parameters', []):
-            combine_parameters = combination_parameters(parameters)
-
-            for combine_parameter in combine_parameters:
+            for combine_parameter in combination_parameters(parameters):
                 testplan_objects.append(self._make_testplan_model(data, combine_parameter))
         else:
             testplan_objects.append(self._make_testplan_model(data))

@@ -7,7 +7,7 @@ from tests_representation.models import Test, TestPlan
 
 
 class TestService:
-    non_side_effect_fields = ['case', 'plan', 'user', 'is_archive']
+    non_side_effect_fields = ['case', 'plan', 'user', 'is_archive', 'project']
 
     def _make_test_model(self, data):
         return Test.model_create(
@@ -33,7 +33,8 @@ class TestService:
 
     @transaction.atomic
     def bulk_test_create(self, test_plans: list[TestPlan], cases: list[TestCase]):
-        test_objects = [self._make_test_model({'case': case, 'plan': tp}) for tp in test_plans for case in cases]
+        test_objects = [self._make_test_model({'case': case, 'plan': tp, 'project': tp.project}) for tp in test_plans
+                        for case in cases]
         return Test.objects.bulk_create(test_objects)
 
     def test_update(self, test: Test, data: Dict[str, Any]) -> Test:
