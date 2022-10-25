@@ -78,5 +78,6 @@ class Attachment(BaseModel):
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, null=True)
     file = models.FileField(
         max_length=150,
-        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'txt', 'png', 'jpg', 'jpeg'])]
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'txt', 'png', 'jpg', 'jpeg'])],
+        upload_to='attachments'
     )

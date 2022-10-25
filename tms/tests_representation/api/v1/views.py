@@ -15,6 +15,7 @@ from tests_representation.selectors.attachments import AttachmentSelector
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.results import TestResultSelector
 from tests_representation.selectors.tests import TestSelector
+from tests_representation.services.attachments import AttachmentService
 from tests_representation.services.parameters import ParameterService
 from tests_representation.services.results import TestResultService
 from tests_representation.services.tests import TestService
@@ -80,40 +81,41 @@ class AttachmentsViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mix
     queryset = AttachmentSelector().attachment_list()
     serializer_class = AttachmentSerializer
 
+    # class CreateModelMixin:
+    #     """
+    #     Create a model instance.
+    #     """
+    #
+    #     def create(self, request, *args, **kwargs):
+    #         serializer = self.get_serializer(data=request.data)
+    #         serializer.is_valid(raise_exception=True)
+    #         self.perform_create(serializer)
+    #         headers = self.get_success_headers(serializer.data)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    #
+    #     def perform_create(self, serializer):
+    #         serializer.save()
+    #
+    #     def get_success_headers(self, data):
+    #         try:
+    #             return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+    #         except (TypeError, KeyError):
+    #             return {}
+
     def create(self, request, *args, **kwargs):
-        formatted_file_dicts = []
-        for file in request.FILES.getlist('file'):
-            formatted_data = {
-                'filename': file.get('name'),
-                'content_type': file.get('content_type'),
-                'size': file.get('size'),
-                'user': request.user,
-                'file': file
-            }
-            verified_result = self._verify_parents(file)
-            if isinstance(verified_result, Response):
-                return verified_result
-            formatted_file_dicts.append(formatted_data.update(verified_result))
+        formatted_file_dicts, response = AttachmentService().format_file(request)
+        created_attachments = []
 
-        for file_dict in formatted_file_dicts:
-            serializer = self.get_serializer(data=file_dict)
-            serializer.is_valid(raise_exception=True)
+        if response:
+            return response
+        serializer = self.get_serializer(data=formatted_file_dicts, many=True, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        print()
 
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        # for file_dict in formatted_file_dicts:
+        #     serializer = self.get_serializer(data=file_dict)
+        #     serializer.is_valid(raise_exception=True)
+        #     attachment = AttachmentService().attachment_create(serializer.validated_data)
+        #     created_attachments.append(attachment)
 
-    def _verify_parents(self, file: Dict):
-        parent_field_names = ['case', 'result', 'test_plan']
-        parent_dict = {}
-        for field_name in parent_field_names:
-            field_value = file.get(field_name)
-            if field_value:
-                parent_dict[field_name] = field_value
-                if len(parent_dict):
-                    return Response(
-                        {'details': 'Only one parent allowed case/result/plan'},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-        if not parent_dict:
-            return Response({'details': 'No parent was provided(case/result/plan)'}, status=status.HTTP_400_BAD_REQUEST)
-        return parent_dict
+        # return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
