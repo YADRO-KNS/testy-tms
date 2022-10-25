@@ -1,5 +1,3 @@
-from typing import Dict
-
 from django.forms import model_to_dict
 from rest_framework import mixins, status
 from rest_framework.decorators import action
@@ -77,45 +75,16 @@ class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixi
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
 
 
-class AttachmentsViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
+class AttachmentViewSet(ModelViewSet):
     queryset = AttachmentSelector().attachment_list()
     serializer_class = AttachmentSerializer
 
-    # class CreateModelMixin:
-    #     """
-    #     Create a model instance.
-    #     """
-    #
-    #     def create(self, request, *args, **kwargs):
-    #         serializer = self.get_serializer(data=request.data)
-    #         serializer.is_valid(raise_exception=True)
-    #         self.perform_create(serializer)
-    #         headers = self.get_success_headers(serializer.data)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    #
-    #     def perform_create(self, serializer):
-    #         serializer.save()
-    #
-    #     def get_success_headers(self, data):
-    #         try:
-    #             return {'Location': str(data[api_settings.URL_FIELD_NAME])}
-    #         except (TypeError, KeyError):
-    #             return {}
-
     def create(self, request, *args, **kwargs):
-        formatted_file_dicts, response = AttachmentService().format_file(request)
-        created_attachments = []
-
-        if response:
-            return response
-        serializer = self.get_serializer(data=formatted_file_dicts, many=True, context={'request': request})
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        print()
+        attachments = AttachmentService().attachment_create(serializer.validated_data, request)
+        data = [self.get_serializer(attachment, context={'request': request}).data for attachment in attachments]
+        return Response(data, status=status.HTTP_201_CREATED)
 
-        # for file_dict in formatted_file_dicts:
-        #     serializer = self.get_serializer(data=file_dict)
-        #     serializer.is_valid(raise_exception=True)
-        #     attachment = AttachmentService().attachment_create(serializer.validated_data)
-        #     created_attachments.append(attachment)
-
-        # return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    def perform_update(self, serializer):
+        serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)

@@ -5,6 +5,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.validators import FileExtensionValidator, MinValueValidator
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
+from rest_framework.exceptions import ValidationError
 from tests_description.models import TestCase
 from tests_representation.choices import TestStatuses
 from users.models import User
@@ -72,12 +73,24 @@ class Attachment(BaseModel):
     filename = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
     content_type = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
     size = models.PositiveBigIntegerField()
-    test_plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE)
-    case = models.ForeignKey(TestCase, on_delete=models.CASCADE, null=True)
-    result = models.ForeignKey(TestResult, on_delete=models.CASCADE, null=True)
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, null=True)
+    plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE, null=True, blank=True)
+    case = models.ForeignKey(TestCase, on_delete=models.CASCADE, null=True, blank=True)
+    result = models.ForeignKey(TestResult, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     file = models.FileField(
         max_length=150,
         validators=[FileExtensionValidator(allowed_extensions=['pdf', 'txt', 'png', 'jpg', 'jpeg'])],
         upload_to='attachments'
     )
+
+    def __str__(self):
+        return str(self.file.url)
+
+    def clean(self):
+        if not self.result and not self.case and not self.plan:
+            raise ValidationError({'detail': 'case, result or plan field should be specified'})
+
+        parent_instances = [self.case, self.result, self.plan]
+        projects = [parent_instance.project for parent_instance in parent_instances if parent_instance]
+        if len(set(projects)) != 1:
+            raise ValidationError({'detail': 'case, result, or plan have different project ids'})
