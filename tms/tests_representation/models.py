@@ -61,6 +61,7 @@ class TestResult(BaseModel):
         blank=True,
         validators=[MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)]
     )
+    execution_time = models.DurationField(null=True, blank=True)
 
     class Meta:
         default_related_name = 'test_results'

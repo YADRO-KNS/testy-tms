@@ -28,7 +28,7 @@ class TestResultSerializer(ModelSerializer):
         model = TestResult
         fields = (
             'id', 'project', 'status', 'test', 'user', 'comment', 'is_archive', 'test_case_version', 'created_at',
-            'updated_at', 'url'
+            'updated_at', 'url', 'execution_time'
         )
 
         read_only_fields = ('test_case_version', 'project', 'test')

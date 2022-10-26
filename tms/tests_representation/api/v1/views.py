@@ -41,9 +41,16 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
     def get_view_name(self):
         return "Test Instance"
 
+    def get_serializer_class(self):
+        if self.action == 'add_result':
+            return TestResultSerializer
+        else:
+            return TestSerializer
+
     @action(detail=False, methods=['POST'])
     def add_result(self, request, pk):
-        serializer = TestResultSerializer(data=request.data, context={'request': request})
+        serializer = self.get_serializer_class()
+        serializer = serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         result = TestResultService().result_create(serializer.validated_data, pk)
         return Response(model_to_dict(result), status=status.HTTP_201_CREATED)
