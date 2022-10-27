@@ -53,17 +53,18 @@ class CustomAPIClient(APIClient):
             data: Dict[str, Any] = None,
             expected_status: HTTPStatus = HTTPStatus.OK,
             request_type: RequestType = RequestType.GET,
-            reverse_kwargs: Dict[str, Any] = None
-
+            reverse_kwargs: Dict[str, Any] = None,
+            format='json'
     ):
         url = reverse(view_name, kwargs=reverse_kwargs)
         http_request = getattr(self, request_type.value, None)
         if not http_request:
             raise TypeError('Request type is not known')
-        response = http_request(url, data=data)
+        response = http_request(url, data=data, format=format)
 
         assert response.status_code == expected_status, f'Expected response code "{expected_status}", ' \
-                                                        f'actual: "{response.status_code}"'
+                                                        f'actual: "{response.status_code}"' \
+                                                        f'Response content: {response.content}'
         return response
 
 
