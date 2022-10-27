@@ -9,18 +9,13 @@ from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from tests_representation.api.v1.serializers import (
     AttachmentSerializer,
     ParameterSerializer,
-    TestResultSerializer,
-    TestSerializer,
-)
-from tests_representation.selectors.attachments import AttachmentSelector, ParentType
-from tests_representation.api.v1.serializers import (
-    ParameterSerializer,
     TestPlanInputSerializer,
     TestPlanOutputSerializer,
     TestPlanUpdateSerializer,
     TestResultSerializer,
     TestSerializer,
 )
+from tests_representation.selectors.attachments import AttachmentSelector, ParentType
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.results import TestResultSelector
 from tests_representation.selectors.testplan import TestPlanSelector

@@ -41,12 +41,13 @@ urlpatterns = [
     path('results/', result_list, name='testresult-list'),
     path('results/<int:pk>/', result_detail, name='testresult-detail'),
 
-    path('<str:parent_type>/<int:pk>/attachments/', attachment_list, name='attachments-by-parent')
     path('testplans/', TestPLanListView.as_view(), name='testplan-list'),
     path('testplans/<int:pk>/', TestPLanDetailView.as_view(), name='testplan-detail'),
 
     path('results/', result_list, name='result-list'),
     path('results/<int>:pk/', result_detail, name='result-detail'),
+
+    path('<str:parent_type>/<int:pk>/attachments/', attachment_list, name='attachments-by-parent'),
 
 ]
 urlpatterns += router.urls
