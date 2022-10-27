@@ -4,7 +4,7 @@ from core.models import Project
 
 
 class ProjectService:
-    non_side_effect_fields = ['name', 'description']
+    non_side_effect_fields = ['name', 'description', 'is_archive']
 
     def project_create(self, data: Dict[str, Any]) -> Project:
         return Project.model_create(
