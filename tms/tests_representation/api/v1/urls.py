@@ -4,7 +4,6 @@ from tests_representation.api.v1 import views
 
 router = SimpleRouter()
 router.register('parameters', views.ParameterViewSet)
-router.register('results', views.TestResultViewSet)
 router.register('attachments', views.AttachmentViewSet)
 
 test_lists = views.TestListViewSet.as_view({'get': 'list'})
@@ -24,6 +23,10 @@ result_list = views.TestResultViewSet.as_view({
     'get': 'list'
 })
 
+attachment_list = views.AttachmentViewSet.as_view({
+    'get': 'attachments_by_parent'
+})
+
 results_by_test = views.TestDetailViewSet.as_view({
     'post': 'add_result',
     'get': 'results_by_test'
@@ -34,8 +37,10 @@ urlpatterns = [
     path('tests/<int:pk>/', test_detail, name='test-detail'),
     path('tests/<int:pk>/results/', results_by_test, name='results-by-test'),
 
-    path('results/', result_list, name='result-list'),
-    path('results/<int>:pk/', result_detail, name='result-detail'),
+    path('results/', result_list, name='testresult-list'),
+    path('results/<int:pk>/', result_detail, name='testresult-detail'),
+
+    path('<str:parent_type>/<int:pk>/attachments/', attachment_list, name='attachments-by-parent')
 
 ]
 urlpatterns += router.urls

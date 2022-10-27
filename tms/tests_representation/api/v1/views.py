@@ -9,7 +9,7 @@ from tests_representation.api.v1.serializers import (
     TestResultSerializer,
     TestSerializer,
 )
-from tests_representation.selectors.attachments import AttachmentSelector
+from tests_representation.selectors.attachments import AttachmentSelector, ParentType
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.results import TestResultSelector
 from tests_representation.selectors.tests import TestSelector
@@ -88,3 +88,14 @@ class AttachmentViewSet(ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
+
+    @action(detail=False)
+    def attachments_by_parent(self, request, parent_type: str, pk):
+        queryset = self.filter_queryset(AttachmentSelector().attachment_list_by_parent(pk, ParentType(parent_type)))
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = AttachmentSerializer(page, many=True, context={'request': request})
+            return self.get_paginated_response(serializer.data)
+
+        serializer = AttachmentSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
