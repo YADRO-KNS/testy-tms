@@ -27,7 +27,7 @@ class Parameter(BaseModel):
 class TestPlan(MPTTModel, BaseModel):
     name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_test_planes')
+    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_test_plans')
     parameters = ArrayField(models.PositiveIntegerField(null=True, blank=True), null=True, blank=True)
     started_at = models.DateTimeField()
     due_date = models.DateTimeField()
@@ -42,7 +42,7 @@ class Test(BaseModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     case = models.ForeignKey(TestCase, on_delete=models.CASCADE)
     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE)
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, null=True, blank=True)
     is_archive = models.BooleanField(default=False)
 
     class Meta:
