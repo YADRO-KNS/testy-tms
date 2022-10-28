@@ -15,6 +15,9 @@ inspect() {
 lint() {
   docker-compose -f docker-compose-ci.yml up -d --build
   docker-compose -f docker-compose-ci.yml run --rm  tms-ci flake8 .
+  echo $?
+  inspect $? lint
+  docker-compose -f docker-compose-ci.yml run --rm  tms-ci python utils/update_license.py --validate-license --directory .
   inspect $? lint
   docker-compose -f docker-compose-ci.yml down -v
 }
