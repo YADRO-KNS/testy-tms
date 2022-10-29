@@ -33,7 +33,6 @@ import argparse
 import difflib
 import logging
 import os
-import sys
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-8s %(message)s')
 
@@ -85,18 +84,15 @@ def check_ext(name: str):
 
 
 def main(cmd_args):
-    errors_found = False
     found = []
-    if not cmd_args.validate_license:
-        logging.info(f'Update License version {__version__}')
-        logging.info(f'Process the extensions {",".join(EXTENSIONS)} in directory {cmd_args.directory}')
+    logging.info(f'Update License version {__version__}')
+    logging.info(f'Process the extensions {",".join(EXTENSIONS)} in directory {cmd_args.directory}')
     # Get all files including nested directories
     for path, subdirs, files in os.walk(cmd_args.directory):
         for name in files:
             if check_ext(name):
                 found.append(os.path.join(path, name))
-    if not cmd_args.validate_license:
-        logging.info(f'Found {len(found)} files')
+    logging.info(f'Found {len(found)} files')
     lisense_lines = LICENSE_HEADER.split('\n')
     for file in found:
         license_required = False
@@ -111,11 +107,7 @@ def main(cmd_args):
                 continue
             if lines[0:len(lisense_lines)] != lisense_lines:
                 diff = '\n'.join([line for line in difflib.unified_diff(lisense_lines, lines[0:len(lisense_lines)])])
-                msg = f'No correct license found for {file}:\n{diff}'
-                if cmd_args.validate_license:
-                    msg = f'No correct license found for {file}'
-                    errors_found = True
-                logging.exception(msg)
+                logging.exception(f'No correct license found for {file}:\n{diff}')
                 license_required = True
             if cmd_args.update and license_required:
                 logging.info(f'Adding the license header for {file}')
@@ -123,8 +115,6 @@ def main(cmd_args):
                 w.seek(0)
                 w.write(content)
                 logging.info(f'The license header added for {file}')
-
-    return errors_found
 
 
 if __name__ == '__main__':
@@ -143,13 +133,4 @@ if __name__ == '__main__':
         default=False,
         required=True
     )
-    parser.add_argument(
-        '--validate-license',
-        help='Update files without license',
-        action='store_true',
-        default=False
-    )
-    err_found = main(parser.parse_args())
-    if err_found:
-        sys.exit(1)
-    sys.exit(0)
+    main(parser.parse_args())
