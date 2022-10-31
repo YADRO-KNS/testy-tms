@@ -9,7 +9,6 @@
 
     {% block stylesheets %}
         <link rel="stylesheet" type="text/css" href="{% static 'css/tms.min.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'other/bstreeview.min.css' %}">
     {% endblock %}
 
     <title>TMS | {% block title %}Base template{% endblock %}</title>
@@ -18,16 +17,14 @@
 
 {% block header %}{% endblock %}
 
-<main class="content-wrap d-flex flex-column h-100">
+<main class="flex-shrink-0">
     {% block content %}{% endblock %}
 </main>
 
 {% block footer %}{% endblock %}
 
 {% block javascripts %}
-    <script src="{% static 'other/jquery.min.js' %}"></script>
     <script src="{% static 'js/tms.min.js' %}"></script>
-    <script src="{% static 'other/bstreeview.min.js' %}"></script>
 {% endblock %}
 
 </body>
