@@ -45,6 +45,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 import views
+from core.views import ProjectOverviewView, ProjectPlansView, ProjectSuitesView
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
@@ -71,6 +72,14 @@ urlpatterns = [
          name='user_change_password'),
 
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+
+    # Administration
+    path('administration/', include('administration.urls')),
+
+    # Project
+    path('project/<int:pk>', login_required(ProjectOverviewView.as_view()), name='project_details'),
+    path('project/<int:pk>/suites', login_required(ProjectSuitesView.as_view()), name='project_suites'),
+    path('project/<int:pk>/runs', login_required(ProjectPlansView.as_view()), name='project_runs'),
 
     # API
     path('api/', include('tms.api.urls', namespace='api')),
