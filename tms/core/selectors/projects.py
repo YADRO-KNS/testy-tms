@@ -29,8 +29,6 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
-from typing import Optional
-
 from core.models import Project
 from django.db.models import QuerySet
 
