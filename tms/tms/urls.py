@@ -77,9 +77,9 @@ urlpatterns = [
     path('administration/', include('administration.urls')),
 
     # Project
-    path('project/<int:pk>', login_required(ProjectOverviewView.as_view()), name='project_details'),
-    path('project/<int:pk>/suites', login_required(ProjectSuitesView.as_view()), name='project_suites'),
-    path('project/<int:pk>/runs', login_required(ProjectPlansView.as_view()), name='project_runs'),
+    path('project/<int:pk>/', login_required(ProjectOverviewView.as_view()), name='project_details'),
+    path('project/<int:pk>/suites/', login_required(ProjectSuitesView.as_view()), name='project_suites'),
+    path('project/<int:pk>/runs/', login_required(ProjectPlansView.as_view()), name='project_runs'),
 
     # API
     path('api/', include('tms.api.urls', namespace='api')),
