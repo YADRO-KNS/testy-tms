@@ -1,4 +1,5 @@
 import difflib
+from typing import List, Tuple
 
 import importlib_metadata
 
@@ -6,12 +7,12 @@ import importlib_metadata
 class CopyrightValidator:
     name = __name__
     version = importlib_metadata.version(__name__)
-    copyright_text_list = None
-    custom_escape_sequences = None
-    detailed_output = False
-    update = False
-    copyright_text = None
-    bytes_to_read = 2048
+    copyright_text_list: List[str] = None
+    custom_escape_sequences: List[Tuple[str, str]] = None
+    detailed_output: bool = False
+    update: bool = False
+    copyright_text: str = None
+    bytes_to_read: int = 2048
 
     def __init__(self, tree, filename) -> None:
         self._tree = tree
