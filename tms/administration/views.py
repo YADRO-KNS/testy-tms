@@ -13,7 +13,8 @@ from django.views.generic import CreateView, UpdateView
 from django.views.generic.edit import DeleteView
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin
-from forms import NewUserForm, UserDetailsForm
+from forms import UserDetailsForm
+from administration.forms import UserAddForm
 from users.models import User
 from users.selectors.users import UserSelector
 from users.services.users import UserService
@@ -82,7 +83,7 @@ class AdministrationUserProfileView(AdministrationBaseView, ViewTabMixin, Update
 
 class AdministrationUserAddView(AdministrationBaseView, ViewTabMixin, CreateView):
     model = User
-    form_class = NewUserForm
+    form_class = UserAddForm
     template_name = 'tms/administration/users/create.html'
     active_tab = 'admin_users'
     success_url = reverse_lazy('admin_users')
