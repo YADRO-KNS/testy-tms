@@ -54,24 +54,15 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from tests_description.views import (
-    TestCaseCreateView,
-    TestCaseDeleteView,
-    TestCaseEditView,
-    TestCaseView,
-    TestSuiteCreateView,
-    TestSuiteDeleteView,
-    TestSuiteView,
-)
 
 schema_view = get_schema_view(
-   openapi.Info(
-      title="TMS API",
-      default_version='v1',
-      description="TMS API v1",
-   ),
-   public=True,
-   permission_classes=[permissions.AllowAny],
+    openapi.Info(
+        title="TMS API",
+        default_version='v1',
+        description="TMS API v1",
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
 )
 
 urlpatterns = [
