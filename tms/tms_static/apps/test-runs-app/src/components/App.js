@@ -1,7 +1,7 @@
 import React from "react";
 import {Provider} from "react-redux";
 import TestPlanActions from "./TestPlanActions";
-import TestPlanList from "./TestPlanList";
+import TestPlanContent from "./TestPlanContent";
 
 const App = ({store}) => {
     return(
@@ -10,7 +10,7 @@ const App = ({store}) => {
                 <div className=" p-3 bg-white">
                     <TestPlanActions/>
                     <hr/>
-                    <TestPlanList/>
+                    <TestPlanContent/>
                 </div>
             </div>
         </Provider>
