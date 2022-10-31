@@ -3,15 +3,15 @@ import difflib
 import importlib_metadata
 
 
-class CopyrightValidator(object):
+class CopyrightValidator:
     name = __name__
     version = importlib_metadata.version(__name__)
-    extensions = None
     copyright_text_list = None
     custom_escape_sequences = None
     detailed_output = False
     update = False
     copyright_text = None
+    bytes_to_read = 2048
 
     def __init__(self, tree, filename) -> None:
         self._tree = tree
@@ -40,17 +40,15 @@ class CopyrightValidator(object):
             help='custom escape sequences',
             parse_from_config=True,
         )
-
         parser.add_option(
-            '--extensions',
-            comma_separated_list=True,
-            help='check files with only these extensions',
+            '--bytes-to-read',
+            type=int,
+            help='number of bytes to read',
             parse_from_config=True,
         )
 
     @classmethod
     def parse_options(cls, options):
-        cls.extensions = options.extensions
         cls.detailed_output = options.detailed_output
         cls.update = options.update
 
@@ -65,16 +63,14 @@ class CopyrightValidator(object):
 
         cls.copyright_text = '\n'.join(cls.copyright_text_list)
 
-        print(cls.copyright_text_list)
+        if options.bytes_to_read:
+            cls.bytes_to_read = options.bytes_to_read
 
     def run(self):
         lisense_lines = self.copyright_text_list
         diff = None
-        if not self.is_ext_valid(self._filename):
-            return
         with open(self._filename, 'r+') as w:
-            print(self._filename)
-            content = w.read()
+            content = w.read(self.bytes_to_read)
             lines = content.split('\n')
             if not lines:
                 return
@@ -90,12 +86,3 @@ class CopyrightValidator(object):
                 content = self.copyright_text + '\n' + content
                 w.seek(0)
                 w.write(content)
-
-    def is_ext_valid(self, name: str) -> bool:
-        """
-        Check the file extension and return True if the given file should have a license
-        """
-        parts = name.split('.')
-        if parts[-1] in self.extensions:
-            return True
-        return False
