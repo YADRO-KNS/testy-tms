@@ -61,18 +61,3 @@ class TestSuiteSerializer(ModelSerializer):
     class Meta:
         model = TestSuite
         fields = ('id', 'name', 'parent', 'project', 'url', 'test_cases',)
-
-
-def serializable_object(node):
-    obj = {
-        "text": node.name,
-        "id": node.id,
-        "nodes": [serializable_object(ch) for ch in node.get_children()]
-    }
-    if not obj["nodes"]:
-        obj = {
-            "text": node.name,
-            "id": node.id,
-            "icon": "bi bi-folder"
-        }
-    return obj
