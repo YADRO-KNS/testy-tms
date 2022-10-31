@@ -1,3 +1,4 @@
+from administration.forms import UserAddForm
 from core.forms import ProjectForm
 from core.mixins.views import ViewTabMixin
 from core.models import Project
@@ -13,7 +14,7 @@ from django.views.generic import CreateView, UpdateView
 from django.views.generic.edit import DeleteView
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin
-from forms import NewUserForm, UserDetailsForm
+from forms import UserDetailsForm
 from users.models import User
 from users.selectors.users import UserSelector
 from users.services.users import UserService
@@ -63,13 +64,8 @@ class AdministrationUserProfileView(AdministrationBaseView, ViewTabMixin, Update
     template_name = 'tms/administration/users/edit.html'
     success_url = 'admin_users'
 
-    def get_object(self, queryset=None):
-        return UserModel.objects.get(pk=self.kwargs['pk'])
-
-    def get_context_data(self, **kwargs):
-        context = super(AdministrationUserProfileView, self).get_context_data(**kwargs)
-        context['form'] = UserDetailsForm(instance=User.objects.get(pk=self.kwargs['pk']))
-        return context
+    def get_queryset(self):
+        return UserSelector().user_list()
 
     def form_valid(self, form):
         UserService().user_update(user=self.get_object(), data=form.cleaned_data)
@@ -80,9 +76,9 @@ class AdministrationUserProfileView(AdministrationBaseView, ViewTabMixin, Update
         return reverse('admin_user_profile', kwargs={'pk': self.object.pk})
 
 
-class AdministrationNewUserView(AdministrationBaseView, ViewTabMixin, CreateView):
+class AdministrationUserAddView(AdministrationBaseView, ViewTabMixin, CreateView):
     model = User
-    form_class = NewUserForm
+    form_class = UserAddForm
     template_name = 'tms/administration/users/create.html'
     active_tab = 'admin_users'
     success_url = reverse_lazy('admin_users')
