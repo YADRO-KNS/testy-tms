@@ -57,8 +57,3 @@ class TestSuiteViewSet(ModelViewSet):
 
     def perform_update(self, serializer: TestSuiteSerializer):
         serializer.instance = TestSuiteService().suite_update(serializer.instance, serializer.validated_data)
-
-
-class TestSuiteListViewSet(ModelViewSet):
-    queryset = TestSuiteSelector().suite_list()
-    serializer_class = TestSuiteTreeSerializer
