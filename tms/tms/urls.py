@@ -1,3 +1,34 @@
+# TMS - Test Management System
+# Copyright (C) 2022 KNS Group LLC (YADRO)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Also add information on how to contact you by electronic and paper mail.
+#
+# If your software can interact with users remotely through a computer
+# network, you should also make sure that it provides a way for users to
+# get its source.  For example, if your program is a web application, its
+# interface could display a "Source" link that leads users to an archive
+# of the code.  There are many ways you could offer source, and different
+# solutions will be better for different programs; see section 13 for the
+# specific requirements.
+#
+# You should also get your employer (if you work as a programmer) or school,
+# if any, to sign a "copyright disclaimer" for the program, if necessary.
+# For more information on this, and how to apply and follow the GNU AGPL, see
+# <http://www.gnu.org/licenses/>.
+
 """tms URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -29,8 +60,21 @@ from core.views import ProjectOverviewView, ProjectPlansView, ProjectSuitesView
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
-from django.urls import include, path
+from django.urls import include, path, re_path
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="TMS API",
+      default_version='v1',
+      description="TMS API v1",
+   ),
+   public=True,
+   permission_classes=[permissions.AllowAny],
+)
 
 urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
@@ -73,4 +117,9 @@ urlpatterns = [
 
     # Admin
     path('admin/', admin.site.urls),
+
+    # Swagger
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
