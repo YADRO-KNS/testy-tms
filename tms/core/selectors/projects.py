@@ -40,7 +40,3 @@ class ProjectSelector:
     @staticmethod
     def project_list() -> QuerySet[Project]:
         return QuerySet(model=Project).order_by('name')
-
-    @staticmethod
-    def project(project_id) -> Optional[Project]:
-        return Project.objects.get(pk=project_id)
