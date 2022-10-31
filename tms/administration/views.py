@@ -64,8 +64,8 @@ class AdministrationUserProfileView(AdministrationBaseView, ViewTabMixin, Update
     template_name = 'tms/administration/users/edit.html'
     success_url = 'admin_users'
 
-    def get_object(self, queryset=None):
-        return UserModel.objects.get(pk=self.kwargs['pk'])
+    def get_queryset(self):
+        return UserSelector().user_list()
 
     def get_context_data(self, **kwargs):
         context = super(AdministrationUserProfileView, self).get_context_data(**kwargs)
