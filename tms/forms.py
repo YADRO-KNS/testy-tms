@@ -33,8 +33,8 @@ from crispy_forms.bootstrap import FormActions, UneditableField
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Div, Layout, Submit
 from django import forms
-from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import PasswordChangeForm
 
 UserModel = get_user_model()
 
