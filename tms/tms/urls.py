@@ -56,13 +56,13 @@ from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 schema_view = get_schema_view(
-   openapi.Info(
-      title="TMS API",
-      default_version='v1',
-      description="TMS API v1",
-   ),
-   public=True,
-   permission_classes=[permissions.AllowAny],
+    openapi.Info(
+        title="TMS API",
+        default_version='v1',
+        description="TMS API v1",
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
 )
 
 urlpatterns = [
@@ -77,9 +77,9 @@ urlpatterns = [
     path('administration/', include('administration.urls')),
 
     # Project
-    path('project/<int:pk>', login_required(ProjectOverviewView.as_view()), name='project_details'),
-    path('project/<int:pk>/suites', login_required(ProjectSuitesView.as_view()), name='project_suites'),
-    path('project/<int:pk>/runs', login_required(ProjectPlansView.as_view()), name='project_runs'),
+    path('project/<int:pk>/', login_required(ProjectOverviewView.as_view()), name='project_details'),
+    path('project/<int:pk>/suites/', login_required(ProjectSuitesView.as_view()), name='project_suites'),
+    path('project/<int:pk>/runs/', login_required(ProjectPlansView.as_view()), name='project_runs'),
 
     # API
     path('api/', include('tms.api.urls', namespace='api')),

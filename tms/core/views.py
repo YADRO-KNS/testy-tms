@@ -3,7 +3,7 @@ from django.views.generic import DetailView
 from views import Tab
 
 
-class ProjectBaseView(DetailView):
+class ProjectBaseView:
     model = Project
     active_tab = 'project_details'
     context_object_name = 'project'
@@ -17,15 +17,18 @@ class ProjectBaseView(DetailView):
         return context
 
 
-class ProjectOverviewView(ProjectBaseView):
+class ProjectOverviewView(ProjectBaseView, DetailView):
+    model = Project
     template_name = 'tms/project/overview.html'
 
 
-class ProjectPlansView(ProjectBaseView):
+class ProjectPlansView(ProjectBaseView, DetailView):
+    model = Project
     template_name = 'tms/project/test_runs.html'
     active_tab = 'project_runs'
 
 
-class ProjectSuitesView(ProjectBaseView):
+class ProjectSuitesView(ProjectBaseView, DetailView):
+    model = Project
     template_name = 'tms/project/test_suites.html'
     active_tab = 'project_suites'

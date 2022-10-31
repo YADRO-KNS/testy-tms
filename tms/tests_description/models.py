@@ -57,7 +57,7 @@ class TestSuite(MPTTModel, BaseModel):
 class TestCase(BaseModel):
     name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    suite = models.ForeignKey(TestSuite, on_delete=models.CASCADE)
+    suite = models.ForeignKey(TestSuite, on_delete=models.CASCADE, related_name='test_cases')
     setup = models.TextField(blank=True)
     scenario = models.TextField()
     teardown = models.TextField(blank=True)

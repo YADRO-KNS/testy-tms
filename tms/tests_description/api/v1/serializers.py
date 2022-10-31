@@ -29,17 +29,10 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
+from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.serializers import ModelSerializer
 from tests_description.models import TestCase, TestSuite
-
-
-class TestSuiteSerializer(ModelSerializer):
-    url = HyperlinkedIdentityField(view_name='api:v1:testsuite-detail')
-
-    class Meta:
-        model = TestSuite
-        fields = ('id', 'name', 'parent', 'project', 'url')
 
 
 class TestCaseSerializer(ModelSerializer):
@@ -48,3 +41,23 @@ class TestCaseSerializer(ModelSerializer):
     class Meta:
         model = TestCase
         fields = ('id', 'name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'url')
+
+
+class TestSuiteTreeSerializer(ModelSerializer):
+    children = SerializerMethodField()
+
+    class Meta:
+        model = TestSuite
+        fields = ('id', 'name', 'level', 'children')
+
+    def get_children(self, value):
+        return self.__class__(value.get_children(), many=True).data
+
+
+class TestSuiteSerializer(ModelSerializer):
+    url = HyperlinkedIdentityField(view_name='api:v1:testsuite-detail')
+    test_cases = TestCaseSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = TestSuite
+        fields = ('id', 'name', 'parent', 'project', 'url', 'test_cases',)
