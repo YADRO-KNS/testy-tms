@@ -1,5 +1,3 @@
-import json
-
 from core.models import Project
 from django.views.generic import DetailView
 from views import Tab

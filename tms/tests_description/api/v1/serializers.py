@@ -63,7 +63,6 @@ class TestSuiteSerializer(ModelSerializer):
         fields = ('id', 'name', 'parent', 'project', 'url', 'test_cases',)
 
 
-
 def serializable_object(node):
     obj = {
         "text": node.name,

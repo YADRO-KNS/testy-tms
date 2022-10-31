@@ -29,9 +29,8 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
-from django.urls import path
-
 from core.api.v1 import views
+from django.urls import path
 from rest_framework import routers
 
 router = routers.SimpleRouter()

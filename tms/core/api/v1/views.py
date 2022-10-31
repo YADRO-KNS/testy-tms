@@ -29,13 +29,11 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
-from rest_framework.decorators import action
-from rest_framework.response import Response
-
 from core.api.v1.serializers import ProjectSerializer
 from core.selectors.projects import ProjectSelector
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-
 from tests_description.api.v1.serializers import TestSuiteTreeSerializer
 from tests_description.selectors.suites import TestSuiteSelector
 
