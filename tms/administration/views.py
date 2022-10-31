@@ -1,3 +1,4 @@
+from administration.forms import UserAddForm
 from core.forms import ProjectForm
 from core.mixins.views import ViewTabMixin
 from core.models import Project
@@ -14,7 +15,6 @@ from django.views.generic.edit import DeleteView
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin
 from forms import UserDetailsForm
-from administration.forms import UserAddForm
 from users.models import User
 from users.selectors.users import UserSelector
 from users.services.users import UserService

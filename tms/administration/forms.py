@@ -1,8 +1,8 @@
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, HTML, Submit
-from django.contrib.auth.forms import UserCreationForm
+from crispy_forms.layout import HTML, Div, Layout, Submit
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm
 
 UserModel = get_user_model()
 
