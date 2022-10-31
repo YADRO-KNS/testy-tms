@@ -167,7 +167,6 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'tms_static/dist/assets',
-    BASE_DIR / 'tms_static/',
 ]
 
 # Default primary key field type
