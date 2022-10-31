@@ -9744,6 +9744,31 @@ a {
   background-color: var(--bs-white);
   border-bottom-color: var(--bs-sky-200); }
 
+.tree .tree-node:hover {
+  cursor: pointer; }
+
+.tree .tree-node.open .tree-node--icon {
+  color: var(--bs-gray-600); }
+
+.tree .tree-node--icon {
+  color: var(--bs-gray-300);
+  line-height: 1.6rem; }
+  .tree .tree-node--icon:hover {
+    color: var(--bs-gray-600); }
+
+.tree .tree-node--text {
+  font-weight: 300;
+  color: var(--bs-gray-800); }
+  .tree .tree-node--text.active {
+    background-color: var(--bs-white);
+    color: var(--bs-blue); }
+  .tree .tree-node--text:hover {
+    background-color: var(--bs-white);
+    color: var(--bs-blue); }
+
+.btn-icon i {
+  cursor: pointer; }
+
 header {
   background-color: var(--bs-gray-800); }
   header .navbar-brand {
