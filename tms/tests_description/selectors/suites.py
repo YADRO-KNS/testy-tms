@@ -39,6 +39,3 @@ class TestSuiteSelector:
 
     def suite_project_root_list(self, project_id: int) -> QuerySet[TestSuite]:
         return QuerySet(model=TestSuite).filter(project=project_id, parent=None).order_by('name')
-
-    def suite(self, **kwargs) -> TestSuite:
-        return TestSuite.objects.get(**kwargs)
