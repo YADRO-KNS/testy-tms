@@ -67,11 +67,6 @@ class AdministrationUserProfileView(AdministrationBaseView, ViewTabMixin, Update
     def get_queryset(self):
         return UserSelector().user_list()
 
-    def get_context_data(self, **kwargs):
-        context = super(AdministrationUserProfileView, self).get_context_data(**kwargs)
-        context['form'] = UserDetailsForm(instance=User.objects.get(pk=self.kwargs['pk']))
-        return context
-
     def form_valid(self, form):
         UserService().user_update(user=self.get_object(), data=form.cleaned_data)
         messages.success(self.request, self.success_message)
