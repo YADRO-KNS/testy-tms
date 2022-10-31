@@ -29,18 +29,23 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from core.api.v1.serializers import ProjectSerializer
 from core.selectors.projects import ProjectSelector
-from core.services.projects import ProjectService
 from rest_framework.viewsets import ModelViewSet
+
+from tests_description.api.v1.serializers import TestSuiteTreeSerializer
+from tests_description.selectors.suites import TestSuiteSelector
 
 
 class ProjectViewSet(ModelViewSet):
     queryset = ProjectSelector.project_list()
     serializer_class = ProjectSerializer
 
-    def perform_create(self, serializer: ProjectSerializer):
-        serializer.instance = ProjectService().project_create(serializer.validated_data)
-
-    def perform_update(self, serializer: ProjectSerializer):
-        serializer.instance = ProjectService().project_update(serializer.instance, serializer.validated_data)
+    @action(detail=False)
+    def suites_by_project(self, request, pk):
+        qs = TestSuiteSelector().suite_project_root_list(pk)
+        serializer = TestSuiteTreeSerializer(qs, many=True, context={'request': request})
+        return Response(serializer.data)
