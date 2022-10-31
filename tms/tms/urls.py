@@ -45,17 +45,6 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 import views
-from administration.views import (
-    AdministrationNewUserView,
-    AdministrationOverviewView,
-    AdministrationProjectsCreateView,
-    AdministrationProjectsDeleteView,
-    AdministrationProjectsUpdateView,
-    AdministrationProjectsView,
-    AdministrationUserDeleteView,
-    AdministrationUserProfileView,
-    AdministrationUsersView,
-)
 from core.views import ProjectOverviewView, ProjectPlansView, ProjectSuitesView
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
@@ -85,24 +74,7 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
     # Administration
-    path('administration/', login_required(AdministrationOverviewView.as_view()), name='admin_overview'),
-
-    # Administration -> Project
-    path('administration/projects', login_required(AdministrationProjectsView.as_view()), name='admin_projects'),
-    path('administration/projects/add_project', login_required(AdministrationProjectsCreateView.as_view()),
-         name='admin_project_add'),
-    path('project/<int:pk>/edit', login_required(AdministrationProjectsUpdateView.as_view()),
-         name='admin_project_edit'),
-    path('administration/projects/<int:pk>/delete', login_required(AdministrationProjectsDeleteView.as_view()),
-         name='admin_project_delete'),
-
-    # Administration -> User
-    path('administration/users', login_required(AdministrationUsersView.as_view()), name='admin_users'),
-    path('administration/users/new_user', login_required(AdministrationNewUserView.as_view()), name='admin_new_user'),
-    path('administration/users/<int:pk>', login_required(AdministrationUserProfileView.as_view()),
-         name='admin_user_profile'),
-    path('administration/users/<int:pk>/delete', login_required(AdministrationUserDeleteView.as_view()),
-         name='admin_user_delete'),
+    path('administration/', include('administration.urls')),
 
     # Project
     path('project/<int:pk>', login_required(ProjectOverviewView.as_view()), name='project_details'),

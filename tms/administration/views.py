@@ -80,7 +80,7 @@ class AdministrationUserProfileView(AdministrationBaseView, ViewTabMixin, Update
         return reverse('admin_user_profile', kwargs={'pk': self.object.pk})
 
 
-class AdministrationNewUserView(AdministrationBaseView, ViewTabMixin, CreateView):
+class AdministrationUserAddView(AdministrationBaseView, ViewTabMixin, CreateView):
     model = User
     form_class = NewUserForm
     template_name = 'tms/administration/users/create.html'

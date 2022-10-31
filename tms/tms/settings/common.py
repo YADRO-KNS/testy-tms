@@ -64,14 +64,15 @@ INSTALLED_APPS = [
     'drf_yasg',
     'mptt',
     'rest_framework',
-    'core',
-    'users',
-    'tests_description',
-    'tests_representation',
     'simple_history',
     'crispy_forms',
     'crispy_bootstrap5',
-    'django_tables2'
+    'django_tables2',
+    'core',
+    'administration',
+    'users',
+    'tests_description',
+    'tests_representation',
 ]
 
 MIDDLEWARE = [
