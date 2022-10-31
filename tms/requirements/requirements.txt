@@ -22,8 +22,8 @@ django==3.2
     # via
     #   -r requirements.in
     #   crispy-bootstrap5
-    #   django-js-asset
     #   django-filter
+    #   django-js-asset
     #   django-tables2
     #   djangorestframework
     #   djangorestframework-simplejwt
