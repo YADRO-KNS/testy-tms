@@ -99,17 +99,6 @@ urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
 
-    # AJAX
-    path('suite_cases_list', login_required(TestSuiteView.as_view()), name='suite_cases_list'),
-    path('test_test_case', login_required(TestCaseView.as_view()), name='test_test_case'),
-
-    path('test_case_edit', login_required(TestCaseEditView.as_view()), name='test_case_edit'),
-    path('test_case_add', login_required(TestCaseCreateView.as_view()), name='test_case_add'),
-    path('test_case_delete', login_required(TestCaseDeleteView.as_view()), name='test_case_remove'),
-
-    path('test_suite_delete', login_required(TestSuiteDeleteView.as_view()), name='test_suite_delete'),
-    path('test_suite_create', login_required(TestSuiteCreateView.as_view()), name='test_suite_create'),
-
     # Swagger
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
