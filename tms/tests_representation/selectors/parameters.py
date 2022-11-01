@@ -36,3 +36,6 @@ from tests_representation.models import Parameter
 class ParameterSelector:
     def parameter_list(self) -> QuerySet[Parameter]:
         return Parameter.objects.all()
+
+    def parameters_by_project_id(self, project_id: int) -> QuerySet[Parameter]:
+        return QuerySet(model=Parameter).filter(project=project_id).order_by('group_name')
