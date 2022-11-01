@@ -131,9 +131,18 @@ class TestProjectEndpoints:
             'user': user.id,
             'comment': constants.TEST_COMMENT,
         }
-        api_client.send_request('api:v1:testresult-list', result_dict, HTTPStatus.CREATED, RequestType.POST)
-        expected_project = TestCase.objects.get(pk=test.case.id).project
+        api_client.send_request(
+            'api:v1:results-by-test',
+            result_dict,
+            HTTPStatus.CREATED,
+            RequestType.POST,
+            reverse_kwargs={'pk': test.id}
+        )
+
+        expected_project = TestCase.objects.all()[0].project
+
         result_project = TestResult.objects.all()[0].project
+
         assert test.project == expected_project, f'Test was not created with correct project, ' \
                                                  f'expected project: {expected_project}' \
                                                  f'actual project: {test.project}'
