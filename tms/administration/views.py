@@ -1,9 +1,9 @@
 from administration.forms import UserAddForm
-from core.forms import ProjectForm
+from core.forms import ProjectForm, ParameterForm
 from core.mixins.views import ViewTabMixin
 from core.models import Project
 from core.selectors.projects import ProjectSelector
-from core.tables import ProjectTable
+from core.tables import ProjectTable, ParameterTable
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.http import HttpResponseRedirect
@@ -15,6 +15,8 @@ from django.views.generic.edit import DeleteView
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin
 from forms import UserDetailsForm
+from tests_representation.models import Parameter
+from tests_representation.selectors.parameters import ParameterSelector
 from users.models import User
 from users.selectors.users import UserSelector
 from users.services.users import UserService
@@ -29,6 +31,7 @@ class AdministrationBaseView:
         Tab('Overview', 'admin_overview'),
         Tab('Projects', 'admin_projects'),
         Tab('Users', 'admin_users'),
+        Tab('Parameters', 'admin_parameters')
     ]
     success_message = CHANGES_SAVED_SUCCESSFULLY
 
@@ -92,11 +95,17 @@ class AdministrationProjectsCreateView(AdministrationBaseView, ViewTabMixin, Cre
     success_url = reverse_lazy('admin_projects')
 
 
-class AdministrationProjectsUpdateView(AdministrationBaseView, ViewTabMixin, UpdateView):
+class AdministrationProjectsUpdateView(AdministrationBaseView, SingleTableMixin, ViewTabMixin, UpdateView):
     model = Project
     form_class = ProjectForm
     template_name = 'tms/administration/project/edit.html'
     active_tab = 'admin_projects'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        qs = ParameterSelector().parameters_by_project_id(context.get('project').id)
+        context['parameters_table'] = ParameterTable(qs)
+        return context
 
     def get_success_url(self):
         return reverse('admin_projects')
@@ -116,3 +125,40 @@ class AdministrationUserDeleteView(AdministrationBaseView, ViewTabMixin, DeleteV
     active_tab = 'admin_users'
     success_url = reverse_lazy('admin_users')
     extra_context = {'href_name': 'admin_users'}
+
+
+class AdministrationParametersView(AdministrationBaseView, ViewTabMixin, SingleTableMixin, FilterView):
+    model = Parameter
+    table_class = ParameterTable
+    queryset = ParameterSelector().parameter_list()
+    template_name = 'tms/administration/parameter/index.html'
+    active_tab = 'admin_parameters'
+
+
+class AdministrationParameterDeleteView(AdministrationBaseView, ViewTabMixin, DeleteView):
+    model = Parameter
+    template_name = 'tms/administration/confirm_deletion.html'
+    active_tab = 'admin_projects'
+    success_url = reverse_lazy('admin_parameters')
+    extra_context = {'href_name': 'admin_parameters'}
+
+
+class AdministrationParametersUpdateView(AdministrationBaseView, ViewTabMixin, UpdateView):
+    model = Parameter
+    form_class = ParameterForm
+    template_name = 'tms/administration/parameter/edit.html'
+    active_tab = 'admin_parameters'
+
+    def get_success_url(self):
+        return reverse('admin_parameters')
+
+
+class AdministrationParametersCreateView(AdministrationBaseView, ViewTabMixin, CreateView):
+    model = Parameter
+    form_class = ParameterForm
+    template_name = 'tms/administration/parameter/create.html'
+    active_tab = 'admin_parameters'
+    success_url = reverse_lazy('admin_parameters')
+
+    def get_context_data(self, **kwargs):
+        print()
