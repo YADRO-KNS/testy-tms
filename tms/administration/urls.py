@@ -18,7 +18,7 @@ urlpatterns = [
          name='admin_project_delete'),
     path('projects/<int:project_id>/parameters/add',
          login_required(administration_views.AdministrationParametersCreateView.as_view()),
-         name='admin_new_parameter_project'),
+         name='admin_project_parameter_add'),
 
     # Administration -> Parameter
     path('parameters/', login_required(administration_views.AdministrationParametersView.as_view()),
@@ -30,8 +30,6 @@ urlpatterns = [
          name='admin_parameter_delete'),
     path('parameters/<int:pk>/edit', login_required(administration_views.AdministrationParametersUpdateView.as_view()),
          name='admin_parameter_edit'),
-    path('parameters/add/', login_required(administration_views.AdministrationParametersCreateView.as_view()),
-         name='admin_new_parameter'),
 
     # Administration -> User
     path('users/', login_required(administration_views.AdministrationUsersView.as_view()), name='admin_users'),
