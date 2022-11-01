@@ -46,7 +46,7 @@ class ParameterTable(tables.Table):
                                    verbose_name='', orderable=False, extra_context={'href_args': tables.A('pk')},
                                    attrs={'td': {'class': 'text-end'}})
 
-    group_name = tables.LinkColumn('admin_parameter_edit', args=[tables.A('pk')])
+    data = tables.LinkColumn('admin_parameter_edit', args=[tables.A('pk')])
 
     class Meta:
         model = Parameter

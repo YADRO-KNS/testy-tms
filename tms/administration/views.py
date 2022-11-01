@@ -7,7 +7,7 @@ from core.tables import ProjectTable, ParameterTable
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, UpdateView
@@ -160,5 +160,11 @@ class AdministrationParametersCreateView(AdministrationBaseView, ViewTabMixin, C
     active_tab = 'admin_parameters'
     success_url = reverse_lazy('admin_parameters')
 
-    def get_context_data(self, **kwargs):
-        print()
+    def get_form_kwargs(self):
+        kwargs = super(AdministrationParametersCreateView, self).get_form_kwargs()
+        kwargs['project_id'] = self.kwargs.get('project_id')
+        return kwargs
+
+
+# def redirect_view(request, pk):
+#     return redirect(reverse('admin_new_parameter_project', kwargs={'project_id': pk}))

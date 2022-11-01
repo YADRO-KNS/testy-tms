@@ -39,7 +39,7 @@
                     <div class="card-header"><h5>Parameters</h5></div>
                     <div class="card-body">
                         {% render_table parameters_table %}
-                        <a href="{% url 'admin_new_parameter' %}" class="btn btn-primary">
+                        <a href="{% url 'admin_new_parameter_project' object.pk %}">
                             <i class="bi bi-plus-circle pe-1"></i>
                             New parameter
                         </a>

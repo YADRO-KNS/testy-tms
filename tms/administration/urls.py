@@ -32,6 +32,9 @@ urlpatterns = [
          name='admin_parameter_edit'),
     path('parameters/add/', login_required(administration_views.AdministrationParametersCreateView.as_view()),
          name='admin_new_parameter'),
+    path('projects/<int:project_id>/parameters/add',
+         login_required(administration_views.AdministrationParametersCreateView.as_view()),
+         name='admin_new_parameter_project'),
 
     # Administration -> User
     path('users/', login_required(administration_views.AdministrationUsersView.as_view()), name='admin_users'),

@@ -54,6 +54,9 @@ class Parameter(BaseModel):
         default_related_name = 'parameters'
         unique_together = ('group_name', 'data',)
 
+    def __str__(self):
+        return f'{self.group_name}: {self.data}'
+
 
 class TestPlan(MPTTModel, BaseModel):
     name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
