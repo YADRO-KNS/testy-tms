@@ -16,15 +16,17 @@ urlpatterns = [
          name='admin_project_edit'),
     path('projects/<int:pk>/delete/', login_required(administration_views.AdministrationProjectsDeleteView.as_view()),
          name='admin_project_delete'),
-    path('projects/<int:project_id>/parameters/add',
+    #params
+    path('projects/<int:pk>/parameters/add/',
          login_required(administration_views.AdministrationParametersCreateView.as_view()),
-         name='admin_project_parameter_add'),
+         name='admin_parameter_from_project'),
 
     # Administration -> Parameter
+    path('/parameters/add/',
+         login_required(administration_views.AdministrationParametersCreateView.as_view()),
+         name='admin_parameter_add'),
     path('parameters/', login_required(administration_views.AdministrationParametersView.as_view()),
          name='admin_parameters'),
-    path('parameters/add/', login_required(administration_views.AdministrationParametersCreateView.as_view()),
-         name='admin_parameter_add'),
     path('parameters/<int:pk>/delete/',
          login_required(administration_views.AdministrationParameterDeleteView.as_view()),
          name='admin_parameter_delete'),

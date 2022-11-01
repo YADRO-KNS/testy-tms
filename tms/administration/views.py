@@ -17,6 +17,7 @@ from django_tables2 import SingleTableMixin
 from forms import UserDetailsForm
 from tests_representation.models import Parameter
 from tests_representation.selectors.parameters import ParameterSelector
+from tests_representation.services.parameters import ParameterService
 from users.models import User
 from users.selectors.users import UserSelector
 from users.services.users import UserService
@@ -31,7 +32,6 @@ class AdministrationBaseView:
         Tab('Overview', 'admin_overview'),
         Tab('Projects', 'admin_projects'),
         Tab('Users', 'admin_users'),
-        Tab('Parameters', 'admin_parameters')
     ]
     success_message = CHANGES_SAVED_SUCCESSFULLY
 
@@ -132,35 +132,47 @@ class AdministrationParametersView(AdministrationBaseView, ViewTabMixin, SingleT
     table_class = ParameterTable
     queryset = ParameterSelector().parameter_list()
     template_name = 'tms/administration/parameter/index.html'
-    active_tab = 'admin_parameters'
+    active_tab = None
 
 
 class AdministrationParameterDeleteView(AdministrationBaseView, ViewTabMixin, DeleteView):
     model = Parameter
     template_name = 'tms/administration/confirm_deletion.html'
-    active_tab = 'admin_projects'
-    success_url = reverse_lazy('admin_parameters')
-    extra_context = {'href_name': 'admin_parameters'}
+    active_tab = None
+    extra_context = {'href_name': 'admin_projects'}
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        success_url = reverse('admin_project_edit', kwargs={'pk': instance.project.id})
+        instance.delete()
+        return HttpResponseRedirect(success_url)
 
 
 class AdministrationParametersUpdateView(AdministrationBaseView, ViewTabMixin, UpdateView):
     model = Parameter
     form_class = ParameterForm
     template_name = 'tms/administration/parameter/edit.html'
-    active_tab = 'admin_parameters'
+    active_tab = None
 
-    def get_success_url(self):
-        return reverse('admin_parameters')
+    def form_valid(self, form):
+        ParameterService().parameter_update(parameter=self.get_object(), data=form.cleaned_data)
+        success_url = reverse('admin_project_edit', kwargs={'pk': form.cleaned_data.get('project').id})
+        return HttpResponseRedirect(success_url)
 
 
 class AdministrationParametersCreateView(AdministrationBaseView, ViewTabMixin, CreateView):
     model = Parameter
     form_class = ParameterForm
     template_name = 'tms/administration/parameter/create.html'
-    active_tab = 'admin_parameters'
-    success_url = reverse_lazy('admin_parameters')
+    active_tab = None
+
+    def form_valid(self, form):
+        ParameterService().parameter_create(data=form.cleaned_data)
+        return HttpResponseRedirect(
+            reverse('admin_project_edit', kwargs={'pk': form.cleaned_data.get('project').id})
+        )
 
     def get_form_kwargs(self):
         kwargs = super(AdministrationParametersCreateView, self).get_form_kwargs()
-        kwargs['project_id'] = self.kwargs.get('project_id')
+        kwargs['pk'] = self.kwargs.get('pk')
         return kwargs
