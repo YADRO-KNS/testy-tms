@@ -11,12 +11,10 @@ urlpatterns = [
     path('projects/add/',
          login_required(administration_views.AdministrationProjectsCreateView.as_view()),
          name='admin_project_add'),
-    path('projects/<int:pk>/edit', login_required(administration_views.AdministrationProjectsUpdateView.as_view()),
-         # TODO: ask if / is not missing at the end
+    path('projects/<int:pk>/edit/', login_required(administration_views.AdministrationProjectsUpdateView.as_view()),
          name='admin_project_edit'),
     path('projects/<int:pk>/delete/', login_required(administration_views.AdministrationProjectsDeleteView.as_view()),
          name='admin_project_delete'),
-    #params
     path('projects/<int:pk>/parameters/add/',
          login_required(administration_views.AdministrationParametersCreateView.as_view()),
          name='admin_parameter_from_project'),
@@ -30,7 +28,7 @@ urlpatterns = [
     path('parameters/<int:pk>/delete/',
          login_required(administration_views.AdministrationParameterDeleteView.as_view()),
          name='admin_parameter_delete'),
-    path('parameters/<int:pk>/edit', login_required(administration_views.AdministrationParametersUpdateView.as_view()),
+    path('parameters/<int:pk>/edit/', login_required(administration_views.AdministrationParametersUpdateView.as_view()),
          name='admin_parameter_edit'),
 
     # Administration -> User
