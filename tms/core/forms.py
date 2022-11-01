@@ -1,9 +1,6 @@
-from django.http import QueryDict
-
 from core.models import Project
 from crispy_forms.helper import FormHelper
 from django import forms
-
 from tests_representation.models import Parameter
 
 
