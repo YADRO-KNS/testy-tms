@@ -28,7 +28,7 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from core.models import Project
+from core.selectors.projects import ProjectSelector
 
 
 class ViewTabMixin:
@@ -42,5 +42,5 @@ class ViewTabMixin:
 class ParameterMixin:
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['project'] = Project.objects.get(pk=self.kwargs.get('pk'))
+        context['project'] = ProjectSelector.project_by_id(self.kwargs.get('pk'))
         return context
