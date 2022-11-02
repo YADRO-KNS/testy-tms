@@ -28,8 +28,8 @@ const TestRow = ({test}) => {
         <tr onClick={() => dispatch(showTestDetail(test))}  className={`${activeTest === test ? 'table-light' : ''}`}>
             <td>{test.case.name}</td>
             <td>
-                <Badge bg={getStatusBadgeColor(test.current_result)}>
-                    {test.current_result}
+                <Badge bg={getStatusBadgeColor(test.current_result || 'Untested')}>
+                    {test.current_result || 'Untested'}
                 </Badge>
             </td>
             <td className="text-end">
