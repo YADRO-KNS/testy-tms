@@ -64,33 +64,3 @@ class ParameterTable(tables.Table):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-# class ProjectParameterTable(tables.Table):
-#     remove = tables.TemplateColumn(template_code="""
-#                                    {% load static %}
-#                                    <span>
-#                                         <a href="{% url 'admin_parameter_delete_from_project' record.id %}">
-#                                             <i class="bi bi-trash" style="color: #000"></i>
-#                                         </a>
-#                                    </span>
-#                                    """,
-#                                    verbose_name='', orderable=False, extra_context={'href_args': tables.A('pk')},
-#                                    attrs={'td': {'class': 'text-end'}})
-#
-#     data = tables.LinkColumn('admin_parameter_edit', args=[tables.A('pk')])
-#
-#     class Meta:
-#         model = Parameter
-#         fields = ('group_name', 'data')
-#         attrs = {
-#             'class': 'table table-hover text-small',
-#             'thead': {
-#                 'class': 'border-bottom',
-#             },
-#             'tbody': {
-#                 'class': 'border-light fw-light h6',
-#             },
-#         }
-#
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
