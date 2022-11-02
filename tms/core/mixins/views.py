@@ -28,10 +28,19 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from core.models import Project
+
 
 class ViewTabMixin:
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['tabs'] = self.tabs
         context['active_tab'] = self.active_tab
+        return context
+
+
+class ParameterMixin:
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['project'] = Project.objects.get(pk=self.kwargs.get('pk'))
         return context

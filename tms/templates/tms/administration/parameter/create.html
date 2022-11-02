@@ -5,7 +5,8 @@
 
 {% block breadcrumb %}
     {{ block.super }}
-    <li class="breadcrumb-item" aria-current="page"><a class="fs-12 text-primary" href="{% url 'admin_parameters' %}">Parameters</a></li>
+    <li class="breadcrumb-item" aria-current="page"><a class="fs-12 text-primary" href="{% url 'admin_projects' %}">Projects</a></li>
+    <li class="breadcrumb-item active" aria-current="page"> <a class="fs-12 text-primary" href={% url 'admin_project_edit' pk=project.id %}>{{ project }}</a></li>
     <li class="breadcrumb-item active" aria-current="page">New parameter</li>
 {% endblock %}
 
@@ -22,7 +23,7 @@
     {% include "tms/components/alerts.html" with messages=messages %}
     <div class="card">
         <div class="card-body">
-            <form action="{% url 'admin_parameter_add' %}" method="post" class="m-0">
+            <form action="{% url 'admin_parameter_from_project' pk=project.id %}" method="post" class="m-0">
                 {% crispy form form.helper %}
                 <hr class="mt-0">
                 <button type="submit" class="btn btn-primary">Create parameter</button>

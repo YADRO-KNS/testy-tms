@@ -23,6 +23,9 @@ class ParameterForm(forms.ModelForm):
     class Meta:
         model = Parameter
         fields = ('project', 'group_name', 'data')
+        widgets = {
+            'project': forms.HiddenInput()
+        }
 
     def __init__(self, *args, pk=None, **kwargs):
         super().__init__(*args, **kwargs)

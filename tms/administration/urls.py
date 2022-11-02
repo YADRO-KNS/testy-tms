@@ -15,21 +15,19 @@ urlpatterns = [
          name='admin_project_edit'),
     path('projects/<int:pk>/delete/', login_required(administration_views.AdministrationProjectsDeleteView.as_view()),
          name='admin_project_delete'),
+
+    # Administration -> Parameters
+    path('projects/<int:pk>/parameters/', login_required(administration_views.AdministrationParametersView.as_view()),
+         name='admin_parameters'),
     path('projects/<int:pk>/parameters/add/',
          login_required(administration_views.AdministrationParametersCreateView.as_view()),
          name='admin_parameter_from_project'),
-
-    # Administration -> Parameter
-    path('/parameters/add/',
-         login_required(administration_views.AdministrationParametersCreateView.as_view()),
-         name='admin_parameter_add'),
-    path('parameters/', login_required(administration_views.AdministrationParametersView.as_view()),
-         name='admin_parameters'),
-    path('parameters/<int:pk>/delete/',
+    path('projects/<int:project_id>/edit/parameters/<int:pk>/edit/',
+         login_required(administration_views.AdministrationParametersUpdateView.as_view()),
+         name='admin_parameter_edit'),
+    path('projects/<int:parameter_id>/parameters/<int:pk>/delete/',
          login_required(administration_views.AdministrationParameterDeleteView.as_view()),
          name='admin_parameter_delete'),
-    path('parameters/<int:pk>/edit/', login_required(administration_views.AdministrationParametersUpdateView.as_view()),
-         name='admin_parameter_edit'),
 
     # Administration -> User
     path('users/', login_required(administration_views.AdministrationUsersView.as_view()), name='admin_users'),

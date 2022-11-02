@@ -38,15 +38,16 @@ class ParameterTable(tables.Table):
     remove = tables.TemplateColumn(template_code="""
                                    {% load static %}
                                    <span>
-                                        <a href="{% url 'admin_parameter_delete' record.id %}">
+                                        <a href="{% url 'admin_parameter_delete' record.project_id record.id %}">
                                             <i class="bi bi-trash" style="color: #000"></i>
                                         </a>
                                    </span>
                                    """,
-                                   verbose_name='', orderable=False, extra_context={'href_args': tables.A('pk')},
+                                   verbose_name='',
+                                   orderable=False,
+                                   extra_context={'href_args': [tables.A('project_id'), tables.A('pk')]},
                                    attrs={'td': {'class': 'text-end'}})
-
-    data = tables.LinkColumn('admin_parameter_edit', args=[tables.A('pk')])
+    data = tables.LinkColumn('admin_parameter_edit', args=[tables.A('project_id'), tables.A('pk')])
 
     class Meta:
         model = Parameter
