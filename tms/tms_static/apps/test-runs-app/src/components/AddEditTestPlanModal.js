@@ -3,7 +3,7 @@ import {Button, Modal} from "react-bootstrap";
 import {useDispatch, useSelector} from "react-redux";
 import {
     fetchModalTestPlans,
-    fetchParameters,
+    fetchParameters, fetchTestPlans,
     fetchTestSuites,
     hideAddEditTestPlanModal
 } from "../actions/testplans";
@@ -80,7 +80,7 @@ const AddEditTestPlanModal = () => {
         if (response.status === 201) {
             dispatch(hideAddEditTestPlanModal())
             clearForm()
-            dispatch(fetchTestPlans()) // overwrite after merge with list test plans
+            dispatch(fetchTestPlans())
         } else {
             setErrors(response.data)
             console.log('Error: ', response)
