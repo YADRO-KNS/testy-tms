@@ -1,20 +1,19 @@
-import React, {useState} from "react";
-import {Col, Row} from "react-bootstrap";
-import TestDetail from "./TestDetail";
-import TestPlanDetail from "./TestPlanDetail";
+import React from "react";
+import ContentBlock from "./ContentBlock";
+import TreeTestPlans from "./TreeTestPlans";
+import NotSelectedTestPlan from "./ContentBlock";
 
 const TestPlanContent = () => {
-    const [isShowTestPlanDetail, setIsShowTestPlanDetail] = useState(false)
-    const [isShowTestDetail, setIsShowTestDetail] = useState(false)
 
     return (
-        <Row>
-            <Col>
-                <p>TreeView Test Plans</p>
-            </Col>
-            {isShowTestPlanDetail ? <Col><TestPlanDetail/></Col> : ""}
-            {isShowTestDetail ? <Col><TestDetail/></Col> : ""}
-        </Row>
+        <div className="row">
+            <div className="col-3">
+                <TreeTestPlans/>
+            </div>
+            <div className="col-9">
+                <ContentBlock/>
+            </div>
+        </div>
     )
 }
 

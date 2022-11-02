@@ -1,8 +1,9 @@
 import React from "react";
+import AddTestPlanBtn from "./AddTestPlanBtn";
 
 const TestPlanActions = () => {
     return (
-        <p>TestPlanActions</p>
+        <AddTestPlanBtn/>
     )
 }
 

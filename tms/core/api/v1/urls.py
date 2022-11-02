@@ -50,10 +50,15 @@ suites_by_project = views.ProjectViewSet.as_view({
     'get': 'suites_by_project'
 })
 
+testplans_by_project = views.ProjectViewSet.as_view({
+    'get': 'testplans_by_project'
+})
+
 urlpatterns = [
     path('projects/', project_list, name='project-list'),
     path('projects/<int:pk>/', project_detail, name='project-detail'),
     path('projects/<int:pk>/suites/', suites_by_project, name='project-suites'),
+    path('projects/<int:pk>/testplans/', testplans_by_project, name='project-testplans'),
 ]
 
 urlpatterns += router.urls

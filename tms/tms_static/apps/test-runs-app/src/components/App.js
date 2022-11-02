@@ -6,12 +6,9 @@ import TestPlanContent from "./TestPlanContent";
 const App = ({store}) => {
     return(
         <Provider store={store}>
-            <div className="p-3">
-                <div className=" p-3 bg-white">
-                    <TestPlanActions/>
-                    <hr/>
-                    <TestPlanContent/>
-                </div>
+            <div className="p-4">
+                <TestPlanActions/>
+                <TestPlanContent/>
             </div>
         </Provider>
     )
