@@ -41,12 +41,13 @@ from tests.error_messages import BOOL_VALUE_ERR_MSG, MODEL_VALUE_ERR_MSG, NOT_NU
 class TestTestModel:
     relation_name = Test._meta.label_lower.replace('.', '_')
 
-    @pytest.mark.parametrize('parameter_name', ['case', 'plan', 'user', 'is_archive'])
+    @pytest.mark.parametrize('parameter_name', ['case', 'plan', 'is_archive'])
     def test_not_null_constraint(self, parameter_name, test_factory):
         foreign_keys = ['case', 'plan', 'user']
         with pytest.raises(IntegrityError) as err:
             test_factory(**{parameter_name: None})
         parameter_name = f'{parameter_name}_id' if parameter_name in foreign_keys else parameter_name
+
         assert NOT_NULL_ERR_MSG.format(
             relation=self.relation_name, column=parameter_name
         ) in str(err.value), 'Expected error message was not found.'

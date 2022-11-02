@@ -49,7 +49,9 @@ class TestSuiteEndpoints:
     def test_list(self, api_client, authorized_superuser, test_suite_factory):
         expected_instances = []
         for _ in range(constants.NUMBER_OF_OBJECTS_TO_CREATE):
-            expected_instances.append(model_to_dict(test_suite_factory()))
+            expected_dict = model_to_dict(test_suite_factory())
+            expected_dict['test_cases'] = []
+            expected_instances.append(expected_dict)
 
         response = api_client.send_request(self.view_name_list)
         for instance_dict in json.loads(response.content):
@@ -58,6 +60,7 @@ class TestSuiteEndpoints:
 
     def test_retrieve(self, api_client, authorized_superuser, test_suite):
         expected_dict = model_to_dict(test_suite)
+        expected_dict['test_cases'] = []
         response = api_client.send_request(self.view_name_detail, reverse_kwargs={'pk': test_suite.pk})
         actual_dict = json.loads(response.content)
         actual_dict.pop('url')
