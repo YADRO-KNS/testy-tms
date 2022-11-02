@@ -29,8 +29,11 @@ class ParameterForm(forms.ModelForm):
 
     def __init__(self, *args, pk=None, **kwargs):
         super().__init__(*args, **kwargs)
-        if pk:
-            self.initial = {'project': pk}
+        self.initial = {
+            'project': pk if pk else self.instance.project,
+            'group_name': self.instance.group_name,
+            'data': self.instance.data
+        }
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal'
         self.helper.label_class = 'col-3'
