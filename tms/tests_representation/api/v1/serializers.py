@@ -28,7 +28,7 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
+from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
 from rest_framework.serializers import ModelSerializer
 from tests_description.selectors.cases import TestCaseSelector
@@ -75,6 +75,17 @@ class TestPlanOutputSerializer(ModelSerializer):
             'id', 'name', 'parent', 'parameters', 'started_at', 'due_date', 'finished_at', 'is_archive',
             'url', 'child_test_plans', 'tests', 'project',
         )
+
+
+class TestPlanTreeSerializer(ModelSerializer):
+    children = SerializerMethodField()
+
+    class Meta:
+        model = TestPlan
+        fields = ('id', 'name', 'level', 'children')
+
+    def get_children(self, value):
+        return self.__class__(value.get_children(), many=True).data
 
 
 class TestSerializer(ModelSerializer):
