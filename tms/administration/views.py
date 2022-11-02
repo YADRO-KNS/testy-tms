@@ -129,14 +129,6 @@ class AdministrationUserDeleteView(AdministrationBaseView, ViewTabMixin, DeleteV
     extra_context = {'href_name': 'admin_users'}
 
 
-class AdministrationParametersView(AdministrationBaseView, ParameterMixin, ViewTabMixin, SingleTableMixin, FilterView):
-    model = Parameter
-    table_class = ParameterTable
-    queryset = ParameterSelector().parameter_list()
-    template_name = 'tms/administration/parameter/index.html'
-    active_tab = 'admin_projects'
-
-
 class AdministrationParameterDeleteView(AdministrationBaseView, ViewTabMixin, ParameterMixin, DeleteView):
     model = Parameter
     template_name = 'tms/administration/confirm_deletion.html'
