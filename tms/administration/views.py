@@ -165,11 +165,6 @@ class AdministrationParametersUpdateView(AdministrationBaseView, ViewTabMixin, P
         messages.success(self.request, _('Parameter was updated successfully!'))
         return HttpResponseRedirect(success_url)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['project'] = ProjectSelector.project_by_id(self.kwargs.get('project_id'))
-        return context
-
 
 class AdministrationParametersCreateView(AdministrationBaseView, ViewTabMixin, ParameterMixin, CreateView):
     model = Parameter
