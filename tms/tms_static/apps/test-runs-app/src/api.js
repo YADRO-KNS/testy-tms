@@ -67,3 +67,19 @@ export const postTestPlan = async (data) => {
         return error.response
     });
 }
+
+export const deleteTestPlan = async (test_plan_id) => {
+    return await axios.delete(
+        getTestPlanURL(test_plan_id),
+        {
+            headers: {
+                'X-CSRFToken': CSRF_TOKEN,
+                'Content-Type': 'application/json'
+            }
+        }
+    ).then(response => {
+        return response
+    }).catch(error => {
+        return error.response
+    });
+}
