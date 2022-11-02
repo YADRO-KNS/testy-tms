@@ -94,10 +94,17 @@ class TestResultSerializer(ModelSerializer):
 
 class TestPlanTreeSerializer(ModelSerializer):
     children = SerializerMethodField()
+    title = SerializerMethodField()
 
     class Meta:
         model = TestPlan
-        fields = ('id', 'name', 'level', 'children')
+        fields = ('id', 'name', 'level', 'children', 'title')
+
+    def get_title(self, instance):
+        if instance.parameters is None:
+            return instance.name
+        parameters = ParameterSelector().parameter_name_list_by_ids(instance.parameters)
+        return '{0} [{1}]'.format(instance.name, ', '.join(parameters))
 
     def get_children(self, value):
         return self.__class__(value.get_children(), many=True).data
@@ -146,10 +153,17 @@ class TestPlanTestSerializer(ModelSerializer):
 class TestPlanOutputSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:testplan-detail')
     tests = TestPlanTestSerializer(many=True, read_only=True)
+    title = SerializerMethodField()
 
     class Meta:
         model = TestPlan
         fields = (
             'id', 'name', 'parent', 'parameters', 'started_at', 'due_date', 'finished_at', 'is_archive',
-            'tests', 'project', 'child_test_plans', 'url'
+            'tests', 'project', 'child_test_plans', 'url', 'title'
         )
+
+    def get_title(self, instance):
+        if instance.parameters is None:
+            return instance.name
+        parameters = ParameterSelector().parameter_name_list_by_ids(instance.parameters)
+        return '{0} [{1}]'.format(instance.name, ', '.join(parameters))

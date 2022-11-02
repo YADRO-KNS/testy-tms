@@ -31,7 +31,7 @@ const TreeNode = ({testplan, treetestplans}) => {
                 <span
                     onClick={handleClick}
                     className={"tree-node--text fs-6 p-2 flex-fill" + (testplan.children.length ? '' : ' ps-4 ') + (testplan.id === treetestplans.active ? ' active ' : '')}>
-                    {testplan.name}
+                    {testplan.title}
                 </span>
             </div>
             {isVisible && testplan.children.map(testplan => <ConnectedTreeNode testplan={testplan} key={testplan.id}/>)}

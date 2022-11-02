@@ -34,7 +34,7 @@ const TestPlanDetail = ({testplan}) => {
 
     return (
         <Fragment>
-            <p className={"fs-4"}>{testplan.name}</p>
+            <p className={"fs-4"}>{testplan.title}</p>
             <div>
                 <button className="btn btn-outline-secondary me-2">
                     <i className="bi bi-pencil-square me-2"></i>Change
