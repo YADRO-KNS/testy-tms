@@ -15,7 +15,7 @@ const TreeTestPlans = ({treetestplans, fetchTestPlans}) => {
                         ? <p>Загрузка...</p>
                         : treetestplans.testplans && treetestplans.testplans.length
                             ? treetestplans.testplans.map(testplan => <ConnectedTreeNode testplan={testplan} key={testplan.id}/>)
-                            : <p>{treetestplans.testplans[0].name}</p>
+                            : <p>No test plans</p>
             }
             </div>
         </div>
