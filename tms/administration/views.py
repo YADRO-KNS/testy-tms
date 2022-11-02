@@ -1,7 +1,6 @@
-from django.utils.translation import gettext_lazy as _
 from administration.forms import UserAddForm
 from core.forms import ParameterForm, ProjectForm
-from core.mixins.views import ViewTabMixin, ParameterMixin
+from core.mixins.views import ParameterMixin, ViewTabMixin
 from core.models import Project
 from core.selectors.projects import ProjectSelector
 from core.tables import ParameterTable, ProjectTable
@@ -10,6 +9,7 @@ from django.contrib.auth import get_user_model
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import CreateView, UpdateView
 from django.views.generic.edit import DeleteView
