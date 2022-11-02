@@ -23,12 +23,12 @@
     {% include "tms/components/alerts.html" with messages=messages %}
     <div class="card">
         <div class="card-body">
-            <form action="{% url 'admin_parameter_from_project' pk=project.id %}" method="post" class="m-0">
+            <form action="{% url 'admin_parameter_from_project' project_id=project.id %}" method="post" class="m-0">
                 {% crispy form form.helper %}
                 <hr class="mt-0">
                 <button type="submit" class="btn btn-primary">Create parameter</button>
             </form>
-        <div>
+        </div>
     </div>
 </div>
 {% endblock %}

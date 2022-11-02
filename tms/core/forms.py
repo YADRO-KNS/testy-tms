@@ -22,18 +22,10 @@ class ProjectForm(forms.ModelForm):
 class ParameterForm(forms.ModelForm):
     class Meta:
         model = Parameter
-        fields = ('project', 'group_name', 'data')
-        widgets = {
-            'project': forms.HiddenInput()
-        }
+        fields = ('group_name', 'data',)
 
-    def __init__(self, *args, pk=None, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.initial = {
-            'project': pk if pk else self.instance.project,
-            'group_name': self.instance.group_name,
-            'data': self.instance.data
-        }
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal'
         self.helper.label_class = 'col-3'
