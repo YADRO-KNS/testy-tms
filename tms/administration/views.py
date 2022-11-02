@@ -160,7 +160,7 @@ class AdministrationParametersUpdateView(AdministrationBaseView, ViewTabMixin, U
     def form_valid(self, form):
         ParameterService().parameter_update(parameter=self.get_object(), data=form.cleaned_data)
         success_url = reverse('admin_project_edit', kwargs={'pk': self.kwargs.get('project_id')})
-        messages.success(self.request, _('Parameter was created successfully!'))
+        messages.success(self.request, _('Parameter was updated successfully!'))
         return HttpResponseRedirect(success_url)
 
     def get_context_data(self, **kwargs):
@@ -182,6 +182,7 @@ class AdministrationParametersCreateView(AdministrationBaseView, ParameterMixin,
 
     def form_valid(self, form):
         ParameterService().parameter_create(data=form.cleaned_data)
+        messages.success(self.request, _('Parameter was created successfully!'))
         return HttpResponseRedirect(
             reverse('admin_project_edit', kwargs={'pk': form.cleaned_data.get('project').id})
         )
