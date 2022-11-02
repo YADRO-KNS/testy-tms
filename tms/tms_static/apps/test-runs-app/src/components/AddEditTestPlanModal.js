@@ -1,7 +1,12 @@
 import React, {useEffect, useState} from "react";
 import {Button, Modal} from "react-bootstrap";
 import {useDispatch, useSelector} from "react-redux";
-import {fetchParameters, fetchTestPlans, fetchTestSuites, hideAddEditTestPlanModal} from "../actions/testplans";
+import {
+    fetchModalTestPlans,
+    fetchParameters,
+    fetchTestSuites,
+    hideAddEditTestPlanModal
+} from "../actions/testplans";
 import {useFieldArray, useForm, Controller} from "react-hook-form";
 import CheckboxTree from 'react-checkbox-tree';
 import "react-checkbox-tree/lib/react-checkbox-tree.css"
@@ -48,7 +53,7 @@ const AddEditTestPlanModal = () => {
     }
 
     useEffect(() => {
-        dispatch(fetchTestPlans())
+        dispatch(fetchModalTestPlans())
         dispatch(fetchTestSuites())
         dispatch(fetchParameters())
     }, [])

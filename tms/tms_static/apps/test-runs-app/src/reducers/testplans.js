@@ -1,9 +1,9 @@
 import {
     FETCH_PARAMETERS_ERROR,
     FETCH_PARAMETERS_PENDING, FETCH_PARAMETERS_SUCCESS,
-    FETCH_TEST_PLANS_ERROR,
-    FETCH_TEST_PLANS_PENDING,
-    FETCH_TEST_PLANS_SUCCESS,
+    FETCH_MODAL_TEST_PLANS_PENDING,
+    FETCH_MODAL_TEST_PLANS_ERROR,
+    FETCH_MODAL_TEST_PLANS_SUCCESS,
     FETCH_TEST_SUITES_ERROR,
     FETCH_TEST_SUITES_PENDING,
     FETCH_TEST_SUITES_SUCCESS,
@@ -117,7 +117,7 @@ const testplans = (state = initialState, action) => {
                     }
                 }
             }
-        case FETCH_TEST_PLANS_PENDING:
+        case FETCH_MODAL_TEST_PLANS_PENDING:
             return {
                 ...state,
                 modals: {
@@ -133,7 +133,7 @@ const testplans = (state = initialState, action) => {
                     }
                 }
             }
-        case FETCH_TEST_PLANS_ERROR:
+        case FETCH_MODAL_TEST_PLANS_ERROR:
             return {
                 ...state,
                 modals: {
@@ -148,7 +148,7 @@ const testplans = (state = initialState, action) => {
                     }
                 }
             }
-        case FETCH_TEST_PLANS_SUCCESS:
+        case FETCH_MODAL_TEST_PLANS_SUCCESS:
                         return {
                 ...state,
                 modals: {

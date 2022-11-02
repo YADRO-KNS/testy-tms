@@ -17,41 +17,41 @@ export const hideAddEditTestPlanModal = () => {
     }
 }
 
-export const FETCH_TEST_PLANS_PENDING = 'FETCH_TEST_PLANS_PENDING'
-export const FETCH_TEST_PLANS_ERROR = 'FETCH_TEST_PLANS_ERROR'
-export const FETCH_TEST_PLANS_SUCCESS = 'FETCH_TEST_PLANS_SUCCESS'
+export const FETCH_MODAL_TEST_PLANS_PENDING = 'FETCH_MODAL_TEST_PLANS_PENDING'
+export const FETCH_MODAL_TEST_PLANS_ERROR = 'FETCH_MODAL_TEST_PLANS_ERROR'
+export const FETCH_MODAL_TEST_PLANS_SUCCESS = 'FETCH_MODAL_TEST_PLANS_SUCCESS'
 
-export const fetchTestPlansPending = () => {
+export const fetchModalTestPlansPending = () => {
     return {
-        type: FETCH_TEST_PLANS_PENDING
+        type: FETCH_MODAL_TEST_PLANS_PENDING
     }
 }
 
-export const fetchTestPlansError = (error) => {
+export const fetchModalTestPlansError = (error) => {
     return {
-        type: FETCH_TEST_PLANS_ERROR,
+        type: FETCH_MODAL_TEST_PLANS_ERROR,
         error: error
     }
 }
 
-export const fetchTestPlansSuccess = (payload) => {
+export const fetchModalTestPlansSuccess = (payload) => {
     return {
-        type: FETCH_TEST_PLANS_SUCCESS,
+        type: FETCH_MODAL_TEST_PLANS_ERROR,
         payload: payload
     }
 }
 
-export const fetchTestPlans = () => {
+export const fetchModalTestPlans = () => {
     return dispatch => {
-        dispatch(fetchTestPlansPending())
+        dispatch(fetchModalTestPlansPending())
 
         axios.get(
             getProjectTestPlans(PROJECT_ID),
         ).then(response => {
-            dispatch(fetchTestPlansSuccess(response.data))
+            dispatch(fetchModalTestPlansSuccess(response.data))
         }).catch(thrown => {
             console.log('Error fetch test plans', thrown)
-            dispatch(fetchTestPlansError(thrown))
+            dispatch(fetchModalTestPlansError(thrown))
         });
     }
 }
