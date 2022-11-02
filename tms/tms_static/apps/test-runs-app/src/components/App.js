@@ -2,17 +2,18 @@ import React from "react";
 import {Provider} from "react-redux";
 import TestPlanActions from "./TestPlanActions";
 import TestPlanContent from "./TestPlanContent";
+import AddEditTestPlanModal from "./AddEditTestPlanModal";
 
 const App = ({store}) => {
-    return(
+    return (
         <Provider store={store}>
-            <div className="p-3">
+            <div className="p-4">
+                <TestPlanActions/>
                 <div className=" p-3 bg-white">
-                    <TestPlanActions/>
-                    <hr/>
                     <TestPlanContent/>
                 </div>
             </div>
+            <AddEditTestPlanModal/>
         </Provider>
     )
 }
