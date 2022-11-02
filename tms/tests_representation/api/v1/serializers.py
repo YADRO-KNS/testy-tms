@@ -127,7 +127,6 @@ class TestPlanTestResultSerializer(ModelSerializer):
 
 class TestPlanTestSerializer(ModelSerializer):
     case = TestCaseSerializer()
-    user = SerializerMethodField()
     current_result = SerializerMethodField()
     test_results = TestPlanTestResultSerializer(many=True, read_only=True)
 
@@ -136,11 +135,8 @@ class TestPlanTestSerializer(ModelSerializer):
 
     class Meta:
         model = Test
-        fields = ('id', 'case', 'plan', 'user', 'is_archive', 'created_at', 'updated_at', 'test_results',
+        fields = ('id', 'case', 'plan', 'is_archive', 'created_at', 'updated_at', 'test_results',
                   'current_result')
-
-    def get_user(self, instance):
-        return instance.user.username
 
     def get_current_result(self, instance):
         if instance.test_results.last():
