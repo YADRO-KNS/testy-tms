@@ -8,7 +8,6 @@ const App = ({store}) => {
     return (
         <Provider store={store}>
             <div className="p-4">
-                <TestPlanActions/>
                 <TestPlanContent/>
             </div>
             <AddEditTestPlanModal/>
