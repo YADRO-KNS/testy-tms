@@ -45,10 +45,11 @@ class TestCaseSerializer(ModelSerializer):
 
 class TestSuiteTreeSerializer(ModelSerializer):
     children = SerializerMethodField()
+    test_cases = TestCaseSerializer(many=True, read_only=True)
 
     class Meta:
         model = TestSuite
-        fields = ('id', 'name', 'level', 'children')
+        fields = ('id', 'name', 'level', 'children', 'test_cases')
 
     def get_children(self, value):
         return self.__class__(value.get_children(), many=True).data
