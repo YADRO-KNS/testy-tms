@@ -36,7 +36,7 @@ export const fetchModalTestPlansError = (error) => {
 
 export const fetchModalTestPlansSuccess = (payload) => {
     return {
-        type: FETCH_MODAL_TEST_PLANS_ERROR,
+        type: FETCH_MODAL_TEST_PLANS_SUCCESS,
         payload: payload
     }
 }
