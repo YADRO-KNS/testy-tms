@@ -20,6 +20,7 @@
     {{ block.super }}
     <script type="text/javascript">window.CSRF_TOKEN = "{{ csrf_token }}";</script>
     <script type="text/javascript">window.PROJECT_ID = "{{ object.id }}";</script>
+    <script type="text/javascript">window.USER_ID = "{{ request.user.id }}";</script>
     <script src="{% static 'js/apps/test-runs-app.js' %}"></script>
 {% endblock %}
 

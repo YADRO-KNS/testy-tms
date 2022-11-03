@@ -45,6 +45,7 @@ from tests_representation.api.v1.serializers import (
     TestResultSerializer,
     TestSerializer,
 )
+from tests_representation.choices import TestStatuses
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.results import TestResultSelector
 from tests_representation.selectors.testplan import TestPlanSelector
@@ -156,3 +157,10 @@ class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixi
 
     def perform_update(self, serializer: TestResultSerializer):
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
+
+
+class TestResultChoicesView(APIView):
+
+    def get(self, request):
+        choices = [{'id': status_id, 'status': status_name} for status_id, status_name in TestStatuses.choices]
+        return Response(choices, status=status.HTTP_200_OK)

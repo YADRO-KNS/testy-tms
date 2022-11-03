@@ -8,10 +8,18 @@ import {
     FETCH_TEST_SUITES_PENDING,
     FETCH_TEST_SUITES_SUCCESS,
     HIDE_ADD_EDIT_TEST_PLAN_MODAL,
-    SHOW_ADD_EDIT_TEST_PLAN_MODAL
+    SHOW_ADD_EDIT_TEST_PLAN_MODAL,
+    FETCH_TEST_PLANS_PENDING,
+    FETCH_TEST_PLANS_SUCCESS,
+    FETCH_TEST_PLANS_ERROR,
+    SET_ACTIVE_TEST_PLAN
 } from "../actions/testplans";
 
 const initialState = {
+    pending: true,
+    testplans: null,
+    error: null,
+    active: null,
     modals: {
         addEditModal: {
             isShow: false,
@@ -149,7 +157,7 @@ const testplans = (state = initialState, action) => {
                 }
             }
         case FETCH_MODAL_TEST_PLANS_SUCCESS:
-                        return {
+            return {
                 ...state,
                 modals: {
                     ...state.modals,
@@ -254,6 +262,30 @@ const testplans = (state = initialState, action) => {
                         }
                     }
                 }
+            }
+        case SET_ACTIVE_TEST_PLAN:
+            return {
+                ...state,
+                active: action.test_plan_id
+            }
+        case FETCH_TEST_PLANS_PENDING:
+            return {
+                ...state,
+                pending: true,
+                error: null,
+            }
+        case FETCH_TEST_PLANS_SUCCESS:
+            return {
+                ...state,
+                pending: false,
+                error: null,
+                testplans: action.payload
+            }
+        case FETCH_TEST_PLANS_ERROR:
+            return {
+                ...state,
+                pending: false,
+                error: action.error
             }
         default:
             return state;
