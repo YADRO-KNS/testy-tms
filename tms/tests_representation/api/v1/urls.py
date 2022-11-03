@@ -32,7 +32,7 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 from tests_representation.api.v1 import views
-from tests_representation.api.v1.views import TestPLanDetailView, TestPLanListView
+from tests_representation.api.v1.views import TestPLanDetailView, TestPLanListView, TestResultChoicesView
 
 router = SimpleRouter()
 router.register('parameters', views.ParameterViewSet)
@@ -71,5 +71,6 @@ urlpatterns = [
     path('results/', result_list, name='result-list'),
     path('results/<int>:pk/', result_detail, name='result-detail'),
 
+    path('test-results/', TestResultChoicesView.as_view(), name='test-results'),
 ]
 urlpatterns += router.urls

@@ -164,7 +164,7 @@ class TestPlanEndpoints:
         response = api_client.send_request(self.view_name_list, testplan_dict, HTTPStatus.CREATED, RequestType.POST)
         test_plans = json.loads(response.content)
         test_ids = copy.deepcopy(test_plans[0].get('tests'))
-        result_ids = [test_result_factory(test_id=test_ids[0]).id for _ in range(3)]
+        result_ids = [test_result_factory(test_id=test_ids[0]['id']).id for _ in range(3)]
         expected_number_of_tests = Test.objects.count()
         update_dict = {
             'test_cases': case_ids
@@ -178,9 +178,9 @@ class TestPlanEndpoints:
         )
         plan = json.loads(response.content)
         actual_results = []
-        for res in TestResult.objects.filter(test=plan.get('tests')[0]):
+        for res in TestResult.objects.filter(test=plan.get('tests')[0]['id']):
             actual_results.append(res.id)
-        assert actual_results == result_ids, f'Results changed for test with id: {plan.get("tests")[0]}'
+        assert actual_results == result_ids, f'Results changed for test with id: {plan.get("tests")[0]["id"]}'
         assert Test.objects.count() == expected_number_of_tests, 'After update number of tests should not change'
 
     def test_delete(self, api_client, authorized_superuser, test_plan):
