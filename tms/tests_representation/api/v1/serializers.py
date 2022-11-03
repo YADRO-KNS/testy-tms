@@ -112,20 +112,16 @@ class TestPlanTreeSerializer(ModelSerializer):
 
 class TestPlanTestResultSerializer(ModelSerializer):
     status = SerializerMethodField()
-    user = SerializerMethodField()
     updated_at = SerializerMethodField()
 
     class Meta:
         model = TestResult
         fields = (
-            'id', 'status', 'user', 'comment', 'test_case_version', 'created_at', 'updated_at'
+            'id', 'status', 'comment', 'test_case_version', 'created_at', 'updated_at'
         )
 
     def get_status(self, instance):
         return instance.get_status_display()
-
-    def get_user(self, instance):
-        return instance.user.username
 
     def get_updated_at(self, instance):
         return instance.updated_at.strftime("%d.%m.%Y %H:%M:%S")
