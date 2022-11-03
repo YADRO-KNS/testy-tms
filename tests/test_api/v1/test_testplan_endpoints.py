@@ -114,8 +114,7 @@ class TestPlanEndpoints:
         assert Test.objects.count() == number_of_tests - 1, 'More then one test was deleted by updating'
         test_ids = []
         for plan in test_plans:
-            tests_from_plan = copy.deepcopy(plan.get('tests'))
-            test_ids.extend(tests_from_plan)
+            test_ids.extend(test.get('id')for test in plan.get('tests'))
         assert len(set(test_ids)) == len(test_ids), 'Test ids from testplans were not unique.'
 
     @pytest.mark.parametrize(
