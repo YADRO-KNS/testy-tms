@@ -51,6 +51,23 @@ export const postTestResult = async (data) => {
     });
 }
 
+export const patchTestPlan = async (testPlanId, data) => {
+    return await axios.patch(
+        getTestPlanURL(testPlanId),
+        JSON.stringify(data),
+        {
+            headers: {
+                'X-CSRFToken': CSRF_TOKEN,
+                'Content-Type': 'application/json'
+            }
+        }
+    ).then(response => {
+        return response
+    }).catch(error => {
+        return error.response
+    });
+}
+
 export const postTestPlan = async (data) => {
     return await axios.post(
         postTestPlanURL(),

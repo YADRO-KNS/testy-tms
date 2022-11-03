@@ -2,7 +2,7 @@ import React, {Fragment, useEffect, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {getTestPlan} from "../actions/testplaninfo";
 import {TestList} from "./TestList"
-import {setActiveTestPlan, fetchTestPlans} from "../actions/testplans";
+import {setActiveTestPlan, fetchTestPlans, showAddEditTestPlanModal} from "../actions/testplans";
 import {deleteTestPlan} from "../api";
 import DeleteConfirmation from "./shared/DeleteConfirmation";
 
@@ -36,7 +36,7 @@ const TestPlanDetail = ({testplan}) => {
         <Fragment>
             <p className={"fs-4"}>{testplan.title}</p>
             <div>
-                <button className="btn btn-outline-secondary me-2">
+                <button className="btn btn-outline-secondary me-2" onClick={() => dispatch(showAddEditTestPlanModal(true))}>
                     <i className="bi bi-pencil-square me-2"></i>Change
                 </button>
                 <button className="btn btn-outline-danger" onClick={() => showDeleteModal()}>

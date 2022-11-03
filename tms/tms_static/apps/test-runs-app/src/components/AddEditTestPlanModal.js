@@ -10,11 +10,12 @@ import {
 import {useFieldArray, useForm, Controller} from "react-hook-form";
 import CheckboxTree from 'react-checkbox-tree';
 import "react-checkbox-tree/lib/react-checkbox-tree.css"
-import {postTestPlan} from "../api";
+import {patchTestPlan, postTestPlan} from "../api";
 import AlertError from "./AlertError";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.min.css"
 import FieldErrors from "./FieldErrors";
+import {getTestPlan} from "../actions/testplaninfo";
 
 const AddEditTestPlanModal = () => {
     const [checkedTestCases, setCheckedTestCases] = useState([])
@@ -33,8 +34,9 @@ const AddEditTestPlanModal = () => {
     const isEditMode = addEditModalState.isEditMode
     const parameters = addEditModalState.parameters
     const isShow = addEditModalState.isShow
+    const testPlan = useSelector(state => state.testplaninfo.testplan)
 
-    const title = isEditMode ? `Edit Test Plan ' - name of test plan - '` : 'Add Test Plan'
+    const title = isEditMode ? `Edit Test Plan '${testPlan.name}'` : 'Add Test Plan'
 
     const clearForm = () => {
         reset()
@@ -52,11 +54,36 @@ const AddEditTestPlanModal = () => {
         dispatch(hideAddEditTestPlanModal())
     }
 
+    const showModal = () => {
+        reset()
+    }
+
     useEffect(() => {
-        dispatch(fetchModalTestPlans())
-        dispatch(fetchTestSuites())
-        dispatch(fetchParameters())
-    }, [])
+        if (isShow) {
+            reset({
+                due_date: isEditMode ? new Date(testPlan.due_date) : new Date(),
+                started_at: isEditMode ? new Date(testPlan.started_at) : new Date(),
+            })
+
+            if (isEditMode) {
+                if (testPlan.parent) {
+                    setCheckedParent([testPlan.parent])
+                }
+
+                if (testPlan.parameters) {
+                    setCheckedParameters(testPlan.parameters)
+                }
+
+                if (testPlan.tests) {
+                    setCheckedTestCases(testPlan.tests.map((test) => test.case.id))
+                }
+            }
+
+            dispatch(fetchModalTestPlans())
+            dispatch(fetchTestSuites())
+            dispatch(fetchParameters())
+        }
+    }, [isShow])
 
     const icons = {
         check: <i className="bi bi-check-square"></i>,
@@ -69,9 +96,17 @@ const AddEditTestPlanModal = () => {
         leaf: <i className="bi bi-journal-check"></i>
     };
 
-    const editTestPlan = async (data) => {
-        // TODO: create after merge with list test plans
-        console.log(data)
+    const updateTestPlan = async (data) => {
+        const response = await patchTestPlan(testPlan.id, data)
+        if (response.status === 200) {
+            dispatch(hideAddEditTestPlanModal())
+            dispatch(getTestPlan(testPlan.id))
+            reset()
+            dispatch(fetchTestPlans())
+        } else {
+            setErrors(response.data)
+            console.log('Error: ', response)
+        }
     }
 
     const addTestPLan = async (data) => {
@@ -89,7 +124,7 @@ const AddEditTestPlanModal = () => {
 
     const onSubmit = async (data) => {
         return isEditMode
-            ? await editTestPlan(data)
+            ? await updateTestPlan(data)
             : await addTestPLan(data)
     }
 
@@ -126,7 +161,7 @@ const AddEditTestPlanModal = () => {
     }
 
     return (
-        <Modal size="lg" show={isShow} onHide={hideModel}>
+        <Modal size="lg" show={isShow} onHide={hideModel} onShow={showModal}>
             <Modal.Header closeButton>
                 <Modal.Title>{title}</Modal.Title>
             </Modal.Header>
@@ -151,7 +186,8 @@ const AddEditTestPlanModal = () => {
                                         icons={icons}
                                         noCascade={true}
                                     />
-                                    <input type="hidden" {...register("parent")} />
+                                    <input type="hidden" {...register("parent")}
+                                           defaultValue={isEditMode ? testPlan.parent : null}/>
                                 </> : <p className="text-muted">No test plans</p>
                             : <p>Loading...</p>
                         }
@@ -164,35 +200,39 @@ const AddEditTestPlanModal = () => {
                         <input
                             type="text"
                             className={`form-control ${errors.name ? 'is-invalid' : ''}`}
-                            defaultValue={isEditMode ? '-name-' : ''}
+                            defaultValue={isEditMode ? testPlan.name : ''}
                             {...register("name")}
                         />
                         <FieldErrors errors={errors.name}/>
                     </div>
 
-                    <div className="form-group mb-3">
-                        <label className="form-label">Parameters</label>
-                        {parameters.data
-                            ? <CheckboxTree
-                                checked={checkedParameters}
-                                expanded={expandedParameters}
-                                nodes={parameters.data}
-                                onCheck={onCheckParameters}
-                                onExpand={setExpandedParameters}
-                                icons={icons}
-                            />
-                            : <p>Loading...</p>
-                        }
+                    {!isEditMode
 
-                        {
-                            fieldsParameters && fieldsParameters.map(
-                                (item, index) => <input key={item}
-                                                        type="hidden" {...register(`parameters.${index}.value`)} />
-                            )
-                        }
-                        <div className={`${errors.parameters ? 'is-invalid' : ''}`}></div>
-                        <FieldErrors errors={errors.parameters}/>
-                    </div>
+                        ? <div className="form-group mb-3">
+                            <label className="form-label">Parameters</label>
+                            {parameters.data
+                                ? <CheckboxTree
+                                    checked={checkedParameters}
+                                    expanded={expandedParameters}
+                                    nodes={parameters.data}
+                                    onCheck={onCheckParameters}
+                                    onExpand={setExpandedParameters}
+                                    icons={icons}
+                                />
+                                : <p>Loading...</p>
+                            }
+
+                            {
+                                fieldsParameters && fieldsParameters.map(
+                                    (item, index) => <input key={item}
+                                                            type="hidden" {...register(`parameters.${index}.value`)} />
+                                )
+                            }
+                            <div className={`${errors.parameters ? 'is-invalid' : ''}`}></div>
+                            <FieldErrors errors={errors.parameters}/>
+                        </div>
+                        : <></>
+                    }
                     <div className="form-group mb-3">
                         <label className="form-label">Test Cases</label>
                         {testSuites.data
@@ -243,7 +283,7 @@ const AddEditTestPlanModal = () => {
                                 render={({field}) => (
                                     <DatePicker
                                         dateFormat="dd.MM.yyyy"
-                                        onChange={(date) => field.onChange(date)}
+                                        onChange={field.onChange}
                                         selected={field.value}
                                         className={`form-control ${errors.due_date ? 'is-invalid' : ''}`}
                                     />
