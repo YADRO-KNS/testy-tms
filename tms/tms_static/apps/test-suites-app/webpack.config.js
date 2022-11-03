@@ -15,7 +15,6 @@ module.exports = (env) => {
             output: {
                 path: path.resolve(__dirname, '../../dist/assets/js/apps'),
                 filename: "test-suites-app.js",
-                clean: true,
             },
             devServer: {
                 devMiddleware: {
