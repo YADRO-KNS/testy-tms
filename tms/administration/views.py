@@ -1,20 +1,24 @@
 from administration.forms import UserAddForm
-from core.forms import ProjectForm
-from core.mixins.views import ViewTabMixin
+from core.forms import ParameterForm, ProjectForm
+from core.mixins.views import ParameterMixin, ViewTabMixin
 from core.models import Project
 from core.selectors.projects import ProjectSelector
-from core.tables import ProjectTable
+from core.tables import ParameterTable, ProjectTable
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import CreateView, UpdateView
 from django.views.generic.edit import DeleteView
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin
 from forms import UserDetailsForm
+from tests_representation.models import Parameter
+from tests_representation.selectors.parameters import ParameterSelector
+from tests_representation.services.parameters import ParameterService
 from users.models import User
 from users.selectors.users import UserSelector
 from users.services.users import UserService
@@ -92,11 +96,18 @@ class AdministrationProjectsCreateView(AdministrationBaseView, ViewTabMixin, Cre
     success_url = reverse_lazy('admin_projects')
 
 
-class AdministrationProjectsUpdateView(AdministrationBaseView, ViewTabMixin, UpdateView):
+class AdministrationProjectsUpdateView(AdministrationBaseView, SingleTableMixin, ViewTabMixin, UpdateView):
     model = Project
     form_class = ProjectForm
     template_name = 'tms/administration/project/edit.html'
     active_tab = 'admin_projects'
+    context_object_name = 'project'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        qs = ParameterSelector().parameters_by_project_id(context.get('project').id)
+        context['parameters_table'] = ParameterTable(qs)
+        return context
 
     def get_success_url(self):
         return reverse('admin_projects')
@@ -116,3 +127,47 @@ class AdministrationUserDeleteView(AdministrationBaseView, ViewTabMixin, DeleteV
     active_tab = 'admin_users'
     success_url = reverse_lazy('admin_users')
     extra_context = {'href_name': 'admin_users'}
+
+
+class AdministrationParameterDeleteView(AdministrationBaseView, ViewTabMixin, ParameterMixin, DeleteView):
+    model = Parameter
+    template_name = 'tms/administration/confirm_deletion.html'
+    active_tab = 'admin_projects'
+    extra_context = {'href_name': 'admin_projects'}
+    queryset = ParameterSelector().parameter_list()
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        success_url = reverse('admin_project_edit', kwargs={'pk': self.kwargs.get('project_id')})
+        messages.success(self.request, _('Parameter was deleted successfully!'))
+        return HttpResponseRedirect(success_url)
+
+
+class AdministrationParametersUpdateView(AdministrationBaseView, ViewTabMixin, ParameterMixin, UpdateView):
+    model = Parameter
+    form_class = ParameterForm
+    template_name = 'tms/administration/parameter/edit.html'
+    active_tab = 'admin_projects'
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        ParameterService().parameter_update(parameter=self.get_object(),
+                                            data={'project': context.get('project')} | form.cleaned_data)
+        success_url = reverse('admin_project_edit', kwargs={'pk': self.kwargs.get('project_id')})
+        messages.success(self.request, _('Parameter was updated successfully!'))
+        return HttpResponseRedirect(success_url)
+
+
+class AdministrationParametersCreateView(AdministrationBaseView, ViewTabMixin, ParameterMixin, CreateView):
+    model = Parameter
+    form_class = ParameterForm
+    template_name = 'tms/administration/parameter/create.html'
+    active_tab = 'admin_projects'
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        ParameterService().parameter_create(data={'project': context.get('project')} | form.cleaned_data)
+        success_url = reverse('admin_project_edit', kwargs={'pk': self.kwargs.get('project_id')})
+        messages.success(self.request, _('Parameter was created successfully!'))
+        return HttpResponseRedirect(success_url)
