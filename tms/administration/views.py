@@ -152,7 +152,8 @@ class AdministrationParametersUpdateView(AdministrationBaseView, ViewTabMixin, P
 
     def form_valid(self, form):
         context = self.get_context_data()
-        ParameterService().parameter_update(parameter=self.get_object(), data={'project': context.get('project')} | form.cleaned_data)
+        ParameterService().parameter_update(parameter=self.get_object(),
+                                            data={'project': context.get('project')} | form.cleaned_data)
         success_url = reverse('admin_project_edit', kwargs={'pk': self.kwargs.get('project_id')})
         messages.success(self.request, _('Parameter was updated successfully!'))
         return HttpResponseRedirect(success_url)
