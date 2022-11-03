@@ -45,7 +45,7 @@ class TestCaseSerializer(ModelSerializer):
 
 class TestSuiteTreeSerializer(ModelSerializer):
     children = SerializerMethodField()
-    test_cases = TestCaseSerializer(many=True, read_only=True)
+    test_cases = SerializerMethodField('get_test_case_serializer')
 
     class Meta:
         model = TestSuite
@@ -53,6 +53,12 @@ class TestSuiteTreeSerializer(ModelSerializer):
 
     def get_children(self, value):
         return self.__class__(value.get_children(), many=True).data
+
+    def get_test_case_serializer(self, obj):
+        serializer_context = {'request': self.context.get('request')}
+        test_cases = TestCase.objects.all().filter(suite=obj)
+        serializer = TestCaseSerializer(test_cases, many=True, context=serializer_context)
+        return serializer.data
 
 
 class TestSuiteSerializer(ModelSerializer):
