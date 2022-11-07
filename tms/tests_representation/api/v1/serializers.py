@@ -32,9 +32,11 @@
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
 from rest_framework.serializers import ModelSerializer
+from tests_description.api.v1.serializers import TestCaseSerializer
 from tests_description.selectors.cases import TestCaseSelector
 from tests_representation.models import Attachment, Parameter, Test, TestPlan, TestResult
 from tests_representation.selectors.parameters import ParameterSelector
+from tests_representation.selectors.results import TestResultSelector
 
 
 class ParameterSerializer(ModelSerializer):

@@ -46,6 +46,7 @@ from tests_representation.api.v1.serializers import (
     TestResultSerializer,
     TestSerializer,
 )
+from tests_representation.choices import TestStatuses
 from tests_representation.selectors.attachments import AttachmentSelector, ParentType
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.results import TestResultSelector
