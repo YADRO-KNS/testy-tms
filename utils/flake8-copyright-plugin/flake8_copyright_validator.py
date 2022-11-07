@@ -47,21 +47,18 @@ class CopyrightValidator:
             help='number of bytes to read',
             parse_from_config=True,
         )
+        parser.add_option(
+            '--lines-to-exclude',
+            help='exclude file if line from list found as first line',
+            parse_from_config=True,
+        )
 
     @classmethod
     def parse_options(cls, options):
         cls.detailed_output = options.detailed_output
         cls.update = options.update
-
-        cls.custom_escape_sequences = [custom_seq.split('|') for custom_seq in options.custom_escape_sequences]
-
-        formatted_text = options.copyright_text
-
-        for escape_seq in cls.custom_escape_sequences:
-            formatted_text = formatted_text.replace(escape_seq[0], escape_seq[1])
-
-        cls.copyright_text_list = [elem for elem in formatted_text.split('\n') if elem]
-
+        cls.lines_to_exclude = cls._parse_lines(options.lines_to_exclude)
+        cls.copyright_text_list = cls._parse_lines(options.copyright_text)
         cls.copyright_text = '\n'.join(cls.copyright_text_list)
 
         if options.bytes_to_read:
@@ -87,3 +84,9 @@ class CopyrightValidator:
                 content = self.copyright_text + '\n' + content
                 w.seek(0)
                 w.write(content)
+
+    @staticmethod
+    def _parse_lines(lines_from_options) -> List[str]:
+        lines = lines_from_options.replace("'", '').split('\n')
+        lines.remove('')
+        return lines
