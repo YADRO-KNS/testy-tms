@@ -6,39 +6,87 @@
 #
 asgiref==3.5.2
     # via django
+certifi==2022.9.24
+    # via requests
+charset-normalizer==2.1.1
+    # via requests
+coreapi==2.3.3
+    # via drf-yasg
+coreschema==0.0.4
+    # via
+    #   coreapi
+    #   drf-yasg
 crispy-bootstrap5==0.7
     # via -r requirements.in
 django==3.2
     # via
     #   -r requirements.in
     #   crispy-bootstrap5
+    #   django-filter
+    #   django-js-asset
+    #   django-tables2
     #   djangorestframework
     #   djangorestframework-simplejwt
+    #   drf-yasg
 django-crispy-forms==1.14.0
     # via
     #   -r requirements.in
     #   crispy-bootstrap5
+django-filter==22.1
+    # via -r requirements.in
 django-js-asset==2.0.0
     # via django-mptt
 django-mptt==0.13.4
     # via -r requirements.in
 django-simple-history==3.1.1
     # via -r requirements.in
+django-tables2==2.4.1
+    # via -r requirements.in
 djangorestframework==3.13.1
     # via
     #   -r requirements.in
     #   djangorestframework-simplejwt
+    #   drf-yasg
 djangorestframework-simplejwt==5.2.0
     # via -r requirements.in
+drf-yasg==1.21.4
+    # via -r requirements.in
+idna==3.4
+    # via requests
+inflection==0.5.1
+    # via drf-yasg
+itypes==1.2.0
+    # via coreapi
+jinja2==3.1.2
+    # via coreschema
+markupsafe==2.1.1
+    # via jinja2
+packaging==21.3
+    # via drf-yasg
 psycopg2==2.9.3
     # via -r requirements.in
 pyjwt==2.4.0
     # via djangorestframework-simplejwt
+pyparsing==3.0.9
+    # via packaging
 python-dotenv==0.21.0
     # via -r requirements.in
 pytz==2022.2.1
     # via
     #   django
     #   djangorestframework
+    #   drf-yasg
+requests==2.28.1
+    # via coreapi
+ruamel-yaml==0.17.21
+    # via drf-yasg
+ruamel-yaml-clib==0.2.7
+    # via ruamel-yaml
 sqlparse==0.4.2
     # via django
+uritemplate==4.1.1
+    # via
+    #   coreapi
+    #   drf-yasg
+urllib3==1.26.12
+    # via requests
