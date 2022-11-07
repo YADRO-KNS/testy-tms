@@ -3,4 +3,4 @@ services:
   tms-ci:
     build:
       context: .
-      dockerfile: tms/scripts/ci/Dockerfile
+      dockerfile: testy/scripts/ci/Dockerfile
