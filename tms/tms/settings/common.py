@@ -61,15 +61,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
     'mptt',
     'rest_framework',
-    'core',
-    'users',
-    'tests_description',
-    'tests_representation',
     'simple_history',
     'crispy_forms',
     'crispy_bootstrap5',
+    'django_tables2',
+    'core',
+    'administration',
+    'users',
+    'tests_description',
+    'tests_representation',
 ]
 
 MIDDLEWARE = [
@@ -192,3 +195,6 @@ COMPANY_DOMAIN = os.environ.get('COMPANY_DOMAIN')
 # Django Crispy forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
+
+# Django tables forms
+DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'

@@ -29,6 +29,8 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
+from dataclasses import dataclass
+
 from core.mixins.views import ViewTabMixin
 from core.selectors.projects import ProjectSelector
 from django.contrib import messages
@@ -39,14 +41,24 @@ from django.shortcuts import redirect, render, resolve_url
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import View
-from django.views.generic import UpdateView
-from django.views.generic.edit import FormView
+from django.views.generic import FormView, UpdateView
 from forms import ProfilePasswordChangeForm, UserDetailsForm
+from tests_representation.selectors.tests import TestSelector
+from users.selectors.users import UserSelector
 from users.services.users import UserService
 
 from tms.settings.common import LOGIN_REDIRECT_URL
 
 UserModel = get_user_model()
+
+CHANGES_SAVED_SUCCESSFULLY = _('Changes was saved successfully!')
+
+
+@dataclass
+class Tab:
+    name: str
+    href: str
+    args: str = None
 
 
 class IndexView(View):
@@ -57,9 +69,11 @@ class IndexView(View):
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return render(request, self.auth_template)
-
-        projects = ProjectSelector.project_list()
-        return render(request, self.dashboard_template, {'projects': projects})
+        ctx = {}
+        ctx['projects'] = ProjectSelector.project_list()
+        ctx['users_count'] = UserSelector().user_list().count()
+        ctx['tests_count'] = TestSelector().test_list().count()
+        return render(request, self.dashboard_template, ctx)
 
     def post(self, request, *args, **kwargs):
         login_form = self.form_class(request=request, data=request.POST)
@@ -71,12 +85,12 @@ class IndexView(View):
 
 
 class UserProfileBaseView(ViewTabMixin):
-    tabs = {
-        'General settings': 'user_profile',
-        'Change password': 'user_change_password'
-    }
+    tabs = [
+        Tab(name='General settings', href='user_profile'),
+        Tab(name='Change password', href='user_change_password')
+    ]
     template_name = 'tms/user_profile.html'
-    success_message = _('Changes was saved successfully!')
+    success_message = CHANGES_SAVED_SUCCESSFULLY
 
     def get_object(self, queryset=None):
         return self.request.user

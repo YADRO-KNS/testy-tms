@@ -28,7 +28,7 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
+import copy
 import json
 from http import HTTPStatus
 
@@ -98,6 +98,7 @@ class TestPlanEndpoints:
         }
         response = api_client.send_request(self.view_name_list, testplan_dict, HTTPStatus.CREATED, RequestType.POST)
         test_plans = json.loads(response.content)
+        pk = test_plans[0].get('id')
         assert Test.objects.count() == number_of_tests
         assert TestCase.objects.count() == number_of_cases
         update_dict = {
@@ -108,12 +109,12 @@ class TestPlanEndpoints:
             update_dict,
             HTTPStatus.OK,
             RequestType.PATCH,
-            reverse_kwargs={'pk': test_plans[0].get('id')}
+            reverse_kwargs={'pk': pk}
         )
         assert Test.objects.count() == number_of_tests - 1, 'More then one test was deleted by updating'
         test_ids = []
         for plan in test_plans:
-            test_ids.extend(plan.get('tests'))
+            test_ids.extend(test.get('id')for test in plan.get('tests'))
         assert len(set(test_ids)) == len(test_ids), 'Test ids from testplans were not unique.'
 
     @pytest.mark.parametrize(
@@ -162,8 +163,8 @@ class TestPlanEndpoints:
         }
         response = api_client.send_request(self.view_name_list, testplan_dict, HTTPStatus.CREATED, RequestType.POST)
         test_plans = json.loads(response.content)
-        test_ids = json.loads(response.content)[0].get('tests')
-        result_ids = [test_result_factory(test_id=test_ids[0]).id for _ in range(3)]
+        test_ids = copy.deepcopy(test_plans[0].get('tests'))
+        result_ids = [test_result_factory(test_id=test_ids[0]['id']).id for _ in range(3)]
         expected_number_of_tests = Test.objects.count()
         update_dict = {
             'test_cases': case_ids
@@ -177,9 +178,9 @@ class TestPlanEndpoints:
         )
         plan = json.loads(response.content)
         actual_results = []
-        for res in TestResult.objects.filter(test=plan.get('tests')[0]):
+        for res in TestResult.objects.filter(test=plan.get('tests')[0]['id']):
             actual_results.append(res.id)
-        assert actual_results == result_ids, f'Results changed for test with id: {plan.get("tests")[0]}'
+        assert actual_results == result_ids, f'Results changed for test with id: {plan.get("tests")[0]["id"]}'
         assert Test.objects.count() == expected_number_of_tests, 'After update number of tests should not change'
 
     def test_delete(self, api_client, authorized_superuser, test_plan):

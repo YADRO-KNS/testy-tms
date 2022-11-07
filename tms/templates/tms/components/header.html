@@ -10,7 +10,7 @@
                 </li>
                 {% if request.user.is_staff %}
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Administration</a>
+                        <a class="nav-link" href="{% url 'admin_overview' %}">Administration</a>
                     </li>
                 {% endif %}
             </ul>
@@ -28,13 +28,13 @@
                             </svg>
                         </div>
                         <div class="text-start">
-                            <span class="d-block lh-1">{{ user.username }}</span>
+                            <span class="d-block lh-1">{{ request.user.username }}</span>
                             <span class="d-block lh-1 pt-1 opacity-75" style="font-size: 0.7rem;">-</span>
                         </div>
                     </div>
                 </div>
             </button>
-            <ul class="dropdown-menu text-small">
+            <ul class="dropdown-menu dropdown-menu-end text-small">
                 <li><a class="dropdown-item" href="{% url 'user_profile' %}">Profile</a></li>
                 <li>
                     <hr class="dropdown-divider">

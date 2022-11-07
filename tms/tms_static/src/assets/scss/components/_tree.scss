@@ -1,0 +1,37 @@
+.tree {
+  .tree-node {
+    &:hover {
+      cursor: pointer;
+    }
+
+    &.open {
+      .tree-node--icon {
+        color: var(--bs-gray-600);
+      }
+    }
+
+    &--icon {
+      color: var(--bs-gray-300);
+      line-height: 1.6rem;
+
+      &:hover {
+        color: var(--bs-gray-600);
+      }
+    }
+
+    &--text {
+      font-weight: 300;
+      color: var(--bs-gray-800);
+
+      &.active {
+        background-color: var(--bs-white);
+        color: var(--bs-blue);
+      }
+
+      &:hover {
+        background-color: var(--bs-white);
+        color: var(--bs-blue);
+      }
+    }
+  }
+}

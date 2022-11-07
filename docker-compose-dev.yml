@@ -19,7 +19,8 @@ services:
       - SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
   db:
     image: postgres:14.5-alpine
     volumes:
@@ -30,3 +31,8 @@ services:
       - POSTGRES_USER=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_NAME}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
