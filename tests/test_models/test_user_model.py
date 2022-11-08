@@ -1,4 +1,4 @@
-# TMS - Test Management System
+# TestY TMS - Test Management System
 # Copyright (C) 2022 KNS Group LLC (YADRO)
 #
 # This program is free software: you can redistribute it and/or modify

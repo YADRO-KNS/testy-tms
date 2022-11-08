@@ -1,0 +1,32 @@
+{% extends 'testy/base_page.html' %}
+
+{% load static %}
+
+{% block page-content-breadcrumbs %}
+<nav style="--bs-breadcrumb-divider: '>';"  aria-label="breadcrumb pb-4">
+    <ol class="breadcrumb mx-3 my-2">
+        {% block breadcrumb %}
+        <li class="breadcrumb-item" aria-current="page">
+            <a class="link-dark text-decoration-none" href="{% url 'index' %}">
+                <i class="bi bi-house-fill"></i>
+            </a>
+        </li>
+        {% endblock %}
+    </ol>
+</nav>
+{% endblock %}
+
+{% block page-content-header %}
+ <div class="content-title p-3">
+     <div id="content-title">
+         <h1 class="h2 w-100">{{ project.name }}</h1>
+     </div>
+ </div>
+{% endblock %}
+
+{% block page-content-tabs %}
+    {% include "testy/components/tabs.html" with tabs=tabs active_tab=active_tab %}
+{% endblock %}
+
+
+{% block page-content %}{% endblock %}

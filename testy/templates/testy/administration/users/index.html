@@ -1,0 +1,35 @@
+{% extends 'testy/admin_page.html' %}
+
+{% load render_table from django_tables2 %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block breadcrumb %}
+    {{ block.super }}
+    <li class="breadcrumb-item active link-secondary" aria-current="page">Users</li>
+{% endblock %}
+
+{% block page-content-header %}
+ <div class="content-title p-3">
+     <div id="content-title">
+         <h1 class="h2 w-100">Users</h1>
+     </div>
+ </div>
+{% endblock %}
+
+{% block page-content %}
+<div class="tab-content p-3">
+    {% include "testy/components/alerts.html" with messages=messages %}
+    <div class="text-end pb-3">
+        <a href="{% url 'admin_new_user' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle pe-1"></i>
+            New user
+        </a>
+    </div>
+    <div class="card">
+        <div class="card-body text-center">
+            {% render_table table %}
+        </div>
+    </div>
+</div>
+{% endblock %}
