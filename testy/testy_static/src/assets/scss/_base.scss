@@ -1,0 +1,16 @@
+body {
+  font-size: $font-size-sm;
+  background-color: var(--bs-gray-100);
+}
+
+th a {
+  color: #000;
+  text-decoration: none; }
+
+a {
+  text-decoration: none; }
+
+.card-button {
+    z-index: 2;
+    position: relative;
+}

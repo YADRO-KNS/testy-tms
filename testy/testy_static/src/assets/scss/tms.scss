@@ -1,0 +1,21 @@
+//Libs
+//@import "node_modules/bootstrap-icons/font/bootstrap-icons.scss";
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css");
+
+//Core files
+@import "bootstrap";
+@import "utils";
+@import "base";
+
+// Components
+@import "components/card";
+@import "components/tree";
+@import "components/button";
+
+// Structure
+@import "structure/header";
+@import "structure/breadcrumbs";
+@import "structure/content";
+
+// Pages
+@import "pages/auth";

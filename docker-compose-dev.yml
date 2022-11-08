@@ -1,15 +1,15 @@
 version: '3.9'
 services:
-  tms:
+  testy:
     build:
-      context: ./tms
+      context: testy
       dockerfile: scripts/dev/Dockerfile
     volumes:
-      - './tms:/tms'
+      - './testy:/testy'
     ports:
       - "8001:8000"
     environment:
-      - DJANGO_SETTINGS_MODULE=tms.settings.development
+      - DJANGO_SETTINGS_MODULE=testy.settings.development
       - POSTGRES_NAME=${POSTGRES_NAME}
       - POSTGRES_USER=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -19,7 +19,8 @@ services:
       - SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
   db:
     image: postgres:14.5-alpine
     volumes:
@@ -30,3 +31,8 @@ services:
       - POSTGRES_USER=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_NAME}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
