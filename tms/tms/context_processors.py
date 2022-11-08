@@ -1,5 +1,8 @@
-from django.conf import settings
+from django.conf import settings as django_settings
 
 
-def tms_version(request):
-    return {'SETTINGS': settings}
+def settings(request):
+    """
+    Expose Django settings in the template context. Example: {{ settings.VERSION }}
+    """
+    return {'settings': django_settings}
