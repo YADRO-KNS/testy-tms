@@ -95,11 +95,6 @@ class TestResult(BaseModel):
         blank=True,
         validators=[MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)]
     )
-    estimate = models.IntegerField(
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)]
-    )
     execution_time = models.IntegerField(
         null=True,
         blank=True,
