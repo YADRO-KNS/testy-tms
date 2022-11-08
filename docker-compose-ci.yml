@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-  tms-ci:
+  testy-ci:
     build:
       context: .
-      dockerfile: tms/scripts/ci/Dockerfile
+      dockerfile: testy/scripts/ci/Dockerfile

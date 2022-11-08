@@ -1,0 +1,18 @@
+{% extends 'testy/project_page.html' %}
+
+{% block breadcrumb %}
+    {{ block.super }}
+    <li class="breadcrumb-item active" aria-current="page">{{project.name}}</li>
+{% endblock %}
+
+{% block page-content %}
+<div class="content">
+    <div class="container-fluid">
+        <div class="card border-0 mt-3 mb-5">
+            <div class="card-body text-center px-0" style="min-height: 250px; background: #ddd;">
+                There will be something.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

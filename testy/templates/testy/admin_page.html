@@ -1,0 +1,38 @@
+{% extends 'testy/base_page.html' %}
+{% load static %}
+
+{% block page-content-breadcrumbs %}
+    <div class="breadcrumbs border-bottom px-3 py-1">
+        <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+            <ol class="breadcrumb m-0">
+                {% block breadcrumb %}
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'index' %}" class="link-dark text-decoration-none">
+                            <i class="bi bi-house-fill"></i>
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item" aria-current="page">
+                        <a href="{% url 'admin_overview' %}" class="link-dark text-decoration-none">
+                            Administration
+                        </a>
+                    </li>
+                {% endblock %}
+            </ol>
+        </nav>
+    </div>
+{% endblock %}
+
+{% block page-content-header %}
+    <div class="content-title p-3">
+        <div id="content-title">
+            <h1 class="h2 w-100">Administration</h1>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block page-content-tabs %}
+    {% include "testy/components/tabs.html" with tabs=tabs active_tab=active_tab %}
+{% endblock %}
+
+{% block page-content %}{% endblock %}

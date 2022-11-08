@@ -1,0 +1,21 @@
+{% extends 'testy/base.html' %}
+
+{% block header %}
+    {% include "testy/components/header.html" %}
+{% endblock %}
+
+{% block content %}
+
+    {% block page-content-breadcrumbs %}{% endblock %}
+    {% block page-content-header %}{% endblock %}
+
+    <div class="content">
+        {% block page-content-tabs %}{% endblock %}
+        {% block page-content %}{% endblock %}
+    </div>
+
+{% endblock %}
+
+{% block footer %}
+    {% include "testy/components/footer.html" %}
+{% endblock %}
