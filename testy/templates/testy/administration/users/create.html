@@ -1,0 +1,32 @@
+{% extends 'testy/admin_page.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block breadcrumb %}
+    {{ block.super }}
+    <li class="breadcrumb-item" aria-current="page">
+        <a class="link-dark text-decoration-none" href="{% url 'admin_users' %}">Users</a>
+    </li>
+    <li class="breadcrumb-item active link-secondary" aria-current="page">New user</li>
+{% endblock %}
+
+{% block page-content-header %}
+    <div class="content-title p-3">
+        <div id="content-title">
+            <h1 class="h2 w-100">New user</h1>
+        </div>
+    </div>
+{% endblock %}
+
+{% block page-content %}
+    <div class="tab-content p-3">
+        {% include "testy/components/alerts.html" with messages=messages %}
+        <div class="card">
+            <div class="card-body">
+                <form action="{% url 'admin_new_user' %}" method="post" class="m-0">
+                    {% crispy form form.helper %}
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

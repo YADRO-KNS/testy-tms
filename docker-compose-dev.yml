@@ -1,15 +1,15 @@
 version: '3.9'
 services:
-  tms:
+  testy:
     build:
-      context: ./tms
+      context: testy
       dockerfile: scripts/dev/Dockerfile
     volumes:
-      - './tms:/tms'
+      - './testy:/testy'
     ports:
       - "8001:8000"
     environment:
-      - DJANGO_SETTINGS_MODULE=tms.settings.development
+      - DJANGO_SETTINGS_MODULE=testy.settings.development
       - POSTGRES_NAME=${POSTGRES_NAME}
       - POSTGRES_USER=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}

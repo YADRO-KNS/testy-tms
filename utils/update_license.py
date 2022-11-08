@@ -1,4 +1,4 @@
-# TMS - Test Management System
+# TestY TMS - Test Management System
 # Copyright (C) 2022 KNS Group LLC (YADRO)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -40,7 +40,7 @@ __version__ = '0.1'
 
 EXTENSIONS = ['py']
 
-LICENSE_HEADER = """# TMS - Test Management System
+LICENSE_HEADER = """# TestY TMS - Test Management System
 # Copyright (C) 2022 KNS Group LLC (YADRO)
 #
 # This program is free software: you can redistribute it and/or modify

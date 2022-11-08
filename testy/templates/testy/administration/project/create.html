@@ -1,0 +1,33 @@
+{% extends 'testy/admin_page.html' %}
+
+{% load render_table from django_tables2 %}
+{% load crispy_forms_tags %}
+
+{% block breadcrumb %}
+    {{ block.super }}
+    <li class="breadcrumb-item" aria-current="page"><a class="fs-12 text-primary" href="{% url 'admin_projects' %}">Projects</a></li>
+    <li class="breadcrumb-item active" aria-current="page">New project</li>
+{% endblock %}
+
+{% block page-content-header %}
+ <div class="content-title p-3">
+     <div id="content-title">
+         <h1 class="h2 w-100">New project</h1>
+     </div>
+ </div>
+{% endblock %}
+
+{% block page-content %}
+<div class="tab-content p-3">
+    {% include "testy/components/alerts.html" with messages=messages %}
+    <div class="card">
+        <div class="card-body">
+            <form action="{% url 'admin_project_add' %}" method="post" class="m-0">
+                {% crispy form form.helper %}
+                <hr class="mt-0">
+                <button type="submit" class="btn btn-primary">Create project</button>
+            </form>
+        <div>
+    </div>
+</div>
+{% endblock %}

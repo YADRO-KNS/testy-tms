@@ -1,0 +1,62 @@
+{% extends 'testy/base_page.html' %}
+
+{% block page-content %}
+
+    <div class="content">
+        <div class="container-fluid">
+
+            <div class="row p-5">
+                <div class="col">
+                    <div class="text-center">
+                        <p style="font-size: 4rem;" class="text-muted">{{ projects.count }}</p>
+                        <i class="bi bi-briefcase" style="font-size: 5rem;"></i>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="text-center">
+                        <p style="font-size: 4rem;" class="text-muted">{{ users_count }}</p>
+                        <i class="bi bi-people" style="font-size: 5rem;"></i>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="text-center">
+                        <p style="font-size: 4rem;" class="text-muted">{{ tests_count }}</p>
+                        <i class="bi bi-card-checklist" style="font-size: 5rem;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <p class="fs-4">Projects</p>
+
+            <div class="card">
+                <ul class="list-group list-group-flush">
+                    {% for project in projects %}
+                        <li class="list-group-item py-3">
+                            <div class="d-flex">
+                                <div class="align-self-center flex-shrink-0 px-3">
+                                    <i class="bi bi-briefcase" style="font-size: 3rem;"></i>
+                                </div>
+
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="card-title">{{ project.name }}</h5>
+                                    <h6 class="card-subtitle mb-2 fw-light text-muted">{{ project.description|linebreaks }}</h6>
+
+                                    <a class="card-link card-button fw-light text-decoration-none" href="{% url 'project_suites' project.pk %}">
+                                        Test Suites
+                                    </a>
+                                    <div class="vr p-0"></div>
+                                    <a class="card-link card-button fw-light text-decoration-none pe-1" href="{% url 'project_runs' project.pk %}">
+                                        Test Plans
+                                    </a>
+                                </div>
+                                <a href="{% url 'project_details' project.pk %}" class="stretched-link"></a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}

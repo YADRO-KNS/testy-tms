@@ -1,0 +1,23 @@
+{% extends 'testy/project_page.html' %}
+{% load static %}
+
+{% block breadcrumb %}
+    {{ block.super }}
+    <li class="breadcrumb-item" aria-current="page">
+        <a class="link-dark text-decoration-none" href="{% url 'project_details' project.pk %}">{{ project.name }}</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Test suites</li>
+{% endblock %}
+
+{% block page-content %}
+    <div class="container-fluid">
+        <div id="test-suites-app"></div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script type="text/javascript">window.CSRF_TOKEN = "{{ csrf_token }}";</script>
+    <script type="text/javascript">window.PROJECT_ID = "{{ object.id }}";</script>
+    <script src="{% static 'js/apps/test-suites-app.js' %}"></script>
+{% endblock %}

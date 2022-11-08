@@ -1,0 +1,55 @@
+{% extends 'testy/base.html' %}
+
+{% block content %}
+    <section class="stars vh-100">
+        <div class="container">
+            <form action="{% url 'index' %}" method="post">
+                {% csrf_token %}
+                <div class="row d-flex justify-content-center align-items-center vh-100">
+                    <div class="col-5">
+                        <div class="card bg-dark bg-opacity-25 text-white" style="border-radius: 1rem;">
+                            <div class="card-body p-5 text-center">
+                                <div class="mb-md-5 mt-md-4">
+                                    <h2 class="h2 mb-3 pb-5 fw-light">Test Management System</h2>
+
+                                    {% if login_form.non_field_errors %}
+                                        <div class="alert alert-danger">
+                                            {% for error in login_form.non_field_errors %}
+                                                <p class="fw-light m-0">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="form-outline form-white mb-4">
+                                        <input name="username" class="form-control" id="username"
+                                               placeholder="USERNAME">
+                                        {% if login_form.username.errors %}
+                                            {% for error in login_form.username.errors %}
+                                                <small class="help-block">{{ error }}</small>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                    <div class="form-outline form-white mb-4">
+                                        <input name="password" type="password" class="form-control" id="password"
+                                               placeholder="PASSWORD">
+                                        {% if login_form.password.errors %}
+                                            {% for error in login_form.password.errors %}
+                                                <small class="help-block">{{ error }}</small>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="form-outline form-white mb-4">
+                                        <button class="btn btn-lg btn-outline-light text-uppercase mt-3 px-5"
+                                                type="submit">Login
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+{% endblock %}
