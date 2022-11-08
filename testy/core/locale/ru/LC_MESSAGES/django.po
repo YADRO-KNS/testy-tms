@@ -20,22 +20,22 @@ msgstr ""
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n"
 "%100>=11 && n%100<=14)? 2 : 3);\n"
 
-#: tms/core/apps.py:8
+#: testy/core/apps.py:8
 msgid "core"
 msgstr "основное"
 
-#: tms/core/models.py:13
+#: testy/core/models.py:13
 msgid "name"
 msgstr "наименование"
 
-#: tms/core/models.py:14
+#: testy/core/models.py:14
 msgid "description"
 msgstr "описание"
 
-#: tms/core/models.py:18
+#: testy/core/models.py:18
 msgid "project"
 msgstr "проект"
 
-#: tms/core/models.py:19
+#: testy/core/models.py:19
 msgid "projects"
 msgstr "проекты"

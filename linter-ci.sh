@@ -14,7 +14,7 @@ inspect() {
 
 lint() {
   docker-compose -f docker-compose-ci.yml up -d --build
-  docker-compose -f docker-compose-ci.yml run --rm  tms-ci flake8 .
+  docker-compose -f docker-compose-ci.yml run --rm  testy-ci flake8 .
   inspect $? lint
   docker-compose -f docker-compose-ci.yml down -v
 }

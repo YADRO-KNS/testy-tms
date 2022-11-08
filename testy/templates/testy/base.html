@@ -1,0 +1,31 @@
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    {% block stylesheets %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/testy.min.css' %}">
+    {% endblock %}
+
+    <title>TestY TMS | {% block title %}Base template{% endblock %}</title>
+</head>
+<body class="d-flex flex-column h-100">
+
+{% block header %}{% endblock %}
+
+<main class="flex-shrink-0">
+    {% block content %}{% endblock %}
+</main>
+
+{% block footer %}{% endblock %}
+
+{% block javascripts %}
+    <script src="{% static 'js/testy.min.js' %}"></script>
+{% endblock %}
+
+</body>
+</html>

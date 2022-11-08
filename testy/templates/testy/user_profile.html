@@ -1,0 +1,54 @@
+{% extends 'testy/base_page.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block page-content-breadcrumbs %}
+    <div class="breadcrumbs border-bottom px-3 py-1">
+        <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+            <ol class="breadcrumb m-0">
+                {% block breadcrumb %}
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'index' %}" class="link-dark text-decoration-none">
+                            <i class="bi bi-house-fill"></i>
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">My profile</li>
+                {% endblock %}
+            </ol>
+        </nav>
+    </div>
+{% endblock %}
+
+{% block page-content-tabs %}
+    {% include "testy/components/tabs.html" with tabs=tabs active=active_tab %}
+{% endblock %}
+
+{% block page-content-header %}
+    <div class="content-title p-3">
+        <div id="content-title">
+            <h1 class="h2 w-100"> Profile settings</h1>
+        </div>
+    </div>
+{% endblock %}
+
+{% block page-content %}
+    <div class="tab-content p-3">
+
+        <div class="card">
+            <div class="card-body">
+
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %} alert-{% if 'error' in message.tags %}danger{% else %}{{ message.tags }}{% endif %} {% endif %}"
+                         role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                <form action="{% url active_tab %}" method="post">
+                    {% crispy form form.helper %}
+                </form>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}

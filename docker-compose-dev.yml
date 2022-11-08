@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-  tms:
+  testy:
     build:
       context: testy
       dockerfile: scripts/dev/Dockerfile
