@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack serve --env goal=local --mode development",
-    "build": "webpack --env goal=${REACT_APP_ENV} --mode ${REACT_APP_ENV}"
+    "dev": "webpack serve --mode ${NODE_ENV}",
+    "build": "webpack --mode ${NODE_ENV}"
   },
   "author": "",
   "dependencies": {

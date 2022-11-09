@@ -4,8 +4,12 @@ services:
     build:
       context: testy
       dockerfile: scripts/dev/Dockerfile
+      args:
+        - NODE_ENV=${NODE_ENV}
+        - REACT_APP_API_ROOT=${REACT_APP_API_ROOT}
     volumes:
       - './testy:/testy'
+      - 'react_apps:/testy/testy_static/dist/assets/js/apps'
     ports:
       - "8001:8000"
     environment:
@@ -36,3 +40,5 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+volumes:
+  react_apps:
