@@ -135,8 +135,7 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
     def get_serializer_class(self):
         if self.action == 'add_result' or self.action == 'results_by_test':
             return TestResultSerializer
-        else:
-            return TestSerializer
+        return TestSerializer
 
     @action(detail=False, methods=['POST'])
     def add_result(self, request, pk):
