@@ -47,6 +47,7 @@ RUN chmod +x /testy/scripts/entrypoint.sh
 COPY . /testy
 
 # copy static files
+RUN mkdir -p /testy/testy_static/dist/assets/js/apps
 COPY --from=builder /frontend/test-runs-app/build/test-runs-app.js /testy/testy_static/dist/assets/js/apps
 COPY --from=builder /frontend/test-suites-app/build/test-suites-app.js /testy/testy_static/dist/assets/js/apps
 
