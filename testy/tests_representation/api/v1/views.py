@@ -133,9 +133,7 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
         return "Test Instance"
 
     def get_serializer_class(self):
-        if self.action == 'add_result':
-            return TestResultSerializer
-        elif self.action == 'results_by_test':
+        if self.action == 'add_result' or self.action == 'results_by_test':
             return TestResultSerializer
         else:
             return TestSerializer
