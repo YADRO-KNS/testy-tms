@@ -35,7 +35,7 @@ DEBUG = True
 
 SECRET_KEY = 'django-insecure-97ml+ugrkdl6s!h)_5vanzw4%d_lajo6j(08e84e7314*&)s3)'
 
-ALLOWED_HOSTS = ['tms-dev.set.yadro.com']
+ALLOWED_HOSTS = ['tms-dev.set.yadro.com', '127.0.0.1']
 
 INSTALLED_APPS += [  # noqa F405
     'django_extensions',
