@@ -135,6 +135,8 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
     def get_serializer_class(self):
         if self.action == 'add_result':
             return TestResultSerializer
+        elif self.action == 'results_by_test':
+            return TestResultSerializer
         else:
             return TestSerializer
 
@@ -150,11 +152,12 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
     def results_by_test(self, request, pk):
         queryset = self.filter_queryset(TestResultSelector().result_list_by_test_id(pk))
         page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer_class()
         if page is not None:
-            serializer = TestResultSerializer(page, many=True, context={'request': request})
+            serializer = serializer(page, many=True, context={'request': request})
             return self.get_paginated_response(serializer.data)
 
-        serializer = TestResultSerializer(queryset, many=True, context={'request': request})
+        serializer = serializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
 
