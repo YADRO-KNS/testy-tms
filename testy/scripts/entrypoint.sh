@@ -6,4 +6,4 @@ done
 echo "PostgreSQL started"
 python manage.py migrate --no-input
 python manage.py seed_db
-python manage.py runserver 0.0.0.0:8000
+gunicorn testy.wsgi:application --bind 0.0.0.0:8000

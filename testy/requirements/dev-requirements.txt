@@ -85,6 +85,8 @@ flake8==5.0.4
     #   flake8-isort
 flake8-isort==4.2.0
     # via -r ci-requirements.in
+gunicorn==20.1.0
+    # via -r requirements.in
 idna==3.4
     # via requests
 inflection==0.5.1

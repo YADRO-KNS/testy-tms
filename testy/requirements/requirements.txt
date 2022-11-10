@@ -51,6 +51,8 @@ djangorestframework-simplejwt==5.2.0
     # via -r requirements.in
 drf-yasg==1.21.4
     # via -r requirements.in
+gunicorn==20.1.0
+    # via -r requirements.in
 idna==3.4
     # via requests
 inflection==0.5.1
@@ -90,3 +92,6 @@ uritemplate==4.1.1
     #   drf-yasg
 urllib3==1.26.12
     # via requests
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools
