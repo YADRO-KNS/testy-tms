@@ -43,6 +43,7 @@ __all__ = (
 class Project(BaseModel):
     name = models.CharField(_('name'), max_length=settings.CHAR_FIELD_MAX_LEN)
     description = models.TextField(_('description'), blank=True)
+    is_archive = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('name',)

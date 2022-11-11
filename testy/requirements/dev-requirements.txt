@@ -82,13 +82,18 @@ faker==15.1.1
 flake8==5.0.4
     # via
     #   -r ci-requirements.in
+    #   flake8-copyright-validator
     #   flake8-isort
+flake8-copyright-validator==0.0.1
+    # via -r requirements.in
 flake8-isort==4.2.0
     # via -r ci-requirements.in
 gunicorn==20.1.0
     # via -r requirements.in
 idna==3.4
     # via requests
+importlib-metadata==5.0.0
+    # via flake8-copyright-validator
 inflection==0.5.1
     # via
     #   drf-yasg
@@ -178,6 +183,8 @@ urllib3==1.26.12
     # via requests
 wheel==0.37.1
     # via pip-tools
+zipp==3.10.0
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
