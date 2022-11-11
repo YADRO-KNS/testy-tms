@@ -47,6 +47,7 @@ SETUP = '1.Setup\n2.Setup'
 SCENARIO = '1.break\n2.break\n3.break'
 TEARDOWN = '1.Teardown\n2.Teardown'
 ESTIMATE = 12345
+EXECUTION_TIME = 1000000
 DATE = timezone.now()
 STATUS_NAME = 'PASSED'
 STATUS_CODE = 1
