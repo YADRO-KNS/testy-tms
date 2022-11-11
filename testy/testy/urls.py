@@ -44,6 +44,9 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
 import views
 from core.views import ProjectOverviewView, ProjectPlansView, ProjectSuitesView
 from django.contrib import admin
@@ -95,3 +98,6 @@ urlpatterns = [
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
+#
+# if settings.DEBUG:
+#     urlpatterns += staticfiles_urlpatterns()

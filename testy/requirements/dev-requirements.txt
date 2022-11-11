@@ -85,7 +85,9 @@ flake8==5.0.4
     #   flake8-copyright-validator
     #   flake8-isort
 flake8-copyright-validator==0.0.1
-    # via -r requirements.in
+    # via
+    #   -r ci-requirements.in
+    #   -r requirements.in
 flake8-isort==4.2.0
     # via -r ci-requirements.in
 gunicorn==20.1.0
