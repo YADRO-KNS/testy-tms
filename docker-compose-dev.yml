@@ -9,7 +9,7 @@ services:
         - REACT_APP_API_ROOT=${REACT_APP_API_ROOT}
     volumes:
       - './testy:/testy'
-      - '/opt/static:/opt/tms-static'
+      - './static:/testy/static'
       - 'react_apps:/testy/testy_static/dist/assets/js/apps'
     ports:
       - "8001:8000"
