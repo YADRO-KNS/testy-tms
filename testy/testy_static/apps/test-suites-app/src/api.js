@@ -1,6 +1,7 @@
 import axios from "axios";
+import {API_ROOT} from "./constants/envrionment";
 
-export const baseUrl = `${process.env.API_ROOT}/api/v1/`
+export const baseUrl = `${API_ROOT}/api/v1/`
 
 export const getTestSuiteURL = (suite_id) => {
     return baseUrl + `suites/${suite_id}/`

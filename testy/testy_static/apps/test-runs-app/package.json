@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack serve --env goal=local --mode development",
-    "build": "webpack --env goal=${REACT_APP_ENV} --mode ${REACT_APP_ENV}"
+    "dev": "webpack serve --mode ${NODE_ENV}",
+    "build": "webpack --mode ${NODE_ENV}"
   },
   "author": "",
   "dependencies": {
@@ -27,7 +27,7 @@
     "babel-loader": "^8.2.5",
     "css-loader": "^6.7.1",
     "dotenv-webpack": "^8.0.1",
-    "redux-devtools-extension": "^2.13.9",
+    "@redux-devtools/extension": "^3.2.3",
     "style-loader": "^3.3.1",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0",
