@@ -73,7 +73,7 @@ class Attachment(BaseModel):
     content_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
-        # limit_choices_to={'model__in': ('Project',)}
+        limit_choices_to={'model__in': ('testsuite', 'testplan', 'testresult')}
     )
 
     object_id = models.PositiveIntegerField()
