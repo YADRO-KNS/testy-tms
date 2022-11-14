@@ -34,7 +34,7 @@ from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelated
 from rest_framework.serializers import ModelSerializer
 from tests_description.api.v1.serializers import TestCaseSerializer
 from tests_description.selectors.cases import TestCaseSelector
-from tests_representation.models import Attachment, Parameter, Test, TestPlan, TestResult
+from tests_representation.models import Parameter, Test, TestPlan, TestResult
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.results import TestResultSelector
 
@@ -165,13 +165,4 @@ class TestPlanOutputSerializer(ModelSerializer):
         return '{0} [{1}]'.format(instance.name, ', '.join(parameters))
 
 
-class AttachmentSerializer(ModelSerializer):
-    url = HyperlinkedIdentityField(view_name='api:v1:attachment-detail')
 
-    class Meta:
-        model = Attachment
-        fields = (
-            'project', 'name', 'filename', 'content_type', 'size', 'case', 'plan', 'result', 'user', 'file', 'url'
-        )
-
-        read_only_fields = ('project', 'name', 'filename', 'content_type', 'size', 'user', 'url')

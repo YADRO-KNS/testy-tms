@@ -38,7 +38,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from tests_representation.api.v1.serializers import (
-    AttachmentSerializer,
     ParameterSerializer,
     TestPlanInputSerializer,
     TestPlanOutputSerializer,
@@ -47,12 +46,10 @@ from tests_representation.api.v1.serializers import (
     TestSerializer,
 )
 from tests_representation.choices import TestStatuses
-from tests_representation.selectors.attachments import AttachmentSelector, ParentType
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.results import TestResultSelector
 from tests_representation.selectors.testplan import TestPlanSelector
 from tests_representation.selectors.tests import TestSelector
-from tests_representation.services.attachments import AttachmentService
 from tests_representation.services.parameters import ParameterService
 from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPLanService
@@ -160,32 +157,6 @@ class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixi
 
     def perform_update(self, serializer: TestResultSerializer):
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
-
-
-class AttachmentViewSet(ModelViewSet):
-    queryset = AttachmentSelector().attachment_list()
-    serializer_class = AttachmentSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        attachments = AttachmentService().attachment_create(serializer.validated_data, request)
-        data = [self.get_serializer(attachment, context={'request': request}).data for attachment in attachments]
-        return Response(data, status=status.HTTP_201_CREATED)
-
-    def perform_update(self, serializer):
-        serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
-
-    @action(detail=False)
-    def attachments_by_parent(self, request, parent_type: str, pk):
-        queryset = self.filter_queryset(AttachmentSelector().attachment_list_by_parent(pk, ParentType(parent_type)))
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = AttachmentSerializer(page, many=True, context={'request': request})
-            return self.get_paginated_response(serializer.data)
-
-        serializer = AttachmentSerializer(queryset, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TestResultChoicesView(APIView):

@@ -31,7 +31,9 @@
 
 from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
-from tests_representation.models import Attachment, Test, TestPlan, TestResult
+
+from core.models import Attachment
+from tests_representation.models import Test, TestPlan, TestResult
 
 from testy.admin import BaseAdmin
 
@@ -56,5 +58,5 @@ class TestResultAdmin(BaseAdmin):
 
 @admin.register(Attachment)
 class AttachmentAdmin(BaseAdmin):
-    list_display = ('project', 'name', 'filename', 'content_type', 'size', 'case', 'plan', 'result', 'user', 'file')
+    list_display = ('project', 'name', 'filename', 'content_type', 'size', 'content_type', 'object_id', 'content_object', 'user', 'file')
     search_fields = ('name',)

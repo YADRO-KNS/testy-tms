@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-from tests_representation.models import Attachment
+from core.models import Attachment
 
 
 class AttachmentService:

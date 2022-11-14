@@ -43,6 +43,8 @@ class TestResultModel:
 
     @pytest.mark.parametrize('parameter_name', ['status', 'test', 'is_archive'])
     def test_not_null_constraint(self, parameter_name, test_result_factory):
+        t = test_result_factory()
+        print(t.model)
         with pytest.raises(IntegrityError) as err:
             test_result_factory(**{parameter_name: None})
         parameter_name = 'test_id' if parameter_name == 'test' else parameter_name

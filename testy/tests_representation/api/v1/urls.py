@@ -36,7 +36,6 @@ from tests_representation.api.v1.views import TestPLanDetailView, TestPLanListVi
 
 router = SimpleRouter()
 router.register('parameters', views.ParameterViewSet)
-router.register('attachments', views.AttachmentViewSet)
 
 test_lists = views.TestListViewSet.as_view({'get': 'list'})
 test_detail = views.TestDetailViewSet.as_view({
@@ -53,10 +52,6 @@ result_detail = views.TestResultViewSet.as_view({
 
 result_list = views.TestResultViewSet.as_view({
     'get': 'list'
-})
-
-attachment_list = views.AttachmentViewSet.as_view({
-    'get': 'attachments_by_parent'
 })
 
 results_by_test = views.TestDetailViewSet.as_view({
@@ -79,7 +74,6 @@ urlpatterns = [
     path('results/<int>:pk/', result_detail, name='result-detail'),
 
     path('test-results/', TestResultChoicesView.as_view(), name='test-results'),
-    path('<str:parent_type>/<int:pk>/attachments/', attachment_list, name='attachments-by-parent'),
 
 ]
 urlpatterns += router.urls

@@ -28,16 +28,26 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from functools import reduce
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.db.models import Q
 
 from testy.models import BaseModel
 
 __all__ = (
     'Project',
+    'Attachment'
 )
+t = Q(app_label='core', model='Project')
+
+UserModel = get_user_model()
 
 
 class Project(BaseModel):
@@ -51,3 +61,39 @@ class Project(BaseModel):
 
     def __str__(self) -> str:
         return self.name
+
+
+class Attachment(BaseModel):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
+    filename = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
+    attachment_type = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
+    size = models.PositiveBigIntegerField()
+
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        # limit_choices_to={'model__in': ('Project',)}
+    )
+
+    object_id = models.PositiveIntegerField()
+
+    content_object = GenericForeignKey('content_type', 'object_id')
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    file = models.FileField(
+        max_length=150,
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'txt', 'png', 'jpg', 'jpeg'])],
+        upload_to='attachments'
+    )
+
+    def __str__(self):
+        return str(self.file.url)
+
+    # def clean(self):
+    #     if not self.result and not self.case and not self.plan:
+    #         raise ValidationError({'detail': 'case, result or plan field should be specified'})
+    #
+    #     parent_instances = [self.case, self.result, self.plan]
+    #     projects = [parent_instance.project for parent_instance in parent_instances if parent_instance]
+    #     if len(set(projects)) != 1:
+    #         raise ValidationError({'detail': 'case, result, or plan have different project ids'})

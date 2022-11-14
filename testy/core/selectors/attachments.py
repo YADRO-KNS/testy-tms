@@ -1,7 +1,8 @@
 from enum import Enum
 
 from django.db.models import QuerySet
-from tests_representation.models import Attachment
+
+from core.models import Attachment
 
 
 class ParentType(Enum):

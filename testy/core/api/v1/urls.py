@@ -35,6 +35,8 @@ from rest_framework import routers
 
 router = routers.SimpleRouter()
 
+router.register('attachments', views.AttachmentViewSet)
+
 project_list = views.ProjectViewSet.as_view({
     'get': 'list',
     'post': 'create'
