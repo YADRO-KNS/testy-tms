@@ -33,10 +33,9 @@ from core.models import Project
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
-from django.core.validators import FileExtensionValidator, MinValueValidator
+from django.core.validators import MinValueValidator
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
-from rest_framework.exceptions import ValidationError
 from tests_description.models import TestCase
 from tests_representation.choices import TestStatuses
 from users.models import User

@@ -28,22 +28,19 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from rest_framework import status
-
-from core.api.v1.serializers import ProjectSerializer, AttachmentSerializer
+from core.api.v1.serializers import AttachmentSerializer, ProjectSerializer
 from core.selectors.attachments import AttachmentSelector, ParentType
 from core.selectors.projects import ProjectSelector
+from core.services.attachments import AttachmentService
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-
-from core.services.attachments import AttachmentService
 from tests_description.api.v1.serializers import TestSuiteTreeSerializer
 from tests_description.selectors.suites import TestSuiteSelector
 from tests_representation.api.v1.serializers import ParameterSerializer, TestPlanTreeSerializer
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.testplan import TestPlanSelector
-from tests_representation.services.results import TestResultService
 
 
 class ProjectViewSet(ModelViewSet):
@@ -81,7 +78,7 @@ class AttachmentViewSet(ModelViewSet):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_update(self, serializer):
-        serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
+        serializer.instance = AttachmentService().attachment_update(serializer.instance, serializer.validated_data)
 
     @action(detail=False)
     def attachments_by_parent(self, request, parent_type: str, pk):

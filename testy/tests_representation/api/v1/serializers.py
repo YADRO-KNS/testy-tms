@@ -163,6 +163,3 @@ class TestPlanOutputSerializer(ModelSerializer):
             return instance.name
         parameters = ParameterSelector().parameter_name_list_by_ids(instance.parameters)
         return '{0} [{1}]'.format(instance.name, ', '.join(parameters))
-
-
-

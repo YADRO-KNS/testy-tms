@@ -29,10 +29,9 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
+from core.models import Attachment
 from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
-
-from core.models import Attachment
 from tests_representation.models import Test, TestPlan, TestResult
 
 from testy.admin import BaseAdmin
@@ -58,5 +57,8 @@ class TestResultAdmin(BaseAdmin):
 
 @admin.register(Attachment)
 class AttachmentAdmin(BaseAdmin):
-    list_display = ('project', 'name', 'filename', 'content_type', 'size', 'content_type', 'object_id', 'content_object', 'user', 'file')
+    list_display = (
+        'project', 'name', 'filename', 'content_type',
+        'size', 'content_type', 'object_id', 'content_object', 'user', 'file'
+    )
     search_fields = ('name',)

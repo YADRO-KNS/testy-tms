@@ -29,7 +29,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
-from core.models import Project, Attachment
+from core.models import Attachment, Project
 from rest_framework.serializers import HyperlinkedIdentityField, ModelSerializer
 
 __all__ = (
@@ -51,7 +51,7 @@ class AttachmentSerializer(ModelSerializer):
     class Meta:
         model = Attachment
         fields = (
-        'project', 'name', 'filename', 'content_type', 'size', 'content_type', 'object_id', 'content_object', 'user',
-        'file', 'url')
+            'project', 'name', 'filename', 'file_extension', 'size', 'content_type', 'object_id', 'user', 'file', 'url'
+        )
 
-        # read_only_fields = ('project', 'name', 'filename', 'content_type', 'size', 'user', 'url')
+        read_only_fields = ('project', 'name', 'filename', 'file_extension', 'size', 'user', 'url')
