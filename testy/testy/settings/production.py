@@ -28,7 +28,12 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+import os
 
 from testy.settings.common import *  # noqa F401, F403
 
 DEBUG = False
+
+ALLOWED_HOSTS = ['tms.set.yadro.com', '127.0.0.1']
+
+SECRET_KEY = os.environ.get('SECRET_KEY')

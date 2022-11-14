@@ -1,0 +1,46 @@
+version: '3.9'
+services:
+  testy:
+    build:
+      context: testy
+      dockerfile: scripts/prod/Dockerfile
+      args:
+        - NODE_ENV=${NODE_ENV}
+        - REACT_APP_API_ROOT=${REACT_APP_API_ROOT}
+    volumes:
+      - './testy:/testy'
+      - './static:/testy/static'
+      - 'react_apps:/testy/testy_static/dist/assets/js/apps'
+    ports:
+      - "8001:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=testy.settings.production
+      - POSTGRES_NAME=${POSTGRES_NAME}
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_SERVICE_HOST=${POSTGRES_SERVICE_HOST}
+      - POSTGRES_SERVICE_PORT=${POSTGRES_SERVICE_PORT}
+      - COMPANY_DOMAIN=${COMPANY_DOMAIN}
+      - SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
+      - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:14.5-alpine
+    volumes:
+      - ./pg-data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_NAME}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  react_apps:
