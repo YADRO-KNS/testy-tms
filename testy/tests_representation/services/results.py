@@ -37,7 +37,7 @@ from tests_representation.models import Test, TestResult
 
 
 class TestResultService:
-    non_side_effect_fields = ['status', 'user', 'comment', 'is_archive', 'test_case_version']
+    non_side_effect_fields = ['status', 'user', 'comment', 'is_archive', 'test_case_version', 'execution_time']
 
     @transaction.atomic
     def result_create(self, data: Dict[str, Any], test_id: int) -> TestResult:
