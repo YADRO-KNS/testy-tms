@@ -28,14 +28,15 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+import json
+import os
 
 from testy.settings.common import *  # noqa F401, F403
 
 DEBUG = True
 
 SECRET_KEY = 'django-insecure-97ml+ugrkdl6s!h)_5vanzw4%d_lajo6j(08e84e7314*&)s3)'
-
-ALLOWED_HOSTS = ['tms-dev.set.yadro.com', '127.0.0.1']
+ALLOWED_HOSTS = json.loads(os.environ.get('ALLOWED_HOSTS'))
 INSTALLED_APPS += [  # noqa F405
     'django_extensions',
 ]
