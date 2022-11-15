@@ -1,0 +1,16 @@
+.logo {
+    height: 32px;
+    margin: 16px;
+    text-align: center;
+    font-size: 24px;
+    color: #EEEEEE;
+}
+
+.site-layout .site-layout-background {
+    background: #ffffff;
+    border-bottom: 1px solid #dddddd;
+}
+
+.ant-page-header {
+    background: #ffffff;
+}
