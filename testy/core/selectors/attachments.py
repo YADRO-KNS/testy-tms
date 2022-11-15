@@ -31,23 +31,24 @@
 from enum import Enum
 
 from core.models import Attachment
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import QuerySet
+from rest_framework.generics import get_object_or_404
 
 
-class ParentType(Enum):
-    TEST_PLAN = 'plans'
-    TEST_CASE = 'cases'
-    TEST_RESULT = 'results'
+class ContentObjectType(Enum):
+    TEST_PLAN = 'testplan'
+    TEST_CASE = 'testcase'
+    TEST_RESULT = 'testresult'
 
 
 class AttachmentSelector:
     def attachment_list(self) -> QuerySet[Attachment]:
         return Attachment.objects.all()
 
-    def attachment_list_by_parent(self, pk: str, parent_type: ParentType):
-        if parent_type == ParentType.TEST_PLAN:
-            return Attachment.objects.filter(plan=pk)
-        elif parent_type == ParentType.TEST_CASE:
-            return Attachment.objects.filter(case=pk)
-        elif parent_type == ParentType.TEST_RESULT:
-            return Attachment.objects.filter(result=pk)
+    def attachment_list_by_parent(self, content_type_name: str, pk: str):
+        content_type = get_object_or_404(ContentType, model=content_type_name)
+        return Attachment.objects.filter(
+            content_type__pk=content_type.pk,
+            object_id=pk
+        )

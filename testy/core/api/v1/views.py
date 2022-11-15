@@ -29,7 +29,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 from core.api.v1.serializers import AttachmentSerializer, ProjectSerializer
-from core.selectors.attachments import AttachmentSelector, ParentType
+from core.selectors.attachments import AttachmentSelector
 from core.selectors.projects import ProjectSelector
 from core.services.attachments import AttachmentService
 from rest_framework import status
@@ -81,8 +81,8 @@ class AttachmentViewSet(ModelViewSet):
         serializer.instance = AttachmentService().attachment_update(serializer.instance, serializer.validated_data)
 
     @action(detail=False)
-    def attachments_by_parent(self, request, parent_type: str, pk):
-        queryset = self.filter_queryset(AttachmentSelector().attachment_list_by_parent(pk, ParentType(parent_type)))
+    def attachments_by_parent(self, request, content_type_name: str, pk):
+        queryset = self.filter_queryset(AttachmentSelector().attachment_list_by_parent(content_type_name, pk))
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = AttachmentSerializer(page, many=True, context={'request': request})
