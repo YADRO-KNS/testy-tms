@@ -10,3 +10,4 @@ crispy-bootstrap5==0.7
 django_tables2==2.4.1
 django_filter==22.1
 drf-yasg==1.21.4
+django-cors-headers==3.13.0
