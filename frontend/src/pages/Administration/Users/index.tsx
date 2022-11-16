@@ -1,7 +1,7 @@
 import React from "react";
 import {Layout} from "antd";
 import {PageHeader} from 'antd';
-import UsersTable from "../../features/administration/users/UsersTable";
+import UsersTable from "../../../features/administration/users/UsersTable";
 
 const {Content} = Layout
 

@@ -3,9 +3,10 @@ import {Card, List, Tooltip} from "antd";
 import BriefcaseIcon from "../../components/Icons/BriefcaseIcon";
 import {useGetProjectsQuery} from "../../features/project/projectApi";
 import ContainerLoader from "../../components/Loader/ContainerLoader";
+import {Link, useNavigate} from "react-router-dom";
 
 const ProjectCards: React.FC = () => {
-
+    const navigate = useNavigate()
     const {data: projects, isLoading} = useGetProjectsQuery();
 
     if (isLoading) {
@@ -20,11 +21,12 @@ const ProjectCards: React.FC = () => {
             renderItem={item => (
                 <List.Item key={item.id}>
                     <Card
+                        onClick={() => navigate(`/projects/${item.id}`)}
                         hoverable
                         bodyStyle={{paddingBottom: 20}}
                         actions={[
                             <Tooltip title="Overview">
-                                <a>Overview</a>
+                                <Link to={`/projects/${item.id}`}>Overview</Link>
                             </Tooltip>,
                             <Tooltip title="Test Suites">
                                 <a>Test Suites</a>

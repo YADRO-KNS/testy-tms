@@ -13,8 +13,11 @@ export const projectApi = createApi({
     endpoints: builder => ({
         getProjects: builder.query<IProjectResponse[], void>({
             query: () => 'v1/projects/',
-        })
+        }),
+        getProject: builder.query<IProjectResponse, string>({
+            query: (projectId) => `v1/projects/${projectId}/`,
+        }),
     })
 })
 
-export const {useGetProjectsQuery} = projectApi;
+export const {useGetProjectsQuery, useGetProjectQuery} = projectApi;

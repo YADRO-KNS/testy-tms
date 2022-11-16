@@ -23,10 +23,10 @@ const Main: FC = () => {
                     </Menu.Item>
                     <Menu.SubMenu title="Administration" key="sub1" icon={<SettingOutlined/>}>
                         <Menu.Item icon={<TableOutlined/>} key="2">
-                            <Link to="/projects">Projects</Link>
+                            <Link to="/administration/projects">Projects</Link>
                         </Menu.Item>
                         <Menu.Item icon={<UserOutlined/>} key="3">
-                            <Link to="/users">Users</Link>
+                            <Link to="/administration/users">Users</Link>
                         </Menu.Item>
                     </Menu.SubMenu>
                 </Menu>
