@@ -34,6 +34,8 @@ from testy.settings.common import *  # noqa F401, F403
 
 DEBUG = False
 
-ALLOWED_HOSTS = json.loads(os.environ.get('ALLOWED_HOSTS', []))  # noqa F405
+loaded_hosts = os.environ.get('ALLOWED_HOSTS', [])
+
+ALLOWED_HOSTS = json.loads(loaded_hosts) if loaded_hosts else loaded_hosts  # noqa F405
 
 SECRET_KEY = os.environ.get('SECRET_KEY')  # noqa F405
