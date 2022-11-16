@@ -55,6 +55,8 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from plugins.url import plugin_api_urls, plugin_urls
+
 schema_view = get_schema_view(
     openapi.Info(
         title="testy API",
@@ -89,6 +91,10 @@ urlpatterns = [
 
     # Admin
     path('admin/', admin.site.urls),
+
+    # Plugins
+    path('plugins/', include((plugin_urls, 'plugins'))),
+    path('plugins/', include((plugin_api_urls, 'plugins-api'))),
 
     # Swagger
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
