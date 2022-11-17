@@ -23,6 +23,8 @@ services:
       - COMPANY_DOMAIN=${COMPANY_DOMAIN}
       - SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - SECRET_KEY=${SECRET_KEY}
     depends_on:
       db:
         condition: service_healthy
