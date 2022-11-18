@@ -163,7 +163,9 @@ python-dotenv==0.21.0
     #   -r ci-requirements.in
     #   -r requirements.in
 python-ldap==3.4.3
-    # via django-auth-ldap
+    # via
+    #   -r requirements.in
+    #   django-auth-ldap
 pytz==2022.2.1
     # via
     #   django

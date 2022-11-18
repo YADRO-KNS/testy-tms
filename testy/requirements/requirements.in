@@ -11,4 +11,5 @@ django_tables2==2.4.1
 django_filter==22.1
 drf-yasg==1.21.4
 flake8-copyright-validator==0.0.1
+python-ldap==3.4.3
 django-auth-ldap==4.1.0
