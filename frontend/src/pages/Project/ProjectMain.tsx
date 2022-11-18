@@ -33,9 +33,9 @@ const ProjectMain: React.FC = () => {
             </PageHeader>
 
             <Content style={{margin: '24px'}}>
-                <div className="site-layout-background" style={{padding: 24, minHeight: 360}}>
+                <div className="site-layout-background" style={{padding: 24}}>
                     <ProjectTabs projectId={projectId}/>
-                    <Outlet/>
+                    <Outlet context={projectId} />
                 </div>
             </Content>
 

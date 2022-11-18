@@ -15,6 +15,7 @@ import {
 } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 import {projectApi} from "../features/project/projectApi";
+import {suiteApi} from "../features/suite/suiteApi";
 
 const persistConfig = {
     key: 'root',
@@ -29,6 +30,7 @@ const rootReducer = combineReducers(
         [authApi.reducerPath]: authApi.reducer,
         [usersApi.reducerPath]: usersApi.reducer,
         [projectApi.reducerPath]: projectApi.reducer,
+        [suiteApi.reducerPath]: suiteApi.reducer,
     }
 )
 
@@ -43,7 +45,8 @@ export const store = configureStore({
         })
         .concat(authApi.middleware)
         .concat(projectApi.middleware)
-        .concat(usersApi.middleware),
+        .concat(usersApi.middleware)
+        .concat(suiteApi.middleware),
     devTools: process.env.NODE_ENV !== 'production',
 });
 
