@@ -33,6 +33,7 @@ from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.serializers import ModelSerializer
 from tests_description.models import TestCase, TestSuite
+from rest_framework import serializers
 
 
 class TestCaseSerializer(ModelSerializer):
@@ -46,10 +47,13 @@ class TestCaseSerializer(ModelSerializer):
 class TestSuiteTreeSerializer(ModelSerializer):
     children = SerializerMethodField()
     test_cases = SerializerMethodField('get_test_case_serializer')
+    key = serializers.IntegerField(source='id')
+    value = serializers.IntegerField(source='id')
+    title = serializers.CharField(source='name')
 
     class Meta:
         model = TestSuite
-        fields = ('id', 'name', 'level', 'children', 'test_cases')
+        fields = ('id', 'value', 'name', 'key', 'title', 'level', 'children', 'test_cases')
 
     def get_children(self, value):
         return self.__class__(value.get_children(), many=True).data
