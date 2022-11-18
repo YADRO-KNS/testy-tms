@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'mptt',
     'rest_framework',
+    'django_filters',
     'corsheaders',
     'simple_history',
     'crispy_forms',
@@ -189,6 +190,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
     ],
 }
 # Django CORS headers
