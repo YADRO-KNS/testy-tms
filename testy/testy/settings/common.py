@@ -44,6 +44,7 @@ import os
 from pathlib import Path
 
 from django.utils.translation import gettext_lazy as _
+
 from testy.utils import insert_plugins
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
