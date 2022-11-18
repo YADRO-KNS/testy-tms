@@ -35,6 +35,7 @@ from tests_description.selectors.cases import TestCaseSelector
 from tests_description.selectors.suites import TestSuiteSelector
 from tests_description.services.cases import TestCaseService
 from tests_description.services.suites import TestSuiteService
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class TestCaseViewSet(ModelViewSet):
@@ -51,6 +52,8 @@ class TestCaseViewSet(ModelViewSet):
 class TestSuiteViewSet(ModelViewSet):
     queryset = TestSuiteSelector().suite_list()
     serializer_class = TestSuiteSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['project']
 
     def perform_create(self, serializer: TestSuiteSerializer):
         serializer.instance = TestSuiteService().suite_create(serializer.validated_data)
