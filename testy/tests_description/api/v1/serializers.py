@@ -29,11 +29,11 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
+from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.serializers import ModelSerializer
 from tests_description.models import TestCase, TestSuite
-from rest_framework import serializers
 
 
 class TestCaseSerializer(ModelSerializer):
