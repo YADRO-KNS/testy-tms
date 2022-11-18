@@ -16,10 +16,13 @@ django==3.2
     # via
     #   -r ci-requirements.in
     #   crispy-bootstrap5
+    #   django-auth-ldap
     #   django-extensions
     #   django-js-asset
     #   djangorestframework
     #   djangorestframework-simplejwt
+django-auth-ldap==4.1.0
+    # via -r ci-requirements.in
 django-crispy-forms==1.14.0
     # via
     #   -r ci-requirements.in
@@ -69,6 +72,12 @@ psycopg2-binary==2.9.5
     # via -r ci-requirements.in
 py==1.11.0
     # via pytest
+pyasn1==0.4.8
+    # via
+    #   pyasn1-modules
+    #   python-ldap
+pyasn1-modules==0.2.8
+    # via python-ldap
 pycodestyle==2.9.1
     # via flake8
 pyflakes==2.5.0
@@ -90,6 +99,8 @@ python-dateutil==2.8.2
     # via faker
 python-dotenv==0.21.0
     # via -r ci-requirements.in
+python-ldap==3.4.3
+    # via django-auth-ldap
 pytz==2022.5
     # via
     #   django
