@@ -44,9 +44,7 @@ import os
 from pathlib import Path
 
 from django.utils.translation import gettext_lazy as _
-
-from utils.insert_plugins import insert_plugins
-
+from testy.utils import insert_plugins
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -79,7 +77,6 @@ INSTALLED_APPS = [
 ]
 
 TESTY_PLUGINS = [
-    'netbox_access_lists'
 ]
 
 MIDDLEWARE = [
