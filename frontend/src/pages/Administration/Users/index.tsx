@@ -1,5 +1,5 @@
 import React from "react";
-import {Layout} from "antd";
+import {Breadcrumb, Layout} from "antd";
 import {PageHeader} from 'antd';
 import UsersTable from "../../../features/administration/users/UsersTable";
 
@@ -7,21 +7,19 @@ const {Content} = Layout
 
 const Users = () => {
 
-    const routes = [
-        {
-            path: '#',
-            breadcrumbName: 'Administration',
-        },
-        {
-            path: '#',
-            breadcrumbName: 'Users',
-        },
-    ];
+    const breadcrumbItems = [
+        <Breadcrumb.Item key="administration">
+            Administration
+        </Breadcrumb.Item>,
+        <Breadcrumb.Item key="users">
+            Users
+        </Breadcrumb.Item>,
+    ]
 
     return (
         <>
             <PageHeader
-                breadcrumb={{routes}}
+                breadcrumbRender={() => <Breadcrumb>{breadcrumbItems}</Breadcrumb>}
                 title="Users"
             >
             </PageHeader>
