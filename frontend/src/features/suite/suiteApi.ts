@@ -11,7 +11,7 @@ export const suiteApi = createApi({
     reducerPath: 'suiteApi',
     baseQuery: baseQueryWithReauth,
     endpoints: builder => ({
-        getSuite: builder.query<ISuiteResponse[], any>({
+        getSuite: builder.query<ISuiteResponse, any>({
             query: (suiteId) => ({
                 url: `v1/suites/${suiteId}/`,
             })
