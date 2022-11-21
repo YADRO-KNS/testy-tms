@@ -1,24 +1,23 @@
 import React from "react";
-import {Layout, PageHeader} from "antd";
+import {Breadcrumb, Layout, PageHeader} from "antd";
+import {Link} from "react-router-dom";
 
 const {Content} = Layout
 
 const Projects = () => {
-    const routes = [
-        {
-            path: '#',
-            breadcrumbName: 'Administration',
-        },
-        {
-            path: '#',
-            breadcrumbName: 'Projects',
-        },
-    ];
+    const breadcrumbItems = [
+        <Breadcrumb.Item key="administration">
+            Administration
+        </Breadcrumb.Item>,
+        <Breadcrumb.Item key="projects">
+            Projects
+        </Breadcrumb.Item>,
+    ]
 
     return (
         <>
             <PageHeader
-                breadcrumb={{routes}}
+                breadcrumbRender={() => <Breadcrumb>{breadcrumbItems}</Breadcrumb>}
                 title="Projects"
             >
             </PageHeader>
