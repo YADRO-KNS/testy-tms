@@ -58,3 +58,16 @@ class TestSuiteViewSet(ModelViewSet):
 
     def perform_update(self, serializer: TestSuiteSerializer):
         serializer.instance = TestSuiteService().suite_update(serializer.instance, serializer.validated_data)
+
+    @action(detail=False)
+    def suites_get(self, request):
+        qs = None
+        project = request.GET.get('project')
+        treeview = True if request.GET.get('treeview') == 'True' else False
+        if project:
+            qs = TestSuiteSelector().suite_project_root_list(project)
+        if qs and treeview:
+            serializer = TestSuiteTreeSerializer(qs, many=True, context={'request': request})
+        else:
+            serializer = TestSuiteSerializer(qs if qs else self.queryset, many=True, context={'request': request})
+        return Response(serializer.data)

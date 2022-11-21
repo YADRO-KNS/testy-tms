@@ -52,21 +52,3 @@ class Project(BaseModel):
 
     def __str__(self) -> str:
         return self.name
-
-
-# class ProjectTreeSerializer(ModelSerializer):
-#     children = SerializerMethodField()
-#     test_cases = SerializerMethodField('get_project_serializer')
-#
-#     class Meta:
-#         model = Project
-#         fields = ('name', 'description')
-#
-#     def get_children(self, value):
-#         return self.__class__(value.get_children(), many=True).data
-#
-#     def get_project_serializer(self, obj):
-#         serializer_context = {'request': self.context.get('request')}
-#         test_suites = TestSuite.objects.all().filter(suite=obj)
-#         serializer = TestSuiteSerializer(test_suites, many=True, context=serializer_context)
-#         return serializer.data
