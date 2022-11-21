@@ -1,15 +1,20 @@
-import React, {useContext, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {Link, Outlet, useParams} from "react-router-dom";
 import {PageHeader, Breadcrumb, Layout} from "antd";
 import {useGetProjectQuery} from "../../features/project/projectApi";
 import ContainerLoader from "../../components/Loader/ContainerLoader";
 import ProjectTabs from "./ProjectTabs";
+import {MenuContext} from "../../layouts/Main";
 
 const {Content} = Layout
 
 export const ProjectActiveTabContext = React.createContext<any>("")
 
 const ProjectMain: React.FC = () => {
+    const {setActiveMenu} = useContext(MenuContext)
+    useEffect(() => {
+        setActiveMenu(["dashboard"])
+    }, [])
     const {projectId} = useParams<{ projectId: any }>();
     const {data: project, isLoading} = useGetProjectQuery(projectId)
     const [projectActiveTab, setProjectActiveTab] = useState("")

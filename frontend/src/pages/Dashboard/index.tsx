@@ -1,10 +1,15 @@
-import React from "react";
+import React, {useContext, useEffect} from "react";
 import {Layout} from "antd";
 import ProjectCards from "./ProjectCards";
+import {MenuContext} from "../../layouts/Main";
 
 const {Content} = Layout
 
 const Dashboard = () => {
+    const {setActiveMenu} = useContext(MenuContext)
+    useEffect(() => {
+        setActiveMenu(["dashboard"])
+    }, [])
     return (
         <>
             <Content style={{margin: '24px'}}>
