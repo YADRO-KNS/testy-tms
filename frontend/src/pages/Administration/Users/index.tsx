@@ -1,12 +1,17 @@
-import React from "react";
+import React, {useContext, useEffect} from "react";
 import {Breadcrumb, Layout} from "antd";
 import {PageHeader} from 'antd';
 import UsersTable from "../../../features/administration/users/UsersTable";
+import {MenuContext} from "../../../layouts/Main";
 
 const {Content} = Layout
 
 const Users = () => {
-
+    const {setActiveMenu, setOpenSubMenu} = useContext(MenuContext)
+    useEffect(() => {
+        setOpenSubMenu(["administration"])
+        setActiveMenu(["administration.users"])
+    }, [])
     const breadcrumbItems = [
         <Breadcrumb.Item key="administration">
             Administration

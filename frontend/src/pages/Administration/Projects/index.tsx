@@ -1,10 +1,16 @@
-import React from "react";
+import React, {useContext, useEffect} from "react";
 import {Breadcrumb, Layout, PageHeader} from "antd";
-import {Link} from "react-router-dom";
+import {MenuContext} from "../../../layouts/Main";
 
 const {Content} = Layout
 
 const Projects = () => {
+    const {setActiveMenu, setOpenSubMenu} = useContext(MenuContext)
+    useEffect(() => {
+        setOpenSubMenu(["administration"])
+        setActiveMenu(["administration.projects"])
+    }, [])
+
     const breadcrumbItems = [
         <Breadcrumb.Item key="administration">
             Administration
