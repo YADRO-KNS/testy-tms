@@ -40,6 +40,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+import json
 import os
 from pathlib import Path
 
@@ -54,6 +55,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 VERSION = '0.1.0'
+
+loaded_hosts = os.environ.get('ALLOWED_HOSTS', [])
+
+ALLOWED_HOSTS = json.loads(loaded_hosts) if loaded_hosts else loaded_hosts
 
 # Application definition
 INSTALLED_APPS = [
@@ -171,6 +176,9 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'testy_static/dist/assets',
 ]
+
+STATIC_ROOT = 'static'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
