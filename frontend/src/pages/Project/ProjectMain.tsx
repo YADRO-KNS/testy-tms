@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useContext, useState} from "react";
 import {Link, Outlet, useParams} from "react-router-dom";
 import {PageHeader, Breadcrumb, Layout} from "antd";
 import {useGetProjectQuery} from "../../features/project/projectApi";
@@ -7,12 +7,12 @@ import ProjectTabs from "./ProjectTabs";
 
 const {Content} = Layout
 
+export const ProjectActiveTabContext = React.createContext<any>("")
 
 const ProjectMain: React.FC = () => {
     const {projectId} = useParams<{ projectId: any }>();
-
     const {data: project, isLoading} = useGetProjectQuery(projectId)
-
+    const [projectActiveTab, setProjectActiveTab] = useState("")
     if (isLoading) return <ContainerLoader/>
 
     const breadcrumbItems = [
@@ -31,14 +31,14 @@ const ProjectMain: React.FC = () => {
                 title={project?.name}
             >
             </PageHeader>
-
-            <Content style={{margin: '24px'}}>
-                <div className="site-layout-background" style={{padding: 24}}>
-                    <ProjectTabs projectId={projectId}/>
-                    <Outlet context={projectId} />
-                </div>
-            </Content>
-
+            <ProjectActiveTabContext.Provider value={{projectActiveTab, setProjectActiveTab}}>
+                <Content style={{margin: '24px'}}>
+                    <div className="site-layout-background" style={{padding: 24}}>
+                        <ProjectTabs projectId={projectId}/>
+                        <Outlet context={projectId}/>
+                    </div>
+                </Content>
+            </ProjectActiveTabContext.Provider>
         </>
     )
 }
