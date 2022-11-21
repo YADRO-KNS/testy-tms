@@ -11,3 +11,4 @@ django_tables2==2.4.1
 django_filter==22.1
 drf-yasg==1.21.4
 flake8-copyright-validator==0.0.1
+gunicorn==20.1.0
