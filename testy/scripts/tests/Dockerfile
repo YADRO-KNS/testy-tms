@@ -11,6 +11,8 @@ RUN apk update && \
 RUN mkdir /testy
 WORKDIR /testy
 
+RUN apk add build-base openldap-dev python3-dev
+
 COPY ./requirements/dev-requirements.txt /testy/requirements/
 
 RUN pip install -r requirements/dev-requirements.txt
