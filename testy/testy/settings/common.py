@@ -44,7 +44,7 @@ import json
 import os
 from pathlib import Path
 
-import ldap
+from _ldap import SCOPE_SUBTREE, OPT_REFERRALS
 from django.utils.translation import gettext_lazy as _
 from django_auth_ldap.config import GroupOfNamesType, LDAPSearch
 
@@ -221,16 +221,16 @@ AUTH_LDAP_BIND_PASSWORD = 'Ue!ng#eeveeCh7r'
 
 AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
     'dc=corp,dc=yadro,dc=com',
-    ldap.SCOPE_SUBTREE,
+    SCOPE_SUBTREE,
     '(objectClass=top)',
 )
 AUTH_LDAP_GROUP_TYPE = GroupOfNamesType()
 
-AUTH_LDAP_CONNECTION_OPTIONS = {ldap.OPT_REFERRALS: 0}
+AUTH_LDAP_CONNECTION_OPTIONS = {OPT_REFERRALS: 0}
 
 AUTH_LDAP_USER_SEARCH = LDAPSearch(
     'dc=corp,dc=yadro,dc=com',
-    ldap.SCOPE_SUBTREE,
+    SCOPE_SUBTREE,
     '(sAMAccountName=%(user)s)',  # noqa: WPS323
 )
 
