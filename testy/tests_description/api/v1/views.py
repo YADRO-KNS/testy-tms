@@ -28,8 +28,7 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from rest_framework.decorators import action
-from rest_framework.response import Response
+
 from rest_framework.viewsets import ModelViewSet
 from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer, TestSuiteTreeSerializer
 from tests_description.selectors.cases import TestCaseSelector
@@ -59,15 +58,7 @@ class TestSuiteViewSet(ModelViewSet):
     def perform_update(self, serializer: TestSuiteSerializer):
         serializer.instance = TestSuiteService().suite_update(serializer.instance, serializer.validated_data)
 
-    @action(detail=False)
-    def suites_get(self, request):
-        qs = None
-        project = request.GET.get('project')
-        treeview = True if request.GET.get('treeview') == 'True' else False
-        if project:
-            qs = TestSuiteSelector().suite_project_root_list(project)
-        if qs and treeview:
-            serializer = TestSuiteTreeSerializer(qs, many=True, context={'request': request})
-        else:
-            serializer = TestSuiteSerializer(qs if qs else self.queryset, many=True, context={'request': request})
-        return Response(serializer.data)
+    def get_serializer_class(self):
+        if self.request.GET.get('treeview') == 'True':
+            return TestSuiteTreeSerializer
+        return TestSuiteSerializer
