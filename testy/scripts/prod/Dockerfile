@@ -37,9 +37,9 @@ RUN apk update && \
 RUN mkdir /testy
 WORKDIR /testy
 
-COPY ./requirements/dev-requirements.txt /testy/requirements/
+COPY ./requirements/requirements.txt /testy/requirements/
 
-RUN pip install -r requirements/dev-requirements.txt
+RUN pip install -r requirements/requirements.txt
 
 COPY ./scripts/entrypoint.sh /testy/scripts/entrypoint.sh
 RUN chmod +x /testy/scripts/entrypoint.sh
