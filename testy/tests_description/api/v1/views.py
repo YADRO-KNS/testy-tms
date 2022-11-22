@@ -41,6 +41,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 class TestCaseViewSet(ModelViewSet):
     queryset = TestCaseSelector().case_list()
     serializer_class = TestCaseSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['project', 'suite']
 
     def perform_create(self, serializer: TestCaseSerializer):
         serializer.instance = TestCaseService().case_create(serializer.validated_data)

@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'mptt',
     'rest_framework',
+    'django_filters',
     'simple_history',
     'crispy_forms',
     'crispy_bootstrap5',
