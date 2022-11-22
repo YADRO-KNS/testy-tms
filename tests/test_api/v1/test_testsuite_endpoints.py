@@ -34,10 +34,13 @@ from http import HTTPStatus
 
 import pytest
 from django.forms import model_to_dict
+
+from tests.factories import ProjectFactory
+from tests_description.api.v1.serializers import TestSuiteSerializer, TestSuiteTreeSerializer
 from tests_description.models import TestSuite
 
 from tests import constants
-from tests.commons import RequestType
+from tests.commons import RequestType, model_to_dict_via_serializer
 from tests.error_messages import REQUIRED_FIELD_MSG
 
 
@@ -125,3 +128,47 @@ class TestSuiteEndpoints:
             reverse_kwargs={'pk': test_suite.pk}
         )
         assert not TestSuite.objects.count(), f'Test suite with id "{test_suite.id}" was not deleted.'
+
+
+@pytest.mark.django_db
+class TestSuiteEndpointsQueryParams:
+    view_name_list = 'api:v1:testsuite-list'
+
+    def test_suite_filter(self, api_client, authorized_superuser, test_suite_factory, project_factory):
+        projects = [project_factory() for _ in range(3)]
+        for _ in range(2):
+            for project in projects:
+                test_suite_factory(project=project)
+
+        for project in projects:
+            suites = TestSuite.objects.filter(project=project.id)
+            expected_dict = model_to_dict_via_serializer(suites, serializer_class=TestSuiteSerializer, many=True)
+            response = api_client.send_request(
+                self.view_name_list,
+                expected_status=HTTPStatus.OK,
+                request_type=RequestType.GET,
+                query_params={'project': project.id}
+            )
+            actual_dict = json.loads(response.content)
+            assert actual_dict == expected_dict, 'Actual and expected dict are different.'
+
+    def test_suite_treeview(self, api_client, authorized_superuser, test_suite_factory, project_factory):
+        projects = [project_factory() for _ in range(3)]
+
+        for _ in range(2):
+            for project in projects:
+                test_suite_factory(project=project)
+
+        for project in projects:
+            suites = TestSuite.objects.filter(project=project.id)
+            expected_dict = model_to_dict_via_serializer(suites, serializer_class=TestSuiteTreeSerializer, many=True)
+            incorrect_dict = model_to_dict_via_serializer(suites, serializer_class=TestSuiteSerializer, many=True)
+            response = api_client.send_request(
+                self.view_name_list,
+                expected_status=HTTPStatus.OK,
+                request_type=RequestType.GET,
+                query_params={'project': project.id, 'treeview': 'True'}
+            )
+            actual_dict = json.loads(response.content)
+            assert actual_dict == expected_dict, 'Actual and expected dict are different.'
+            assert actual_dict != incorrect_dict, 'SuiteSerializer is used to output suites with treeview param.'
