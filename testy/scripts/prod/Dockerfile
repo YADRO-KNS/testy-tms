@@ -17,7 +17,6 @@ ENV REACT_APP_API_ROOT $REACT_APP_API_ROOT
 ARG NODE_ENV
 ENV NODE_ENV $NODE_ENV
 
-RUN echo $NODE_ENV
 RUN cd /frontend/test-runs-app && npm install && npm run build
 RUN cd /frontend/test-suites-app && npm install && npm run build
 
