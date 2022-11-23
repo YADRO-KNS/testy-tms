@@ -34,14 +34,13 @@ from http import HTTPStatus
 
 import pytest
 from django.forms import model_to_dict
-
-from tests.factories import ProjectFactory, TestSuiteFactory
 from tests_description.api.v1.serializers import TestCaseSerializer
 from tests_description.models import TestCase
 
 from tests import constants
 from tests.commons import RequestType, model_to_dict_via_serializer
 from tests.error_messages import REQUIRED_FIELD_MSG
+from tests.factories import ProjectFactory, TestSuiteFactory
 
 
 @pytest.mark.django_db

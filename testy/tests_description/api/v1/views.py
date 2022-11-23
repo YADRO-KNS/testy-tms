@@ -29,13 +29,13 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.viewsets import ModelViewSet
 from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer, TestSuiteTreeSerializer
 from tests_description.selectors.cases import TestCaseSelector
 from tests_description.selectors.suites import TestSuiteSelector
 from tests_description.services.cases import TestCaseService
 from tests_description.services.suites import TestSuiteService
-from django_filters.rest_framework import DjangoFilterBackend
 
 
 class TestCaseViewSet(ModelViewSet):

@@ -35,9 +35,9 @@ from typing import Any, Dict, List, Union
 
 from django.db.models import QuerySet
 from django.forms import model_to_dict
+from django.test.client import RequestFactory
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
-from django.test.client import RequestFactory
 
 
 class RequestType(Enum):
