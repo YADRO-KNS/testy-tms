@@ -29,13 +29,17 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
+import os
+import random
+import time
+from hashlib import sha256
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.core.validators import FileExtensionValidator
 from django.db import models
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext_lazy
 
 from testy.models import BaseModel
 
@@ -47,15 +51,26 @@ __all__ = (
 UserModel = get_user_model()
 
 
+def get_file_path(instance, filename):
+    dir_hash = []
+    name, extension = os.path.splitext(filename)
+    filename = f'{sha256(name.encode()).hexdigest()}{extension}'
+    for _ in range(3):
+        hash_str = sha256(str(time.time()).encode()).hexdigest()
+        for _ in range(2):  # idx to avoid linter error
+            dir_hash.append(random.choice(hash_str))
+    return f"{'/'.join([''.join(x) for x in zip(dir_hash[0::2], dir_hash[1::2])])}/{filename}"
+
+
 class Project(BaseModel):
-    name = models.CharField(_('name'), max_length=settings.CHAR_FIELD_MAX_LEN)
-    description = models.TextField(_('description'), blank=True)
+    name = models.CharField('name', max_length=settings.CHAR_FIELD_MAX_LEN)
+    description = models.TextField('description', blank=True)
     is_archive = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('name',)
-        verbose_name = _('project')
-        verbose_name_plural = _('projects')
+        verbose_name = gettext_lazy('project')
+        verbose_name_plural = gettext_lazy('projects')
 
     def __str__(self) -> str:
         return self.name
@@ -63,23 +78,27 @@ class Project(BaseModel):
 
 class Attachment(BaseModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    # Name of file without extension
     name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
+    # Full filename
     filename = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
     file_extension = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
+    # Size of file in bytes
     size = models.PositiveBigIntegerField()
-
+    # Parent object table, example: core_project
     content_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
     )
-
+    # Id of object from table of content_type
     object_id = models.PositiveIntegerField()
     comment = models.TextField(blank=True)
+    # Instance of parent object
     content_object = GenericForeignKey('content_type', 'object_id')
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     file = models.FileField(
         max_length=150,
-        upload_to='attachments'
+        upload_to=get_file_path
     )
 
     def __str__(self):

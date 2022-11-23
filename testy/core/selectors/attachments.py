@@ -30,9 +30,7 @@
 # <http://www.gnu.org/licenses/>.
 
 from core.models import Attachment
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import QuerySet
-from rest_framework.generics import get_object_or_404
 
 
 class AttachmentSelector:
