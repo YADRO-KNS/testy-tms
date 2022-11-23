@@ -40,7 +40,6 @@ from tests_description.models import TestSuite
 from tests import constants
 from tests.commons import RequestType, model_to_dict_via_serializer
 from tests.error_messages import REQUIRED_FIELD_MSG
-from tests.factories import ProjectFactory
 
 
 @pytest.mark.django_db
