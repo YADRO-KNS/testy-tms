@@ -60,9 +60,6 @@ parameters_by_project = views.ProjectViewSet.as_view({
     'get': 'parameters_by_project'
 })
 
-attachemtns_by_parent = views.AttachmentViewSet.as_view({
-    'get': 'attachments_by_parent'
-})
 
 urlpatterns = [
     path('projects/', project_list, name='project-list'),
@@ -70,7 +67,6 @@ urlpatterns = [
     path('projects/<int:pk>/suites/', suites_by_project, name='project-suites'),
     path('projects/<int:pk>/testplans/', testplans_by_project, name='project-testplans'),
     path('projects/<int:pk>/parameters/', parameters_by_project, name='project-parameters'),
-    path('<str:content_type_name>/<int:pk>/attachments/', attachemtns_by_parent, name='attachments-by-parent')
 ]
 
 urlpatterns += router.urls

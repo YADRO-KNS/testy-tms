@@ -28,18 +28,11 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from enum import Enum
 
 from core.models import Attachment
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import QuerySet
 from rest_framework.generics import get_object_or_404
-
-
-class ContentObjectType(Enum):
-    TEST_PLAN = 'testplan'
-    TEST_CASE = 'testcase'
-    TEST_RESULT = 'testresult'
 
 
 class AttachmentSelector:

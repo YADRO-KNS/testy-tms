@@ -74,19 +74,10 @@ class AttachmentViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         attachments = AttachmentService().attachment_create(serializer.validated_data, request)
+        if isinstance(attachments, str):
+            return Response(
+                {'details': [f'File type {attachments} is not allowed']},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         data = [self.get_serializer(attachment, context={'request': request}).data for attachment in attachments]
         return Response(data, status=status.HTTP_201_CREATED)
-
-    def perform_update(self, serializer):
-        serializer.instance = AttachmentService().attachment_update(serializer.instance, serializer.validated_data)
-
-    @action(detail=False)
-    def attachments_by_parent(self, request, content_type_name: str, pk):
-        queryset = self.filter_queryset(AttachmentSelector().attachment_list_by_parent(content_type_name, pk))
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = AttachmentSerializer(page, many=True, context={'request': request})
-            return self.get_paginated_response(serializer.data)
-
-        serializer = AttachmentSerializer(queryset, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)

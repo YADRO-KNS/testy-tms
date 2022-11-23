@@ -71,16 +71,14 @@ class Attachment(BaseModel):
     content_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
-        limit_choices_to={'model__in': ('testsuite', 'testplan', 'testresult')}
     )
 
     object_id = models.PositiveIntegerField()
-
+    comment = models.TextField(blank=True)
     content_object = GenericForeignKey('content_type', 'object_id')
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     file = models.FileField(
         max_length=150,
-        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'txt', 'png', 'jpg', 'jpeg'])],
         upload_to='attachments'
     )
 
