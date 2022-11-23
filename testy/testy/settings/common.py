@@ -175,7 +175,7 @@ STATICFILES_DIRS = [
     BASE_DIR / 'testy_static/dist/assets',
 ]
 
-ALLOWED_FILE_EXTENSIONS = ['txt']
+ALLOWED_FILE_EXTENSIONS = []
 
 STATIC_ROOT = 'static'
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'

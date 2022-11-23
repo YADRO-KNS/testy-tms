@@ -37,7 +37,8 @@ from core.models import Attachment, Project
 
 class AttachmentService:
     non_side_effect_fields = [
-        'project', 'name', 'filename', 'file_extension', 'content_type', 'size', 'object_id', 'user', 'file', 'url'
+        'project', 'name', 'filename', 'comment', 'file_extension', 'content_type', 'size', 'object_id', 'user', 'file',
+        'url'
     ]
 
     def attachment_create(self, data: Dict[str, Any], request) -> Union[List[Attachment], str]:

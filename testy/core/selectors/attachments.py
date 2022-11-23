@@ -38,10 +38,3 @@ from rest_framework.generics import get_object_or_404
 class AttachmentSelector:
     def attachment_list(self) -> QuerySet[Attachment]:
         return Attachment.objects.all()
-
-    def attachment_list_by_parent(self, content_type_name: str, pk: str):
-        content_type = get_object_or_404(ContentType, model=content_type_name)
-        return Attachment.objects.filter(
-            content_type__pk=content_type.pk,
-            object_id=pk
-        )
