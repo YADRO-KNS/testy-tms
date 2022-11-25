@@ -32,10 +32,10 @@ from core.api.v1.serializers import AttachmentSerializer, ProjectSerializer
 from core.selectors.attachments import AttachmentSelector
 from core.selectors.projects import ProjectSelector
 from core.services.attachments import AttachmentService
-from rest_framework import status
+from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from tests_description.api.v1.serializers import TestSuiteTreeSerializer
 from tests_description.selectors.suites import TestSuiteSelector
 from tests_representation.api.v1.serializers import ParameterSerializer, TestPlanTreeSerializer
@@ -66,7 +66,7 @@ class ProjectViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-class AttachmentViewSet(ModelViewSet):
+class AttachmentViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
     queryset = AttachmentSelector().attachment_list()
     serializer_class = AttachmentSerializer
 

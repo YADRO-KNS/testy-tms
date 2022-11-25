@@ -35,7 +35,14 @@ from rest_framework import routers
 
 router = routers.SimpleRouter()
 
-router.register('attachments', views.AttachmentViewSet)
+attachment_list = views.AttachmentViewSet.as_view({
+    'get': 'list',
+    'post': 'create'
+})
+
+attachment_detail = views.AttachmentViewSet.as_view({
+    'get': 'retrieve'
+})
 
 project_list = views.ProjectViewSet.as_view({
     'get': 'list',
@@ -60,13 +67,15 @@ parameters_by_project = views.ProjectViewSet.as_view({
     'get': 'parameters_by_project'
 })
 
-
 urlpatterns = [
     path('projects/', project_list, name='project-list'),
     path('projects/<int:pk>/', project_detail, name='project-detail'),
     path('projects/<int:pk>/suites/', suites_by_project, name='project-suites'),
     path('projects/<int:pk>/testplans/', testplans_by_project, name='project-testplans'),
     path('projects/<int:pk>/parameters/', parameters_by_project, name='project-parameters'),
+
+    path('attachments/', attachment_list, name='attachment-list'),
+    path('attachments/<int:pk>/', attachment_detail, name='attachment-detail')
 ]
 
 urlpatterns += router.urls
