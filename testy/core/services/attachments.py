@@ -32,7 +32,6 @@ import os
 from typing import Any, Dict, List, Union
 
 from core.models import Attachment, Project
-from django.conf import settings
 
 
 class AttachmentService:
@@ -45,8 +44,6 @@ class AttachmentService:
         attachments_instances = []
         for file in request.data.getlist('file'):
             name, extension = os.path.splitext(file.name)
-            if settings.ALLOWED_FILE_EXTENSIONS and extension not in settings.ALLOWED_FILE_EXTENSIONS:
-                return file.content_type
             parent_object = data['content_type'].get_object_for_this_type(pk=data['object_id'])
             project = parent_object if isinstance(parent_object, Project) else parent_object.project
             data.update(

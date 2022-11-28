@@ -53,12 +53,3 @@ class TestAdmin(BaseAdmin):
 class TestResultAdmin(BaseAdmin):
     list_display = ('test', 'status', 'comment', 'user')
     search_fields = ('name',)
-
-
-@admin.register(Attachment)
-class AttachmentAdmin(BaseAdmin):
-    list_display = (
-        'project', 'name', 'filename', 'content_type',
-        'size', 'content_type', 'object_id', 'content_object', 'user', 'file'
-    )
-    search_fields = ('name',)

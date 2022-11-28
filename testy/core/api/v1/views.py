@@ -74,10 +74,5 @@ class AttachmentViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, mixins
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         attachments = AttachmentService().attachment_create(serializer.validated_data, request)
-        if isinstance(attachments, str):
-            return Response(
-                {'details': [f'File type {attachments} is not allowed']},
-                status=status.HTTP_400_BAD_REQUEST
-            )
         data = [self.get_serializer(attachment, context={'request': request}).data for attachment in attachments]
-        return Response(data, status=status.HTTP_201_CREATED)
+        return Response(data, status=status.HTTP_404_NOT_FOUND)

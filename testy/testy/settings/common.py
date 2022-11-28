@@ -175,7 +175,7 @@ STATICFILES_DIRS = [
     BASE_DIR / 'testy_static/dist/assets',
 ]
 
-# extensions should be specified with dot (.txt)
+# extensions should be specified with dot (.txt). If no extensions specified all extensions are allowed.
 ALLOWED_FILE_EXTENSIONS = []
 
 STATIC_ROOT = 'static'

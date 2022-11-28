@@ -29,7 +29,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
-from core.models import Project
+from core.models import Project, Attachment
 from django.contrib import admin
 
 from testy.admin import BaseAdmin
@@ -38,4 +38,13 @@ from testy.admin import BaseAdmin
 @admin.register(Project)
 class ProjectAdmin(BaseAdmin):
     list_display = ('name',)
+    search_fields = ('name',)
+
+
+@admin.register(Attachment)
+class AttachmentAdmin(BaseAdmin):
+    list_display = (
+        'project', 'name', 'filename', 'content_type',
+        'size', 'content_type', 'object_id', 'content_object', 'user', 'file'
+    )
     search_fields = ('name',)

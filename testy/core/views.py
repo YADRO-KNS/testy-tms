@@ -28,6 +28,17 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+import mimetypes
+import os
+
+from django.conf import settings
+from django.contrib.admin.utils import unquote
+from django.contrib.auth.decorators import login_required
+from django.http import FileResponse
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from core.models import Project
 from django.views.generic import DetailView
 from views import Tab
@@ -62,3 +73,15 @@ class ProjectSuitesView(ProjectBaseView, DetailView):
     model = Project
     template_name = 'testy/project/test_suites.html'
     active_tab = 'project_suites'
+
+
+class MediaView(APIView):
+
+    def get(self, request, path):
+        if not os.path.exists(f"{settings.MEDIA_ROOT}/{path}"):
+            return Response("No such file exists.", status=status.HTTP_404_NOT_FOUND)
+        mimetype, encoding = mimetypes.guess_type(path, strict=True)
+        if not mimetype:
+            mimetype = "text/html"
+        file_path = unquote(os.path.join(settings.MEDIA_ROOT, path)).encode("utf-8")
+        return FileResponse(open(file_path, "rb"), content_type=mimetype)

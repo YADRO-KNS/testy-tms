@@ -29,10 +29,6 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
-import os
-import random
-import time
-from hashlib import sha256
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -48,18 +44,11 @@ __all__ = (
     'Attachment'
 )
 
+from utils import get_attachments_file_path
+
+from validators import ExtensionValidator, ProjectValidator
+
 UserModel = get_user_model()
-
-
-def get_file_path(instance, filename):
-    dir_hash = []
-    name, extension = os.path.splitext(filename)
-    filename = f'{sha256(name.encode()).hexdigest()}{extension}'
-    for _ in range(3):
-        hash_str = sha256(str(time.time()).encode()).hexdigest()
-        for _ in range(2):  # idx to avoid linter error
-            dir_hash.append(random.choice(hash_str))
-    return f"{'/'.join([''.join(x) for x in zip(dir_hash[0::2], dir_hash[1::2])])}/{filename}"
 
 
 class Project(BaseModel):
@@ -89,6 +78,7 @@ class Attachment(BaseModel):
     content_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
+        validators=[ProjectValidator()]
     )
     # Id of object from table of content_type
     object_id = models.PositiveIntegerField()
@@ -98,7 +88,8 @@ class Attachment(BaseModel):
     user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     file = models.FileField(
         max_length=150,
-        upload_to=get_file_path
+        upload_to=get_attachments_file_path,
+        validators=[ExtensionValidator()]
     )
 
     def __str__(self):
