@@ -28,7 +28,9 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
+from core.api.v1.serializers import AttachmentSerializer
+from core.models import Attachment
+from django.contrib.contenttypes.models import ContentType
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
 from rest_framework.serializers import ModelSerializer
@@ -90,6 +92,29 @@ class TestResultSerializer(ModelSerializer):
         )
 
         read_only_fields = ('test_case_version', 'project', 'test')
+
+
+class TestResultRetrieveSerializer(ModelSerializer):
+    url = HyperlinkedIdentityField(view_name='api:v1:testresult-detail')
+    attachments = SerializerMethodField('get_serialized_attachments')
+
+    class Meta:
+        model = TestResult
+        fields = (
+            'id', 'project', 'status', 'test', 'attachments', 'user', 'comment', 'is_archive', 'test_case_version',
+            'created_at', 'updated_at', 'url', 'execution_time'
+        )
+
+        read_only_fields = ('test_case_version', 'project', 'test')
+
+    def get_serialized_attachments(self, obj):
+        serializer_context = {'request': self.context.get('request')}
+        attachments = Attachment.objects.filter(
+            content_type=ContentType.objects.get_for_model(TestResult).id,
+            object_id=obj.id
+        )
+        serializer = AttachmentSerializer(attachments, many=True, context=serializer_context)
+        return serializer.data
 
 
 class TestPlanTreeSerializer(ModelSerializer):

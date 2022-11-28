@@ -28,7 +28,9 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
+from core.api.v1.serializers import AttachmentSerializer
+from core.models import Attachment
+from django.contrib.contenttypes.models import ContentType
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.serializers import ModelSerializer
@@ -41,6 +43,24 @@ class TestCaseSerializer(ModelSerializer):
     class Meta:
         model = TestCase
         fields = ('id', 'name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'url')
+
+
+class TestCaseRetrieveSerializer(ModelSerializer):
+    url = HyperlinkedIdentityField(view_name='api:v1:testcase-detail')
+    attachments = SerializerMethodField('get_serialized_attachments')
+
+    class Meta:
+        model = TestCase
+        fields = ('id', 'name', 'project', 'attachments', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'url')
+
+    def get_serialized_attachments(self, obj):
+        serializer_context = {'request': self.context.get('request')}
+        attachments = Attachment.objects.filter(
+            content_type=ContentType.objects.get_for_model(TestCase).id,
+            object_id=obj.id
+        )
+        serializer = AttachmentSerializer(attachments, many=True, context=serializer_context)
+        return serializer.data
 
 
 class TestSuiteTreeSerializer(ModelSerializer):

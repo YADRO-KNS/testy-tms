@@ -28,9 +28,8 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
 from rest_framework.viewsets import ModelViewSet
-from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer
+from tests_description.api.v1.serializers import TestCaseRetrieveSerializer, TestCaseSerializer, TestSuiteSerializer
 from tests_description.selectors.cases import TestCaseSelector
 from tests_description.selectors.suites import TestSuiteSelector
 from tests_description.services.cases import TestCaseService
@@ -46,6 +45,11 @@ class TestCaseViewSet(ModelViewSet):
 
     def perform_update(self, serializer: TestCaseSerializer):
         serializer.instance = TestCaseService().case_update(serializer.instance, serializer.validated_data)
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return TestCaseRetrieveSerializer
+        return TestCaseSerializer
 
 
 class TestSuiteViewSet(ModelViewSet):
