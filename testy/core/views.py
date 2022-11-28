@@ -34,7 +34,6 @@ import os
 from core.models import Project
 from django.conf import settings
 from django.contrib.admin.utils import unquote
-from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
 from django.views.generic import DetailView
 from rest_framework import status
@@ -77,10 +76,10 @@ class ProjectSuitesView(ProjectBaseView, DetailView):
 class MediaView(APIView):
 
     def get(self, request, path):
-        if not os.path.exists(f"{settings.MEDIA_ROOT}/{path}"):
-            return Response("No such file exists.", status=status.HTTP_404_NOT_FOUND)
+        if not os.path.exists(f'{settings.MEDIA_ROOT}/{path}'):
+            return Response('File does not exist.', status=status.HTTP_404_NOT_FOUND)
         mimetype, encoding = mimetypes.guess_type(path, strict=True)
         if not mimetype:
-            mimetype = "text/html"
-        file_path = unquote(os.path.join(settings.MEDIA_ROOT, path)).encode("utf-8")
-        return FileResponse(open(file_path, "rb"), content_type=mimetype)
+            mimetype = 'text/html'
+        file_path = unquote(os.path.join(settings.MEDIA_ROOT, path)).encode('utf-8')
+        return FileResponse(open(file_path, 'rb'), content_type=mimetype)
