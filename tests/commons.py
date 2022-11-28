@@ -49,7 +49,7 @@ class RequestType(Enum):
 
 
 class RequestMock(RequestFactory):
-    GET = []
+    GET = {}
 
     @staticmethod
     def build_absolute_uri(url):
