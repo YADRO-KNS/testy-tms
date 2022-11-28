@@ -36,6 +36,7 @@ from tests_description.selectors.cases import TestCaseSelector
 from tests_description.selectors.suites import TestSuiteSelector
 from tests_description.services.cases import TestCaseService
 from tests_description.services.suites import TestSuiteService
+from utilities.request import get_boolean
 
 
 class TestCaseViewSet(ModelViewSet):
@@ -64,6 +65,6 @@ class TestSuiteViewSet(ModelViewSet):
         serializer.instance = TestSuiteService().suite_update(serializer.instance, serializer.validated_data)
 
     def get_serializer_class(self):
-        if self.request.GET.get('treeview') == 'True':
+        if get_boolean(self.request, 'treeview'):
             return TestSuiteTreeSerializer
         return TestSuiteSerializer
