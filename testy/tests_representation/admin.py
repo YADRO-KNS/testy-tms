@@ -29,7 +29,6 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
-from core.models import Attachment
 from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
 from tests_representation.models import Test, TestPlan, TestResult

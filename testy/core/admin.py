@@ -29,7 +29,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
-from core.models import Project, Attachment
+from core.models import Attachment, Project
 from django.contrib import admin
 
 from testy.admin import BaseAdmin

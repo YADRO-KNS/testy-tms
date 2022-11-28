@@ -44,9 +44,9 @@ __all__ = (
     'Attachment'
 )
 
-from utils import get_attachments_file_path
-
 from validators import ExtensionValidator, ProjectValidator
+
+from utils import get_attachments_file_path
 
 UserModel = get_user_model()
 

@@ -31,16 +31,15 @@
 import mimetypes
 import os
 
+from core.models import Project
 from django.conf import settings
 from django.contrib.admin.utils import unquote
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
+from django.views.generic import DetailView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from core.models import Project
-from django.views.generic import DetailView
 from views import Tab
 
 
