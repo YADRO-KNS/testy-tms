@@ -61,6 +61,7 @@ class TestResultEndpoints:
     def test_retrieve(self, api_client, authorized_superuser, test_result):
         expected_dict = model_with_base_to_dict(test_result)
         expected_dict['status'] = expected_dict['status'].value
+        expected_dict['attachments'] = []
         response = api_client.send_request(self.view_name_detail, reverse_kwargs={'pk': test_result.pk})
         actual_dict = json.loads(response.content)
         actual_dict.pop('url')

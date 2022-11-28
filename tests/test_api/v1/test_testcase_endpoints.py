@@ -59,6 +59,7 @@ class TestCaseEndpoints:
 
     def test_retrieve(self, api_client, authorized_superuser, test_case):
         expected_dict = model_to_dict(test_case)
+        expected_dict['attachments'] = []
         response = api_client.send_request(self.view_name_detail, reverse_kwargs={'pk': test_case.pk})
         actual_dict = json.loads(response.content)
         actual_dict.pop('url')
