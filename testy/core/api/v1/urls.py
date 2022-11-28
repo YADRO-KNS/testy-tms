@@ -34,15 +34,7 @@ from django.urls import path
 from rest_framework import routers
 
 router = routers.SimpleRouter()
-
-attachment_list = views.AttachmentViewSet.as_view({
-    'get': 'list',
-    'post': 'create'
-})
-
-attachment_detail = views.AttachmentViewSet.as_view({
-    'get': 'retrieve'
-})
+router.register('attachments', views.AttachmentViewSet)
 
 project_list = views.ProjectViewSet.as_view({
     'get': 'list',
@@ -73,9 +65,6 @@ urlpatterns = [
     path('projects/<int:pk>/suites/', suites_by_project, name='project-suites'),
     path('projects/<int:pk>/testplans/', testplans_by_project, name='project-testplans'),
     path('projects/<int:pk>/parameters/', parameters_by_project, name='project-parameters'),
-
-    path('attachments/', attachment_list, name='attachment-list'),
-    path('attachments/<int:pk>/', attachment_detail, name='attachment-detail')
 ]
 
 urlpatterns += router.urls
