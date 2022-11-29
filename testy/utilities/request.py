@@ -28,7 +28,16 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from dotenv import load_dotenv
+__all__ = (
+    'get_boolean',
+)
 
-load_dotenv('.env.local')
-from testy.settings.development import *  # noqa F401, F403
+
+def get_boolean(request, key, method='GET'):
+    """
+    Gets the value from request and returns it's boolean state
+    """
+    value = getattr(request, method).get(key, False)
+    if str(value).lower() in ['1', 'yes', 'true']:
+        return True
+    return False
