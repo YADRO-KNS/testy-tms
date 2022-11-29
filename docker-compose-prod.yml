@@ -3,7 +3,7 @@ services:
   testy:
     build:
       context: testy
-      dockerfile: scripts/dev/Dockerfile
+      dockerfile: scripts/prod/Dockerfile
       args:
         - NODE_ENV=${NODE_ENV}
         - REACT_APP_API_ROOT=${REACT_APP_API_ROOT}
@@ -14,7 +14,7 @@ services:
     ports:
       - "8001:8000"
     environment:
-      - DJANGO_SETTINGS_MODULE=testy.settings.development
+      - DJANGO_SETTINGS_MODULE=testy.settings.production
       - POSTGRES_NAME=${POSTGRES_NAME}
       - POSTGRES_USER=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}

@@ -58,6 +58,8 @@ flake8==5.0.4
     # via flake8-copyright-validator
 flake8-copyright-validator==0.0.1
     # via -r requirements.in
+gunicorn==20.1.0
+    # via -r requirements.in
 idna==3.4
     # via requests
 importlib-metadata==5.0.0

@@ -28,9 +28,20 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from utilities.request import get_boolean
 
-from testy.settings.common import *  # noqa F401, F403
+from tests.commons import RequestMock
 
-DEBUG = False
 
-SECRET_KEY = os.environ.get('SECRET_KEY')  # noqa F405
+class TestTestyUtilities:
+
+    def test_get_boolean(self):
+        request = RequestMock()
+        valid_positive_yes = ['1', 'yes', 'true', 'True', 'YES', 1, 'TRue']
+        invalid_yes = ['2', '0', 'ye', 'y', 't', 'truee', 0, '']
+        for option in valid_positive_yes:
+            request.GET = {'treeview': option}
+            assert get_boolean(request, 'treeview'), f'Valid option "{option}" was recognised as invalid.'
+        for option in invalid_yes:
+            request.GET = {'treeview': option}
+            assert not get_boolean(request, 'treeview'), f'Invalid option "{option}" was recognised as valid.'
