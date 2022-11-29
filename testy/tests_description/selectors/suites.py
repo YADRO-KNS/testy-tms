@@ -37,5 +37,5 @@ class TestSuiteSelector:
     def suite_list(self) -> QuerySet[TestSuite]:
         return TestSuite.objects.all()
 
-    def suite_project_root_list(self, project_id: int) -> QuerySet[TestSuite]:
-        return QuerySet(model=TestSuite).filter(project=project_id, parent=None).order_by('name')
+    def suite_without_parent(self) -> QuerySet[TestSuite]:
+        return QuerySet(model=TestSuite).filter(parent=None).order_by('name')
