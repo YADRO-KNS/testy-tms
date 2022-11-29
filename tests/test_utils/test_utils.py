@@ -37,8 +37,8 @@ class TestTestyUtilities:
 
     def test_get_boolean(self):
         request = RequestMock()
-        valid_positive_yes = ['1', 'yes', 'true', 'True', 'YES', '1', 'TRue']
-        invalid_yes = ['2', '0', 'ye', 'y', 't', 'truee']
+        valid_positive_yes = ['1', 'yes', 'true', 'True', 'YES', 1, 'TRue']
+        invalid_yes = ['2', '0', 'ye', 'y', 't', 'truee', 0, '']
         for option in valid_positive_yes:
             request.GET = {'treeview': option}
             assert get_boolean(request, 'treeview'), f'Valid option "{option}" was recognised as invalid.'
