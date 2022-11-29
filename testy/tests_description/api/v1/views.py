@@ -28,7 +28,6 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.viewsets import ModelViewSet
 from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer, TestSuiteTreeSerializer
@@ -68,3 +67,8 @@ class TestSuiteViewSet(ModelViewSet):
         if get_boolean(self.request, 'treeview'):
             return TestSuiteTreeSerializer
         return TestSuiteSerializer
+
+    def get_queryset(self):
+        if get_boolean(self.request, 'treeview'):
+            return TestSuiteSelector().suite_without_parent()
+        return super().get_queryset()

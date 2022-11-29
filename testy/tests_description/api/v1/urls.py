@@ -34,6 +34,6 @@ from tests_description.api.v1 import views
 
 router = SimpleRouter()
 router.register('cases', views.TestCaseViewSet)
-router.register('suites', views.TestSuiteViewSet)
+router.register('suites', views.TestSuiteViewSet, basename='testsuite')
 
 urlpatterns = router.urls
