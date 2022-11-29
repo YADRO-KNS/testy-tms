@@ -35,7 +35,6 @@ from core.services.attachments import AttachmentService
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from tests_description.api.v1.serializers import TestSuiteTreeSerializer
 from tests_description.selectors.suites import TestSuiteSelector

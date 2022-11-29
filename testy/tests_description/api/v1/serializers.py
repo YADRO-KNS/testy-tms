@@ -31,7 +31,6 @@
 from core.api.v1.serializers import AttachmentSerializer
 from core.models import Attachment
 from django.contrib.contenttypes.models import ContentType
-
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField
