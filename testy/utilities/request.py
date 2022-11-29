@@ -28,12 +28,16 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+__all__ = (
+    'get_boolean',
+)
 
-from rest_framework.routers import SimpleRouter
-from tests_description.api.v1 import views
 
-router = SimpleRouter()
-router.register('cases', views.TestCaseViewSet)
-router.register('suites', views.TestSuiteViewSet, basename='testsuite')
-
-urlpatterns = router.urls
+def get_boolean(request, key, method='GET'):
+    """
+    Gets the value from request and returns it's boolean state
+    """
+    value = getattr(request, method).get(key, False)
+    if str(value).lower() in ['1', 'yes', 'true']:
+        return True
+    return False

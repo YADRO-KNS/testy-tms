@@ -5,6 +5,7 @@ __pycache__/
 /media/
 /pg-data/
 .env
+.env.local
 db.sqlite3
 .DS_Store
 .idea

@@ -28,17 +28,22 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.viewsets import ModelViewSet
+from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer, TestSuiteTreeSerializer
 from tests_description.api.v1.serializers import TestCaseRetrieveSerializer, TestCaseSerializer, TestSuiteSerializer
 from tests_description.selectors.cases import TestCaseSelector
 from tests_description.selectors.suites import TestSuiteSelector
 from tests_description.services.cases import TestCaseService
 from tests_description.services.suites import TestSuiteService
+from utilities.request import get_boolean
 
 
 class TestCaseViewSet(ModelViewSet):
     queryset = TestCaseSelector().case_list()
     serializer_class = TestCaseSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['project', 'suite']
 
     def perform_create(self, serializer: TestCaseSerializer):
         serializer.instance = TestCaseService().case_create(serializer.validated_data)
@@ -55,9 +60,21 @@ class TestCaseViewSet(ModelViewSet):
 class TestSuiteViewSet(ModelViewSet):
     queryset = TestSuiteSelector().suite_list()
     serializer_class = TestSuiteSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['project']
 
     def perform_create(self, serializer: TestSuiteSerializer):
         serializer.instance = TestSuiteService().suite_create(serializer.validated_data)
 
     def perform_update(self, serializer: TestSuiteSerializer):
         serializer.instance = TestSuiteService().suite_update(serializer.instance, serializer.validated_data)
+
+    def get_serializer_class(self):
+        if get_boolean(self.request, 'treeview'):
+            return TestSuiteTreeSerializer
+        return TestSuiteSerializer
+
+    def get_queryset(self):
+        if get_boolean(self.request, 'treeview'):
+            return TestSuiteSelector().suite_without_parent()
+        return super().get_queryset()
