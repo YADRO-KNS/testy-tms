@@ -54,6 +54,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
+from plugins.url import plugin_api_urls, plugin_urls
 from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -91,6 +92,10 @@ urlpatterns = [
 
     # Admin
     path('admin/', admin.site.urls),
+
+    # Plugins
+    path('plugins/', include((plugin_urls, 'plugins'))),
+    path('plugins/', include((plugin_api_urls, 'plugins-api'))),
 
     # Swagger
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
