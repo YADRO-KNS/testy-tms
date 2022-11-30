@@ -1,4 +1,0 @@
-testrail:
-  login: srv_testrail
-  password: Test1rail!
-  api_url: https://testrail.yadro.com/index.php?/api/v2

@@ -9,14 +9,25 @@ class TestrailConfig:
     login: str = None
     password: str = None
     api_url: str = None
+    dumpfile_path: str = None
 
 
-def parse_yaml_config(config_path: str) -> TestrailConfig:
+@dataclass
+class TestyConfig:
+    login: str = None
+    password: str = None
+    api_url: str = None
+    dumpfile_path: str = None
+    path_to_session_ids: str = None
+
+
+def parse_yaml_config(config_path: str, config_name: str):
     """
     Parse yaml config file.
 
     Args:
         config_path: path to config
+        config_name: key in yaml dict
 
     Returns:
           Testrail config, Allure config, kwargs for force_passed.
@@ -27,4 +38,4 @@ def parse_yaml_config(config_path: str) -> TestrailConfig:
         except yaml.YAMLError as err:
             pass
             # logger.error(str(err))
-    return TestrailConfig(**config.get('testrail'))
+    return config.get(config_name)

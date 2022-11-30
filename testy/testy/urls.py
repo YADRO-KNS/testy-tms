@@ -94,8 +94,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Plugins
-    path('plugins/', include((plugin_urls, 'plugins'))),
-    path('plugins/', include((plugin_api_urls, 'plugins-api'))),
+    # !!!! REVERSE FOR PLUGINS IS plugins:<your_app_label>:<your view name>
+    path('plugins/', include((plugin_urls, 'plugins'), namespace='plugins')),
+    path('plugins/', include((plugin_api_urls, 'plugins-api'), namespace='plugins-api')),
+
 
     # Swagger
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),

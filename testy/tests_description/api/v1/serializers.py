@@ -41,7 +41,7 @@ class TestCaseSerializer(ModelSerializer):
 
     class Meta:
         model = TestCase
-        fields = ('id', 'name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'url')
+        fields = ('id', 'name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'url', 'import_id')
 
 
 class TestSuiteTreeSerializer(ModelSerializer):
@@ -71,4 +71,4 @@ class TestSuiteSerializer(ModelSerializer):
 
     class Meta:
         model = TestSuite
-        fields = ('id', 'name', 'parent', 'project', 'url', 'test_cases',)
+        fields = ('id', 'name', 'parent', 'project', 'url', 'test_cases', 'import_id')

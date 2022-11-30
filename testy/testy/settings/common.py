@@ -81,9 +81,14 @@ INSTALLED_APPS = [
     'users',
     'tests_description',
     'tests_representation',
+
+    # celery_progress
+    'celery',
+    'celery_progress',
 ]
 
 TESTY_PLUGINS = [
+    'testrail_migrator'
 ]
 
 MIDDLEWARE = [
@@ -92,6 +97,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.RemoteUserMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -101,6 +107,13 @@ MIDDLEWARE = [
 INSTALLED_APPS, MIDDLEWARE = insert_plugins(TESTY_PLUGINS, INSTALLED_APPS, MIDDLEWARE, VERSION)
 
 ROOT_URLCONF = 'testy.urls'
+
+# REDIS_HOST = 'localhost'
+# REDIS_PORT = 6379
+
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+
 
 TEMPLATES = [
     {
@@ -203,6 +216,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
     ],
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend'

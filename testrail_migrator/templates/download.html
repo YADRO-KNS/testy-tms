@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block demo %}
+<!-- Reset Form -->
+<a href="{% url 'plugins:testrail_migrator:demo' %}" role="button" class="btn btn-primary btn-lg btn-block" style="border-radius: 0px;"><b>RESET</b></a>
+
+<!-- Download Form -->
+<div class="container text-center" style="padding-top: 20px;">
+	<form action="{% url 'plugins:testrail_migrator:demo' %}" method="post" style="display: inline;">
+		{% csrf_token %}
+		<button class="btn btn-primary" type="submit" style="width:120px;">
+			<strong>Download</strong>
+		</button>
+	</form>
+</div>
+
+<!-- Download Status -->
+<div class="container" style="padding-top: 20px;">
+	<div class="card" style="height: 120px;">
+		{% block progress %}{% endblock progress %}
+	</div>
+</div>
+{% endblock %}

@@ -43,6 +43,7 @@ class TestSuite(MPTTModel, BaseModel):
     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_test_suites')
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
+    import_id = models.CharField(blank=True, max_length=settings.CHAR_FIELD_MAX_LEN)
 
     class Meta:
         default_related_name = 'test_suites'
@@ -67,6 +68,7 @@ class TestCase(BaseModel):
         validators=[MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)]
     )
     history = HistoricalRecords()
+    import_id = models.CharField(blank=True, max_length=settings.CHAR_FIELD_MAX_LEN)
 
     class Meta:
         default_related_name = 'test_cases'
