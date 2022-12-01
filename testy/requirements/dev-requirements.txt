@@ -33,6 +33,7 @@ django==3.2
     #   -r ci-requirements.in
     #   -r requirements.in
     #   crispy-bootstrap5
+    #   django-cors-headers
     #   django-extensions
     #   django-filter
     #   django-js-asset
@@ -40,6 +41,8 @@ django==3.2
     #   djangorestframework
     #   djangorestframework-simplejwt
     #   drf-yasg
+django-cors-headers==3.13.0
+    # via -r requirements.in
 django-crispy-forms==1.14.0
     # via
     #   -r ci-requirements.in

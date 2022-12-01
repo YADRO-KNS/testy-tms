@@ -22,12 +22,15 @@ django==3.2
     # via
     #   -r requirements.in
     #   crispy-bootstrap5
+    #   django-cors-headers
     #   django-filter
     #   django-js-asset
     #   django-tables2
     #   djangorestframework
     #   djangorestframework-simplejwt
     #   drf-yasg
+django-cors-headers==3.13.0
+    # via -r requirements.in
 django-crispy-forms==1.14.0
     # via
     #   -r requirements.in
