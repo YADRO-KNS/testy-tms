@@ -1,6 +1,6 @@
 testrail:
   login: r.kabaev
-  password: Pfchfycbz2022
+  password:
   api_url: https://testrail.yadro.com/index.php?/api/v2
   dumpfile_path: /Users/r.kabaev/Desktop/tms/suites_cases.json
 
