@@ -1,0 +1,53 @@
+{% extends 'testy/admin_page.html' %}
+
+{% load render_table from django_tables2 %}
+{% load crispy_forms_tags %}
+
+{% block breadcrumb %}
+    {{ block.super }}
+    <li class="breadcrumb-item" aria-current="page"><a class="fs-12 text-primary" href="{% url 'admin_projects' %}">Projects</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">{{ object }}</li>
+{% endblock %}
+
+{% block page-content-header %}
+    <div class="content-title p-3">
+        <div id="content-title">
+            <h1 class="h2 w-100">{{ object }} details</h1>
+        </div>
+    </div>
+{% endblock %}
+
+{% block page-content %}
+    <div class="tab-content p-3">
+        <div class="row d-flex align-items-stretch gx-3">
+            {% include "testy/components/alerts.html" with messages=messages %}
+            <div class="col">
+                <div class="card p-3">
+                    <div class="card-header"><h5>Attributes</h5></div>
+                    <div class="card-body">
+                        <form action="{% url 'admin_project_edit' object.pk %}" method="post" class="m-0">
+                            {% crispy form form.helper %}
+                            <hr class="mt-0">
+                            <button type="submit" class="btn btn-primary mb-0">Save changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col d-flex">
+                <div class="card p-3 h-100 w-100">
+                    <div class="card-header">
+                        <h5>Parameters</h5>
+                    </div>
+                    <div class="card-body">
+                        <a href="{% url 'admin_parameter_from_project' object.pk %}" class="d-block btn-icon fs-4 mb-3">
+                            <i class="bi bi-plus-circle-fill pe-3 text-primary"></i>
+                            Add parameter
+                        </a>
+                        {% render_table parameters_table %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

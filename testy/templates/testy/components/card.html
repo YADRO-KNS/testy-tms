@@ -1,0 +1,21 @@
+{% load static %}
+
+<div class="card mb-2 bg-light">
+    <div class="card-body align-items-stretch">
+        <div class="d-flex">
+            <div class="align-self-center flex-shrink-0">
+                <img src="{% static 'testy/images/project.svg' %}" style="width: 32px">
+            </div>
+
+            <div class="flex-grow-1 ms-3">
+                <h5 class="card-title">{{ project.name }}</h5>
+                <h6 class="card-subtitle mb-2 fw-light text-muted">{{ project.description|linebreaks }}</h6>
+
+                <a class="card-link card-button fw-light text-decoration-none" href="#"> Test Runs </a>
+                <div class="vr p-0"></div>
+                <a class="card-link card-button fw-light text-decoration-none" href="#"> Test Suites </a>
+            </div>
+            <a href="#" class="stretched-link"></a>
+        </div>
+    </div>
+</div>

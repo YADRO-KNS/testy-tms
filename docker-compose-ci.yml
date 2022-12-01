@@ -1,0 +1,6 @@
+version: '3.9'
+services:
+  testy-ci:
+    build:
+      context: .
+      dockerfile: testy/scripts/ci/Dockerfile

@@ -1,0 +1,15 @@
+*.pyc
+__pycache__/
+/venv/
+/static/
+/media/
+/pg-data/
+.env
+db.sqlite3
+.DS_Store
+.idea
+.coverage
+.vscode
+node_modules/
+testy_static/dist/*.html
+package-lock.json

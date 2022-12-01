@@ -1,0 +1,13 @@
+<ul class="nav nav-tabs px-3">
+    {% for tab in tabs %}
+    <li class="nav-item">
+        {% if tab.args %}
+        <a class="nav-link {% if active_tab == tab.href %} active {% endif %}" aria-current="true"
+           href='{% url tab.href tab.args %}'> {{ tab.name }} </a>
+        {% else %}
+        <a class="nav-link {% if active_tab == tab.href %} active {% endif %}" aria-current="true"
+           href='{% url tab.href %}'> {{ tab.name }} </a>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>

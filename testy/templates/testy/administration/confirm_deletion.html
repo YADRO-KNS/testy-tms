@@ -1,0 +1,33 @@
+{% extends 'testy/admin_page.html' %}
+
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block breadcrumb %}
+    {{ block.super }}
+    <li class="breadcrumb-item" aria-current="page">
+        <a class="link-dark text-decoration-none" href="{% url 'admin_projects' %}">Projects</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Confirmation</li>
+{% endblock %}
+
+
+{% block page-content %}
+    <div class="content col-8 p-3">
+        <div class="card bg-white border-0 pt-3">
+            <div class="card-header border-0 bg-white px-0">
+                <h5>Confirm operation</h5>
+                <p>You are going to delete {{ object }}. Are you sure?</p>
+            </div>
+            <div>
+                <form method="post">
+                    {% csrf_token %}
+                    <a href="{% url href_name %}" class="btn btn-outline-secondary float-right">Cancel</a>
+                    <input class="btn btn-outline-danger float-right" type="submit" value="Yes, delete">
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
