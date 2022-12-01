@@ -10,20 +10,13 @@ asgiref==3.5.2
     # via django
 attrs==22.1.0
     # via pytest
-crispy-bootstrap5==0.7
-    # via -r ci-requirements.in
 django==3.2
     # via
     #   -r ci-requirements.in
-    #   crispy-bootstrap5
     #   django-extensions
     #   django-js-asset
     #   djangorestframework
     #   djangorestframework-simplejwt
-django-crispy-forms==1.14.0
-    # via
-    #   -r ci-requirements.in
-    #   crispy-bootstrap5
 django-extensions==3.2.1
     # via -r ci-requirements.in
 django-js-asset==2.0.0
