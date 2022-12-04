@@ -29,8 +29,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 from core.api.v1.serializers import AttachmentSerializer
-from core.models import Attachment
-from django.contrib.contenttypes.models import ContentType
+from core.selectors.attachments import AttachmentSelector
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField
@@ -48,18 +47,15 @@ class TestCaseSerializer(ModelSerializer):
 
 class TestCaseRetrieveSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:testcase-detail')
-    attachments = SerializerMethodField('get_serialized_attachments')
+    attachments = SerializerMethodField()
 
     class Meta:
         model = TestCase
         fields = ('id', 'name', 'project', 'attachments', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'url')
 
-    def get_serialized_attachments(self, obj):
+    def get_attachments(self, obj):
         serializer_context = {'request': self.context.get('request')}
-        attachments = Attachment.objects.filter(
-            content_type=ContentType.objects.get_for_model(TestCase).id,
-            object_id=obj.id
-        )
+        attachments = AttachmentSelector().attachment_list_by_parent_object(TestCase, obj.id)
         serializer = AttachmentSerializer(attachments, many=True, context=serializer_context)
         return serializer.data
 
