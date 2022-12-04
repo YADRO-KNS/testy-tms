@@ -49,8 +49,6 @@ from core.views import MediaView, ProjectOverviewView, ProjectPlansView, Project
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.contrib.auth import views as auth_views
-from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path, re_path
 from drf_yasg import openapi
@@ -69,21 +67,6 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('', views.IndexView.as_view(), name='index'),
-    path('profile/', login_required(views.UserProfileView.as_view()), name='user_profile'),
-    path('profile/change-password/', login_required(views.UserChangePasswordView.as_view()),
-         name='user_change_password'),
-
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-
-    # Administration
-    path('administration/', include('administration.urls')),
-
-    # Project
-    path('project/<int:pk>/', login_required(ProjectOverviewView.as_view()), name='project_details'),
-    path('project/<int:pk>/suites/', login_required(ProjectSuitesView.as_view()), name='project_suites'),
-    path('project/<int:pk>/runs/', login_required(ProjectPlansView.as_view()), name='project_runs'),
-
     # API
     path('api/', include('testy.api.urls', namespace='api')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

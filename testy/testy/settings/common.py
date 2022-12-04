@@ -70,12 +70,9 @@ INSTALLED_APPS = [
     'mptt',
     'rest_framework',
     'django_filters',
+    'corsheaders',
     'simple_history',
-    'crispy_forms',
-    'crispy_bootstrap5',
-    'django_tables2',
     'core',
-    'administration',
     'users',
     'tests_description',
     'tests_representation',
@@ -84,6 +81,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -108,7 +106,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'testy.context_processors.settings',
             ],
         },
     },
@@ -180,7 +177,6 @@ STATICFILES_DIRS = [
 ALLOWED_FILE_EXTENSIONS = []
 
 STATIC_ROOT = 'static'
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # noqa: F405
@@ -208,12 +204,9 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Django CORS headers
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
+
 # Company
 COMPANY_DOMAIN = os.environ.get('COMPANY_DOMAIN')
-
-# Django Crispy forms
-CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
-CRISPY_TEMPLATE_PACK = 'bootstrap5'
-
-# Django tables forms
-DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'
