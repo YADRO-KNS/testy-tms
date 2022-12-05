@@ -28,8 +28,8 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
-from core.models import Project
+from core.models import Attachment, Project
+from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import HyperlinkedIdentityField, ModelSerializer
 
 __all__ = (
@@ -43,3 +43,21 @@ class ProjectSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = ('id', 'url', 'name', 'description', 'is_archive')
+
+
+class AttachmentSerializer(ModelSerializer):
+    url = HyperlinkedIdentityField(view_name='api:v1:attachment-detail')
+
+    class Meta:
+        model = Attachment
+        fields = (
+            'project', 'comment',
+            'name', 'filename', 'file_extension', 'size', 'content_type', 'object_id', 'user', 'file', 'url'
+        )
+
+        read_only_fields = ('project', 'name', 'filename', 'file_extension', 'size', 'user', 'url')
+
+    def validate(self, attrs):
+        if not attrs['content_type'].model_class().objects.all().filter(pk=attrs['object_id']):
+            raise ValidationError(f'Specified model does not have object with id {attrs["object_id"]}')
+        return attrs

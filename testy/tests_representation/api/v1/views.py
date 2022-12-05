@@ -42,6 +42,7 @@ from tests_representation.api.v1.serializers import (
     TestPlanInputSerializer,
     TestPlanOutputSerializer,
     TestPlanUpdateSerializer,
+    TestResultRetrieveSerializer,
     TestResultSerializer,
     TestSerializer,
 )
@@ -164,6 +165,11 @@ class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixi
 
     def perform_update(self, serializer: TestResultSerializer):
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return TestResultRetrieveSerializer
+        return TestResultSerializer
 
 
 class TestResultChoicesView(APIView):
