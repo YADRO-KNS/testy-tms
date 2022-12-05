@@ -16,22 +16,17 @@ coreschema==0.0.4
     # via
     #   coreapi
     #   drf-yasg
-crispy-bootstrap5==0.7
-    # via -r requirements.in
 django==3.2
     # via
     #   -r requirements.in
-    #   crispy-bootstrap5
+    #   django-cors-headers
     #   django-filter
     #   django-js-asset
-    #   django-tables2
     #   djangorestframework
     #   djangorestframework-simplejwt
     #   drf-yasg
-django-crispy-forms==1.14.0
-    # via
-    #   -r requirements.in
-    #   crispy-bootstrap5
+django-cors-headers==3.13.0
+    # via -r requirements.in
 django-filter==22.1
     # via -r requirements.in
 django-js-asset==2.0.0
@@ -39,8 +34,6 @@ django-js-asset==2.0.0
 django-mptt==0.13.4
     # via -r requirements.in
 django-simple-history==3.1.1
-    # via -r requirements.in
-django-tables2==2.4.1
     # via -r requirements.in
 djangorestframework==3.13.1
     # via
