@@ -60,7 +60,7 @@ class TestCase(BaseModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     suite = models.ForeignKey(TestSuite, on_delete=models.CASCADE, related_name='test_cases')
     setup = models.TextField(blank=True)
-    scenario = models.TextField()
+    scenario = models.TextField(blank=True, null=True)
     teardown = models.TextField(blank=True)
     estimate = models.IntegerField(
         null=True,

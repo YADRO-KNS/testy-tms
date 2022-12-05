@@ -80,12 +80,11 @@ INSTALLED_APPS = [
     'tests_representation',
 
     # celery_progress
-    'celery',
-    'celery_progress',
+    # 'celery',
+    # 'celery_progress',
 ]
 
 TESTY_PLUGINS = [
-    'testrail_migrator'
 ]
 
 MIDDLEWARE = [

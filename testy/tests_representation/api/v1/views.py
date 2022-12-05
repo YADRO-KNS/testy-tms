@@ -114,7 +114,7 @@ class TestPLanDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class TestListViewSet(mixins.ListModelMixin, GenericViewSet):
+class TestListViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
     queryset = TestSelector().test_list()
     serializer_class = TestSerializer
 
@@ -123,6 +123,9 @@ class TestListViewSet(mixins.ListModelMixin, GenericViewSet):
 
     def perform_update(self, serializer: TestSerializer):
         serializer.instance = TestService().test_update(serializer.instance, serializer.validated_data)
+
+    def perform_create(self, serializer: TestSerializer):
+        serializer.instance = TestService().test_create(serializer.validated_data)
 
 
 class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericViewSet):
@@ -158,12 +161,16 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
         return Response(serializer.data)
 
 
-class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
+class TestResultViewSet(mixins.UpdateModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin,
+                        mixins.ListModelMixin, GenericViewSet):
     queryset = TestResultSelector().result_list()
     serializer_class = TestResultSerializer
 
     def perform_update(self, serializer: TestResultSerializer):
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
+
+    def perform_create(self, serializer: TestResultSerializer):
+        serializer.instance = TestResultService().result_create(serializer.validated_data)
 
 
 class TestResultChoicesView(APIView):

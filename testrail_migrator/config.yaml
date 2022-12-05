@@ -1,6 +1,6 @@
 testrail:
   login: r.kabaev
-  password:
+  password: Pfchfycbz2022
   api_url: https://testrail.yadro.com/index.php?/api/v2
   dumpfile_path: /Users/r.kabaev/Desktop/tms/suites_cases.json
 
@@ -8,5 +8,5 @@ testy:
   login: admin
   password: password
   api_url: http://127.0.0.1:8001/api/v1
-  dumpfile_path: /Users/r.kabaev/Desktop/tms/suites_cases.json
+  dumpfile_path: '/Users/r.kabaev/Desktop/testrail_migrator/backup_suites_cases/resulting2022-12-05 13:59:13.870764.json'
   path_to_session_ids: /Users/r.kabaev/Desktop/tms/latest_session_ids.json
