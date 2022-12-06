@@ -43,6 +43,12 @@ class TestCaseService:
             data=data,
         )
 
+    def cases_bulk_create(self, data_list):
+        cases = []
+        for data in data_list:
+            cases.append(TestCase.model_create(fields=self.non_side_effect_fields, data=data, commit=False))
+        return TestCase.objects.bulk_create(cases)
+
     def case_update(self, case: TestCase, data: Dict[str, Any]) -> TestCase:
         case, _ = case.model_update(
             fields=self.non_side_effect_fields,

@@ -85,6 +85,7 @@ INSTALLED_APPS = [
 ]
 
 TESTY_PLUGINS = [
+    'testrail_migrator'
 ]
 
 MIDDLEWARE = [

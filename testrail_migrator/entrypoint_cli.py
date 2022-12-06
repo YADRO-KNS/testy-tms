@@ -7,8 +7,20 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import Any
 
+from asgiref.sync import sync_to_async
+from dateutil.relativedelta import relativedelta
+
 from migrator_lib import TestRailClient, TestrailConfig, TestyClient, TestyConfig, parse_yaml_config
 from tqdm import tqdm
+
+from core.models import Project
+from tests_description.api.v1.serializers import TestSuiteSerializer, TestCaseSerializer
+from tests_description.models import TestSuite
+from tests_description.services.cases import TestCaseService
+from tests_description.services.suites import TestSuiteService
+from tests_representation.api.v1.serializers import TestPlanInputSerializer, TestSerializer
+from tests_representation.services.testplans import TestPLanService
+from tests_representation.services.tests import TestService
 
 
 @contextmanager
@@ -260,7 +272,7 @@ async def download_representations(testrail_client: TestRailClient, project_id: 
     return plans, runs_with_plan, runs_without_plans, milestones
 
 
-async def create_milestones(testy_client, milestones, project_id):
+async def create_milestones_via_endpoint(testy_client, milestones, project_id):
     milestones_mapping = {}
     tasks = []
     milestones_bar = tqdm(milestones)
@@ -313,31 +325,92 @@ async def create_milestones(testy_client, milestones, project_id):
     return milestones_mapping
 
 
-async def create_plans(testy_client: TestyClient, plans, milestones_mappings, project_id, map_to_plan: bool = False):
+def create_milestones(milestones, project_id):
+    milestones_mapping = {}
+    parent_milestones = []
+    for milestone in milestones:
+        milestone_data = {
+            'project': project_id,
+            'name': milestone['name'],
+            'is_archive': milestone['is_completed'],
+            'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(milestone['started_on'])),
+            'finished_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(milestone['completed_on'])),
+            'due_date': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(milestone['due_on']))
+        }
+        parent_milestones.append(milestone_data)
+
+    serializer = TestPlanInputSerializer(data=parent_milestones, many=True)
+    serializer.is_valid(raise_exception=True)
+    test_plans = TestPLanService().testplan_bulk_create(serializer.validated_data)
+    for tr_milestone, testy_milestone in zip(milestones, test_plans):
+        milestones_mapping.update({tr_milestone['id']: testy_milestone.id})
+
+    child_milestones_data_list = []
+    for milestone in milestones:
+        if not milestone['milestones']:
+            continue
+        for child_milestone in milestone['milestones']:
+            milestone_data = {
+                'project': project_id,
+                'name': child_milestone['name'],
+                'is_archive': child_milestone['is_completed'],
+                'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(milestone['started_on'])),
+                'finished_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(child_milestone['completed_on'])),
+                'due_date': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(child_milestone['due_on'])),
+                'parent': milestones_mapping[milestone['id']]
+            }
+            child_milestones_data_list.append(milestone_data)
+
+    serializer = TestPlanInputSerializer(data=child_milestones_data_list, many=True)
+    serializer.is_valid(raise_exception=True)
+    test_plans = TestPLanService().testplan_bulk_create(serializer.validated_data)
+
+    for tr_milestone, testy_milestone in zip(child_milestones_data_list, test_plans):
+        milestones_mapping.update({tr_milestone['id']: testy_milestone.id})
+
+    return milestones_mapping
+
+
+async def create_plans_via_endpoint(testy_client: TestyClient, plans, milestones_mappings, project_id,
+                                    map_to_plan: bool = False):
     tasks = []
+    plan_data_list = []
     plan_mappings = {}
     for plan in plans:
+        mapping_id = plan['plan_id' if map_to_plan else 'milestone_id']
+        due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan.get('due_on')))
+        if not plan.get('due_on'):
+            due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
         plan_data = {
             'project': project_id,
             'name': plan['name'],
             'is_archive': plan['is_completed'],
+            'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan['created_on'])),
             'finished_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan['completed_on'])),
-            'due_date': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan['due_on'])),
-            'parent': milestones_mappings[plan['plan_id' if map_to_plan else 'milestone_id']]
+            'due_date': due_date,
         }
-        tasks.append(
-            asyncio.create_task(
-                testy_client.create_plan_async(plan_data, plan['id'])
-            )
-        )
+        if mapping_id:
+            plan_data['parent'] = milestones_mappings[mapping_id]
+        plan_data_list.append(plan_data)
 
-    for mapping in await asyncio.gather(*tasks):
-        plan_mappings.update(mapping)
+    serializer = TestPlanInputSerializer(data=plan_data_list, many=True)
+    serializer.is_valid(raise_exception=True)
+    test_plans = TestPLanService().testplan_bulk_create(serializer.validated_data)
+    print()
+    # for src_plan, created_plan in zip(chunk, created_plans):
+    #     plan_mappings[src_plan['id']] = created_plan['id']
+    #     tasks.append(
+    #         asyncio.create_task(
+    #             testy_client.create_plan_async(plan_data, plan['id'])
+    #         )
+    #     )
+    # for mapping in await asyncio.gather(*tasks):
+    #     plan_mappings.update(mapping)
 
     return plan_mappings
 
 
-async def create_tests(testy_client: TestyClient, tests, plans_mappings, project_id):
+async def create_tests_via_endpoint(testy_client: TestyClient, tests, plans_mappings, project_id):
     tasks = []
     tests_mappings = {}
     for test in tests:
@@ -401,8 +474,8 @@ async def create_results(testy_client: TestyClient, results, tests_mappings, pro
 
 
 async def main():
-    args = parse_args()
-    testrail_client, testy_client = init_tms_clients(args.config_path)
+    # args = parse_args()
+    testrail_client, testy_client = init_tms_clients('/Users/r.kabaev/Desktop/testrail_migrator/config.yaml')
 
     # Descriptions
 
@@ -417,8 +490,21 @@ async def main():
     # Representations
     # Testrail part
     with timer('Download representations'):
-        plans, runs_with_plan, runs_without_plans, milestones = await download_representations(testrail_client,
-                                                                                               project_id=1)
+        milestones = testrail_client.get_milestones(1)
+        plans_without_runs = testrail_client.get_plans(1)
+        runs_from_plan = []
+        with timer('Getting plans took:'):
+            plans = await get_plans_w_runs(testrail_client, plans_without_runs)
+            for plan in plans:
+                for entry in plan['entries']:
+                    runs_from_plan.extend(entry['runs'])
+        # plans, runs_with_plan, runs_without_plans, milestones = await download_representations(testrail_client, project_id=1)
+
+    with open(
+            f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/milestones2022-12-06 16:36:14.618443.json',
+            'r') as file:
+        milestones = json.loads(file.read())
+
     with open(
             f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/results_with_test_plans2022-12-05 20:38:57.790758.json',
             'r') as file:
@@ -443,19 +529,140 @@ async def main():
             'r') as file:
         tests_without_test_plans = json.loads(file.read())
 
-    milestones_mappings = await create_milestones(testy_client, milestones, project_id=1)
-    testplan_mappings = await create_plans(testy_client, plans, milestones_mappings, project_id=1)
-    runs_without_plans_mappings = await create_plans(testy_client, runs_without_plans, milestones_mappings,
-                                                     project_id=1)
-    runs_with_plans_mappings = await create_plans(testy_client, runs_with_plans, testplan_mappings, project_id=1,
-                                                  map_to_plan=True)
-    tests_with_test_plan_mappings = await create_tests(testy_client, tests_with_test_plan, runs_with_plans_mappings,
-                                                       project_id=1)
-    tests_without_test_plan_mappings = await create_tests(testy_client, tests_without_test_plans,
-                                                          runs_without_plans_mappings, project_id=1)
-    await create_results(testy_client, results_with_test_plans, tests_with_test_plan_mappings, project_id=1)
-    await create_results(testy_client, results_without_test_plans, tests_without_test_plan_mappings, project_id=1)
+    # testy_client.create_project({'name': 'Tatlin'})
+    # await sync_to_async(Project.objects.create)(**{'name': 'Tatlin'})
+    # milestones_mappings = await create_milestones_via_endpoint(testy_client, milestones, project_id=1)
+    milestones_mappings = create_milestones(milestones, project_id=1)
+    testplan_mappings = await create_plans_via_endpoint(testy_client, plans, milestones_mappings, project_id=1)
+    # runs_without_plans_mappings = await create_plans(testy_client, runs_without_plans, milestones_mappings,
+    #                                                  project_id=1)
+    # runs_with_plans_mappings = await create_plans(testy_client, runs_with_plans, testplan_mappings, project_id=1,
+    #                                               map_to_plan=True)
+    # tests_with_test_plan_mappings = await create_tests(testy_client, tests_with_test_plan, runs_with_plans_mappings,
+    #                                                    project_id=1)
+    # tests_without_test_plan_mappings = await create_tests(testy_client, tests_without_test_plans,
+    #                                                       runs_without_plans_mappings, project_id=1)
+    # await create_results(testy_client, results_with_test_plans, tests_with_test_plan_mappings, project_id=1)
+    # await create_results(testy_client, results_without_test_plans, tests_without_test_plan_mappings, project_id=1)
 
 
-if __name__ == '__main__':
-    asyncio.run(main())
+#     serializer = TestPlanInputSerializer(data=plan_data_list, many=True)
+#     serializer.is_valid(raise_exception=True)
+#     test_plans = TestPLanService().testplan_bulk_create(serializer.validated_data)
+def create_cases_suites(suites_cases, project_id):
+    cases_mappings = {}
+    for suite in suites_cases:
+        suite_data = {
+            'name': suite['name'],
+            'project': project_id,
+        }
+        serializer = TestSuiteSerializer(data=suite_data)
+        serializer.is_valid(raise_exception=True)
+        created_suite = TestSuiteService().suite_create(serializer.validated_data)
+        cases_data_list = []
+        for case in suite['cases']:
+            case_data = {
+                'name': case['title'],
+                'project': project_id,
+                'suite': created_suite.id,
+                'scenario': case['custom_steps'],
+            }
+            cases_data_list.append(case_data)
+        serializer = TestCaseSerializer(data=cases_data_list, many=True)
+        serializer.is_valid(raise_exception=True)
+        created_cases = TestCaseService().cases_bulk_create(serializer.validated_data)
+        for tr_case, case in zip(cases_data_list, created_cases):
+            cases_mappings.update({tr_case['id']: case.id})
+    return cases_mappings
+
+
+def create_plans(plans, milestones_mappings, project_id, map_to_plan: bool = False):
+    plan_data_list = []
+    plan_mappings = {}
+    for plan in plans:
+        mapping_id = plan['plan_id' if map_to_plan else 'milestone_id']
+        due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan.get('due_on')))
+        if not plan.get('due_on'):
+            due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
+        plan_data = {
+            'project': project_id,
+            'name': plan['name'],
+            'is_archive': plan['is_completed'],
+            'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan['created_on'])),
+            'finished_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan['completed_on'])),
+            'due_date': due_date,
+        }
+        if mapping_id:
+            plan_data['parent'] = milestones_mappings[mapping_id]
+        plan_data_list.append(plan_data)
+
+    serializer = TestPlanInputSerializer(data=plan_data_list, many=True)
+    serializer.is_valid(raise_exception=True)
+    test_plans = TestPLanService().testplan_bulk_create(serializer.validated_data)
+    for tr_milestone, testy_milestone in zip(plan_data_list, test_plans):
+        plan_mappings.update({tr_milestone['id']: testy_milestone.id})
+
+    return plan_mappings
+
+
+#     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+#     case = models.ForeignKey(TestCase, on_delete=models.CASCADE)
+#     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE)
+#     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, null=True, blank=True)
+#     is_archive = models.BooleanField(default=False)
+def create_tests(tests, case_mappings, plans_mappings, project_id):
+    test_data_list = []
+    tests_mappings = {}
+    for test in tests:
+        test_data = {
+            'project': project_id,
+            'case': case_mappings[test['case_id']],
+            'parent': plans_mappings[test['run_id']]
+        }
+        test_data_list.append(test_data)
+
+    serializer = TestSerializer(data=test_data_list, many=True)
+    serializer.is_valid(raise_exception=True)
+    created_tests = TestService().tests_bulk_create_by_data_list(serializer.validated_data)
+    for tr_test, testy_test in zip(test_data_list, created_tests):
+        tests_mappings.update({tr_test['id']: testy_test.id})
+
+    return tests_mappings
+
+
+def upload_to_testy(project_id):
+    with open(f'/Users/r.kabaev/Desktop/testrail_migrator/backup_suites_cases/resulting2022-12-05 13:59:13.870764.json',
+              'r') as file:
+        suites_cases = json.loads(file.read())
+    ######
+    with open(f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/milestones2022-12-06 16:36:14.618443.json',
+              'r') as file:
+        milestones = json.loads(file.read())
+    with open(f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/plan2022-12-06 18:18:03.753751.json',
+              'r') as file:
+        plans = json.loads(file.read())
+    with open(f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/runs_with_plan2022-12-05 20:37:01.498579.json',
+              'r') as file:
+        runs_with_plans = json.loads(file.read())
+    with open(
+            f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/tests_with_test_plan2022-12-05 20:38:12.798847.json',
+            'r') as file:
+        tests_with_test_plan = json.loads(file.read())
+    with open(
+            f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/results_with_test_plans2022-12-05 20:38:57.790758.json',
+            'r') as file:
+        results_with_test_plans = json.loads(file.read())
+    # with open(f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/results_without_test_plans2022-12-05 20:36:59.781118.json','r') as file:
+    #     results_without_test_plans = json.loads(file.read())
+    # with open(f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/runs_without_plans2022-12-05 20:36:49.323261.json','r') as file:
+    #     runs_without_plans = json.loads(file.read())
+
+    # with open(f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/tests_without_test_plans2022-12-05 20:36:55.567101.json', 'r') as file:
+    #     tests_without_test_plans = json.loads(file.read())
+    cases_mappings = create_cases_suites(suites_cases, project_id)
+    milestones_mappings = create_milestones(milestones, project_id)
+    plans_mappings = create_plans(plans, milestones_mappings, project_id)
+    runs_with_plans_mappings = create_plans(runs_with_plans, plans_mappings, map_to_plan=True, project_id=project_id)
+    tests_mappings = create_tests(tests_with_test_plan, cases_mappings, runs_with_plans_mappings, project_id)
+
+    print()

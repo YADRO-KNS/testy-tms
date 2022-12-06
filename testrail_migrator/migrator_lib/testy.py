@@ -4,7 +4,7 @@ from typing import Union
 import aiohttp
 import requests
 import urllib3
-from aiohttp import ClientConnectionError
+from aiohttp import ClientConnectionError, ContentTypeError
 from requests.adapters import HTTPAdapter
 
 from .config import TestyConfig
@@ -88,7 +88,7 @@ class TestyClient:
         return {tr_case: self._process_request('/cases/', input_data=case)}
 
     def create_plan(self, plan):
-        return self._process_request('/plans/', input_data=plan)
+        return self._process_request('/testplans/', input_data=plan)
 
     def _process_request(self, endpoint: str, input_data=None, headers=None) -> Union[list, dict, None]:
         """
@@ -130,13 +130,18 @@ class TestyClient:
                 if input_data:
                     input_data = json.dumps(input_data)
                     async with session.post(url=url, data=input_data, headers=headers) as resp:
-                        response = await resp.json()
+                        try:
+                            response = await resp.json()
+                        except ContentTypeError:
+                            response = resp
+
                         if resp.status not in [200, 201]:
                             print('response:', response, 'input_data:', json.loads(input_data))
                             raise ClientConnectionError
-                        if resp.status == 400:
+                        if resp.status in [400, 500]:
                             print('response:', response, 'input_data:', json.loads(input_data))
                             raise ClientConnectionError
+
                         return response
                 async with session.get(url=url, headers=headers) as resp:
                     response = await resp.json()

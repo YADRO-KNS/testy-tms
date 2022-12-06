@@ -77,6 +77,13 @@ class TestPLanListView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
+        if isinstance(request.data, list):
+            serializer = TestPlanInputSerializer(data=request.data, many=True)
+            serializer.is_valid(raise_exception=True)
+            test_plans = TestPLanService().testplan_bulk_create(serializer.validated_data)
+            return Response(TestPlanOutputSerializer(test_plans, many=True, context={'request': request}).data,
+                            status=status.HTTP_201_CREATED)
+
         serializer = TestPlanInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         test_plans = TestPLanService().testplan_create(serializer.validated_data)

@@ -74,6 +74,15 @@ class TestPLanService:
 
         return test_plans
 
+    def testplan_bulk_create(self, validated_data):
+        testplan_objects = []
+        for data in validated_data:
+            testplan_objects.append(self._make_testplan_model(data))
+        test_plans = TestPlan.objects.bulk_create(testplan_objects)
+        TestPlan.objects.rebuild()
+
+        return test_plans
+
     @transaction.atomic
     def testplan_update(self, *, test_plan: TestPlan, data: dict[str, Any]) -> TestPlan:
         test_plan, _ = test_plan.model_update(
