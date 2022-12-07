@@ -52,18 +52,18 @@ result_detail = views.TestResultViewSet.as_view({
 })
 
 result_list = views.TestResultViewSet.as_view({
+    'post': 'create',
     'get': 'list'
 })
 
-results_by_test = views.TestDetailViewSet.as_view({
-    'post': 'add_result',
-    'get': 'results_by_test'
-})
+# results_by_test = views.TestDetailViewSet.as_view({
+#     'post': 'add_result',
+#     'get': 'results_by_test'
+# })
 
 urlpatterns = [
     path('tests/', test_lists, name='test-list'),
     path('tests/<int:pk>/', test_detail, name='test-detail'),
-    path('tests/<int:pk>/results/', results_by_test, name='results-by-test'),
 
     path('testplans/', TestPLanListView.as_view(), name='testplan-list'),
     path('testplans/<int:pk>/', TestPLanDetailView.as_view(), name='testplan-detail'),
