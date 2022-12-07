@@ -133,30 +133,6 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
     def get_view_name(self):
         return "Test Instance"
 
-    def get_serializer_class(self):
-        if self.action == 'add_result' or self.action == 'results_by_test':
-            return TestResultSerializer
-        return TestSerializer
-
-    @action(detail=False, methods=['POST'])
-    def add_result(self, request, pk):
-        serializer = self.get_serializer_class()
-        serializer = serializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        result = TestResultService().result_create(serializer.validated_data, pk)
-        return Response(model_to_dict(result), status=status.HTTP_201_CREATED)
-
-    @action(detail=False)
-    def results_by_test(self, request, pk):
-        queryset = self.filter_queryset(TestResultSelector().result_list_by_test_id(pk))
-        page = self.paginate_queryset(queryset)
-        serializer = self.get_serializer_class()
-        if page is not None:
-            serializer = serializer(page, many=True, context={'request': request})
-            return self.get_paginated_response(serializer.data)
-
-        serializer = serializer(queryset, many=True, context={'request': request})
-        return Response(serializer.data)
 
 
 class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
