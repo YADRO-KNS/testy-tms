@@ -32,6 +32,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import model_to_dict
 from django.http import Http404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -134,13 +135,18 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
         return "Test Instance"
 
 
-
-class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
+class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin, GenericViewSet):
     queryset = TestResultSelector().result_list()
     serializer_class = TestResultSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['test']
 
     def perform_update(self, serializer: TestResultSerializer):
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
+
+    def perform_create(self, serializer: TestResultSerializer):
+        request = serializer.context.get('request')
+        serializer.instance = TestResultService().result_create(serializer.validated_data, request.user)
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
