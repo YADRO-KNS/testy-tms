@@ -30,11 +30,9 @@
 # <http://www.gnu.org/licenses/>.
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.forms import model_to_dict
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status
-from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
@@ -135,7 +133,8 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
         return "Test Instance"
 
 
-class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixins.ListModelMixin, GenericViewSet):
+class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin,
+                        mixins.ListModelMixin, GenericViewSet):
     queryset = TestResultSelector().result_list()
     serializer_class = TestResultSerializer
     filter_backends = [DjangoFilterBackend]
