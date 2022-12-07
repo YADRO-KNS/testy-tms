@@ -133,8 +133,7 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
         return "Test Instance"
 
 
-class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin,
-                        mixins.ListModelMixin, GenericViewSet):
+class TestResultViewSet(ModelViewSet):
     queryset = TestResultSelector().result_list()
     serializer_class = TestResultSerializer
     filter_backends = [DjangoFilterBackend]
