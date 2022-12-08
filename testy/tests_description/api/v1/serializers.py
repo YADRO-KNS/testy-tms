@@ -28,7 +28,8 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
+from core.api.v1.serializers import AttachmentSerializer
+from core.selectors.attachments import AttachmentSelector
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField
@@ -42,6 +43,21 @@ class TestCaseSerializer(ModelSerializer):
     class Meta:
         model = TestCase
         fields = ('id', 'name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'url', 'import_id')
+
+
+class TestCaseRetrieveSerializer(ModelSerializer):
+    url = HyperlinkedIdentityField(view_name='api:v1:testcase-detail')
+    attachments = SerializerMethodField()
+
+    class Meta:
+        model = TestCase
+        fields = ('id', 'name', 'project', 'attachments', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'url')
+
+    def get_attachments(self, obj):
+        serializer_context = {'request': self.context.get('request')}
+        attachments = AttachmentSelector().attachment_list_by_parent_object(TestCase, obj.id)
+        serializer = AttachmentSerializer(attachments, many=True, context=serializer_context)
+        return serializer.data
 
 
 class TestSuiteTreeSerializer(ModelSerializer):
