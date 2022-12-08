@@ -52,8 +52,9 @@ for plugin_path in settings.TESTY_PLUGINS:
     base_url = app.plugin_base_url
 
     # UI endpoints
+    urlpatterns = import_object(module_name=f'{plugin_path}.urls', attribute_name='urlpatterns')
     try:
-        urlpatterns = import_object(module_name=f'{plugin_path}.urls', attribute_name='urlpatterns')
+
         if urlpatterns:
             plugin_base_url = f'{base_url}/' if base_url else ''
             plugin_urls.append(path(plugin_base_url, include((urlpatterns, app.label))))

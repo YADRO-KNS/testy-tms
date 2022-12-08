@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'users',
     'tests_description',
     'tests_representation',
+    # 'debug_toolbar'
 
     # celery_progress
     # 'celery',
@@ -100,8 +101,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
+    # 'debug_toolbar.middleware.DebugToolbarMiddleware'
 ]
 
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
 INSTALLED_APPS, MIDDLEWARE = insert_plugins(TESTY_PLUGINS, INSTALLED_APPS, MIDDLEWARE, VERSION)
 
 ROOT_URLCONF = 'testy.urls'
@@ -112,12 +117,12 @@ ROOT_URLCONF = 'testy.urls'
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(BASE_DIR, 'templates'),
+
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -187,7 +192,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATIC_ROOT = 'static'
 
 # Default primary key field type
@@ -212,6 +217,8 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend'
     ],
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    # 'PAGE_SIZE': 100
 }
 
 # Django CORS headers

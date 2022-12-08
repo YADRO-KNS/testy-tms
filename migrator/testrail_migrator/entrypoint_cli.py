@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import itertools
 import json
+import logging
 import time
 from contextlib import contextmanager
 from datetime import datetime
@@ -10,7 +11,8 @@ from typing import Any
 from asgiref.sync import sync_to_async
 from dateutil.relativedelta import relativedelta
 
-from migrator_lib import TestRailClient, TestrailConfig, TestyClient, TestyConfig, parse_yaml_config
+from tests_representation.services.parameters import ParameterService
+from .migrator_lib import TestRailClient, TestrailConfig, TestyClient, TestyConfig, parse_yaml_config
 from tqdm import tqdm
 
 from core.models import Project
@@ -18,9 +20,11 @@ from tests_description.api.v1.serializers import TestSuiteSerializer, TestCaseSe
 from tests_description.models import TestSuite
 from tests_description.services.cases import TestCaseService
 from tests_description.services.suites import TestSuiteService
-from tests_representation.api.v1.serializers import TestPlanInputSerializer, TestSerializer
+from tests_representation.api.v1.serializers import TestPlanInputSerializer, TestSerializer, TestResultSerializer
+from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPLanService
 from tests_representation.services.tests import TestService
+from .serializers import ParameterSerializer
 
 
 @contextmanager
@@ -345,10 +349,11 @@ def create_milestones(milestones, project_id):
     for tr_milestone, testy_milestone in zip(milestones, test_plans):
         milestones_mapping.update({tr_milestone['id']: testy_milestone.id})
 
-    child_milestones_data_list = []
+
     for milestone in milestones:
         if not milestone['milestones']:
             continue
+        child_milestones_data_list = []
         for child_milestone in milestone['milestones']:
             milestone_data = {
                 'project': project_id,
@@ -361,12 +366,12 @@ def create_milestones(milestones, project_id):
             }
             child_milestones_data_list.append(milestone_data)
 
-    serializer = TestPlanInputSerializer(data=child_milestones_data_list, many=True)
-    serializer.is_valid(raise_exception=True)
-    test_plans = TestPLanService().testplan_bulk_create(serializer.validated_data)
+        serializer = TestPlanInputSerializer(data=child_milestones_data_list, many=True)
+        serializer.is_valid(raise_exception=True)
+        test_plans = TestPLanService().testplan_bulk_create(serializer.validated_data)
 
-    for tr_milestone, testy_milestone in zip(child_milestones_data_list, test_plans):
-        milestones_mapping.update({tr_milestone['id']: testy_milestone.id})
+        for tr_milestone, testy_milestone in zip(milestone['milestones'], test_plans):
+            milestones_mapping.update({tr_milestone['id']: testy_milestone.id})
 
     return milestones_mapping
 
@@ -442,7 +447,7 @@ async def create_tests_via_endpoint(testy_client: TestyClient, tests, plans_mapp
 #     is_archive = models.BooleanField(default=False)
 
 
-async def create_results(testy_client: TestyClient, results, tests_mappings, project_id):
+async def create_results_via_endpoint(testy_client: TestyClient, results, tests_mappings, project_id):
     statuses = {
         1: 1,  # passed
         5: 0,  # failed
@@ -571,9 +576,32 @@ def create_cases_suites(suites_cases, project_id):
         serializer = TestCaseSerializer(data=cases_data_list, many=True)
         serializer.is_valid(raise_exception=True)
         created_cases = TestCaseService().cases_bulk_create(serializer.validated_data)
-        for tr_case, case in zip(cases_data_list, created_cases):
+        for tr_case, case in zip(suite['cases'], created_cases):
             cases_mappings.update({tr_case['id']: case.id})
     return cases_mappings
+
+
+def create_configs(config_groups, project_id):
+    parameters_mappings = {}
+    parameter_data_list = []
+    src_config_ids = []
+    for config_group in config_groups:
+        for config in config_group['configs']:
+            src_config_ids.append(config['id'])
+            parameter_data = {
+                'group_name': config_group['name'],
+                'data': config['name'],
+                'project': project_id,
+            }
+            parameter_data_list.append(parameter_data)
+
+    serializer = ParameterSerializer(data=parameter_data_list, many=True)
+    serializer.is_valid(raise_exception=True)
+    created_parameters = ParameterService().parameter_bulk_create(serializer.validated_data)
+    for tr_config_id, testy_parameter in zip(src_config_ids, created_parameters):
+        parameters_mappings.update({tr_config_id: testy_parameter.id})
+
+    return parameters_mappings
 
 
 def create_plans(plans, milestones_mappings, project_id, map_to_plan: bool = False):
@@ -599,70 +627,143 @@ def create_plans(plans, milestones_mappings, project_id, map_to_plan: bool = Fal
     serializer = TestPlanInputSerializer(data=plan_data_list, many=True)
     serializer.is_valid(raise_exception=True)
     test_plans = TestPLanService().testplan_bulk_create(serializer.validated_data)
-    for tr_milestone, testy_milestone in zip(plan_data_list, test_plans):
+    for tr_milestone, testy_milestone in zip(plans, test_plans):
         plan_mappings.update({tr_milestone['id']: testy_milestone.id})
 
     return plan_mappings
 
 
-#     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-#     case = models.ForeignKey(TestCase, on_delete=models.CASCADE)
-#     plan = models.ForeignKey(TestPlan, on_delete=models.CASCADE)
-#     user = models.ForeignKey(UserModel, on_delete=models.CASCADE, null=True, blank=True)
-#     is_archive = models.BooleanField(default=False)
+def create_runs_parent_plan(runs, plan_mappings, config_mappings, tests, case_mappings, project_id):
+    #     name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
+    #     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    #     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_test_plans')
+    #     parameters = ArrayField(models.PositiveIntegerField(null=True, blank=True), null=True, blank=True)
+    #     started_at = models.DateTimeField()
+    #     due_date = models.DateTimeField()
+    #     finished_at = models.DateTimeField(null=True, blank=True)
+    #     is_archive = models.BooleanField(default=False)
+    #     test_cases = PrimaryKeyRelatedField(queryset=TestCaseSelector().case_list(), many=True, required=False)
+    #     parameters
+    run_data_list = []
+    run_mappings = {}
+    for run in runs:
+        cases = [case_mappings[test['case_id']] for test in tests if test['run_id'] == run['id']]
+        parameters = [config_mappings[config_id] for config_id in run['config_ids']]
+        due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run.get('due_on')))
+        if not run.get('due_on'):
+            due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
+        run_data = {
+            'project': project_id,
+            'name': run['name'],
+            'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run['created_on'])),
+            'due_date': due_date,
+            'parent': plan_mappings[run['plan_id']],
+            'test-cases': cases,
+            'parameter': parameters
+        }
+        run_data_list.append(run_data)
+        serializer = TestPlanInputSerializer(data=run_data_list)
+        serializer.is_valid(raise_exception=True)
+        created_plan = TestPLanService().testplan_create(serializer.validated_data, combine=False)[0]
+        run_mappings.update({run['id']: created_plan.id})
+
+    return run_mappings
+
+
 def create_tests(tests, case_mappings, plans_mappings, project_id):
     test_data_list = []
     tests_mappings = {}
     for test in tests:
+        if not case_mappings.get(test['case_id']) or not plans_mappings.get(test['run_id']):
+            continue
         test_data = {
             'project': project_id,
             'case': case_mappings[test['case_id']],
-            'parent': plans_mappings[test['run_id']]
+            'plan': plans_mappings[test['run_id']]
         }
         test_data_list.append(test_data)
-
     serializer = TestSerializer(data=test_data_list, many=True)
     serializer.is_valid(raise_exception=True)
     created_tests = TestService().tests_bulk_create_by_data_list(serializer.validated_data)
-    for tr_test, testy_test in zip(test_data_list, created_tests):
+    for tr_test, testy_test in zip(tests, created_tests):
         tests_mappings.update({tr_test['id']: testy_test.id})
 
     return tests_mappings
 
 
+def create_results(results, tests_mappings, project_id):
+    statuses = {
+        1: 1,  # passed
+        5: 0,  # failed
+        8: 2,  # skipped
+        2: 4,  # Retest
+        3: 5,  # Untested
+        4: 3  # Not matching retest in tr / broken in testy
+    }
+    results_mappings = {}
+    results_data_list = []
+    for result in results:
+        if not tests_mappings.get(str(result['test_id'])):
+            continue
+        result_data = {
+            'project': project_id,
+            'status': statuses.get(result['status_id']),
+            'comment': result['comment'],
+            'test': tests_mappings[str(result['test_id'])],
+            # 'test_case_version': result['version']
+        }
+        results_data_list.append(result_data)
+    serializer = TestResultSerializer(data=results_data_list, many=True)
+    serializer.is_valid(raise_exception=True)
+    created_results = TestResultService().create_bulk_results(serializer.validated_data)
+    for tr_result, testy_result in zip(results, created_results):
+        results_mappings.update({tr_result['id']: testy_result.id})
+
+    return results_mappings
+
+
 def upload_to_testy(project_id):
-    with open(f'/Users/r.kabaev/Desktop/testrail_migrator/backup_suites_cases/resulting2022-12-05 13:59:13.870764.json',
-              'r') as file:
-        suites_cases = json.loads(file.read())
-    ######
-    with open(f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/milestones2022-12-06 16:36:14.618443.json',
-              'r') as file:
-        milestones = json.loads(file.read())
-    with open(f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/plan2022-12-06 18:18:03.753751.json',
-              'r') as file:
-        plans = json.loads(file.read())
-    with open(f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/runs_with_plan2022-12-05 20:37:01.498579.json',
-              'r') as file:
-        runs_with_plans = json.loads(file.read())
-    with open(
-            f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/tests_with_test_plan2022-12-05 20:38:12.798847.json',
-            'r') as file:
-        tests_with_test_plan = json.loads(file.read())
-    with open(
-            f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/results_with_test_plans2022-12-05 20:38:57.790758.json',
-            'r') as file:
-        results_with_test_plans = json.loads(file.read())
-    # with open(f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/results_without_test_plans2022-12-05 20:36:59.781118.json','r') as file:
-    #     results_without_test_plans = json.loads(file.read())
-    # with open(f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/runs_without_plans2022-12-05 20:36:49.323261.json','r') as file:
-    #     runs_without_plans = json.loads(file.read())
+    try:
+        with open(f'/Users/r.kabaev/Desktop/testrail_migrator/backup_suites_cases/resulting2022-12-05 13:59:13.870764.json',
+                  'r') as file:
+            suites_cases = json.loads(file.read())
 
-    # with open(f'/Users/r.kabaev/Desktop/testrail_migrator/temp_backup/tests_without_test_plans2022-12-05 20:36:55.567101.json', 'r') as file:
-    #     tests_without_test_plans = json.loads(file.read())
-    cases_mappings = create_cases_suites(suites_cases, project_id)
-    milestones_mappings = create_milestones(milestones, project_id)
-    plans_mappings = create_plans(plans, milestones_mappings, project_id)
-    runs_with_plans_mappings = create_plans(runs_with_plans, plans_mappings, map_to_plan=True, project_id=project_id)
-    tests_mappings = create_tests(tests_with_test_plan, cases_mappings, runs_with_plans_mappings, project_id)
+        with open(f'/Users/r.kabaev/Desktop/testrail_migrator/backup_08.12/backup2022-12-08 01:08:34.356653.json',
+                  'r') as file:
+            backup = json.loads(file.read())
 
-    print()
+        configs = backup['configs']
+        milestones = backup['milestones']
+        plans = backup['plans']
+        runs_parent_plan = backup['runs_parent_plan']
+        tests_parent_plan = backup['tests_parent_plan']
+        results_parent_plan = backup['results_parent_plan']
+        #     results_without_test_plans = json.loads(file.read())
+        #     runs_without_plans = json.loads(file.read())
+        #     tests_without_test_plans = json.loads(file.read())
+
+
+        config_mappings = create_configs(configs, project_id)
+        print('Configs finished')
+        cases_mappings = create_cases_suites(suites_cases['suites'], project_id)
+        print('Cases finished')
+        milestones_mappings = create_milestones(milestones, project_id)
+        print('milestones_mappings finished')
+        plans_mappings = create_plans(plans, milestones_mappings, project_id)
+        print('plans_mappings finished')
+        runs_parent_plan_mappings = create_runs_parent_plan(
+            runs=runs_parent_plan,
+            plan_mappings=plans_mappings,
+            config_mappings=config_mappings,
+            tests=tests_parent_plan,
+            case_mappings=cases_mappings,
+            project_id=project_id
+        )
+        print('runs_parent_plan_mappings finished')
+    except Exception as err:
+        logging.error(str(err))
+        raise err
+
+    # print('all finished')
+    # return
+# 28053

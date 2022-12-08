@@ -57,14 +57,14 @@ class TestPLanService:
         return testplan
 
     @transaction.atomic
-    def testplan_create(self, data=Dict[str, Any]) -> List[TestPlan]:
+    def testplan_create(self, data=Dict[str, Any], combine: bool = True) -> List[TestPlan]:
         testplan_objects = []
 
-        if parameters := data.get('parameters', []):
+        if parameters := data.get('parameters', []) and combine:
             for combine_parameter in combination_parameters(parameters):
                 testplan_objects.append(self._make_testplan_model(data, combine_parameter))
         else:
-            testplan_objects.append(self._make_testplan_model(data))
+            testplan_objects.append(self._make_testplan_model(data, parameters=parameters if parameters else None))
 
         test_plans = TestPlan.objects.bulk_create(testplan_objects)
         TestPlan.objects.rebuild()

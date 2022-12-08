@@ -76,7 +76,7 @@ class TestSerializer(ModelSerializer):
         model = Test
         fields = ('id', 'project', 'case', 'plan', 'user', 'is_archive', 'created_at', 'updated_at', 'url')
 
-        read_only_fields = ('project',)
+        # read_only_fields = ('project',)
 
 
 class TestResultSerializer(ModelSerializer):
@@ -89,16 +89,16 @@ class TestResultSerializer(ModelSerializer):
             'updated_at', 'url', 'execution_time'
         )
 
-        read_only_fields = ('test_case_version', 'project', 'test')
+        read_only_fields = ('test_case_version',)
 
 
 class TestPlanTreeSerializer(ModelSerializer):
     children = SerializerMethodField()
-    title = SerializerMethodField()
+    # title = SerializerMethodField()
 
     class Meta:
         model = TestPlan
-        fields = ('id', 'name', 'level', 'children', 'title')
+        fields = ('id', 'name', 'level', 'children')
 
     def get_title(self, instance):
         if instance.parameters is None:

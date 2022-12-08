@@ -28,6 +28,8 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+import logging
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.viewsets import ModelViewSet
 from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer, TestSuiteTreeSerializer
@@ -65,6 +67,7 @@ class TestSuiteViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         if get_boolean(self.request, 'treeview'):
+            logging.error('INTERED TREEVIEW FOR NO REASON')
             return TestSuiteTreeSerializer
         return TestSuiteSerializer
 
