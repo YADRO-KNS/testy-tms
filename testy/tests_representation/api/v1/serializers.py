@@ -32,7 +32,7 @@ from core.api.v1.serializers import AttachmentSerializer
 from core.selectors.attachments import AttachmentSelector
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
-from rest_framework.serializers import CharField, ModelSerializer
+from rest_framework.serializers import ModelSerializer, IntegerField, CharField
 from tests_description.api.v1.serializers import TestCaseSerializer
 from tests_description.selectors.cases import TestCaseSelector
 from tests_representation.models import Parameter, Test, TestPlan, TestResult
@@ -122,10 +122,12 @@ class TestResultRetrieveSerializer(ModelSerializer):
 class TestPlanTreeSerializer(ModelSerializer):
     children = SerializerMethodField()
     title = SerializerMethodField()
+    key = IntegerField(source='id')
+    value = IntegerField(source='id')
 
     class Meta:
         model = TestPlan
-        fields = ('id', 'name', 'level', 'children', 'title')
+        fields = ('id', 'key', 'value', 'title', 'name', 'level', 'children',)
 
     def get_title(self, instance):
         if instance.parameters is None:

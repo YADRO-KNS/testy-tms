@@ -43,7 +43,7 @@ from tests_representation.api.v1.serializers import (
     TestPlanUpdateSerializer,
     TestResultRetrieveSerializer,
     TestResultSerializer,
-    TestSerializer,
+    TestSerializer, TestPlanTreeSerializer,
 )
 from tests_representation.choices import TestStatuses
 from tests_representation.selectors.parameters import ParameterSelector
@@ -54,6 +54,7 @@ from tests_representation.services.parameters import ParameterService
 from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPLanService
 from tests_representation.services.tests import TestService
+from utilities.request import get_boolean
 
 
 class ParameterViewSet(ModelViewSet):
@@ -68,12 +69,20 @@ class ParameterViewSet(ModelViewSet):
 
 
 class TestPLanListView(APIView):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['project']
+
     def get_view_name(self):
         return "Test Plan List"
 
     def get(self, request):
-        qs = TestPlanSelector().testplan_list()
-        serializer = TestPlanOutputSerializer(qs, many=True, context={'request': request})
+        if get_boolean(self.request, 'treeview'):
+            qs = TestPlanSelector().testplan_without_parent()
+            serializer_class = TestPlanTreeSerializer
+        else:
+            qs = TestPlanSelector().testplan_list()
+            serializer_class = TestPlanOutputSerializer
+        serializer = serializer_class(qs, many=True, context={'request': request})
         return Response(serializer.data)
 
     def post(self, request):
