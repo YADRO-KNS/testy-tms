@@ -32,7 +32,7 @@ from core.api.v1.serializers import AttachmentSerializer
 from core.selectors.attachments import AttachmentSelector
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
-from rest_framework.serializers import ModelSerializer, IntegerField, CharField
+from rest_framework.serializers import CharField, IntegerField, ModelSerializer
 from tests_description.api.v1.serializers import TestCaseSerializer
 from tests_description.selectors.cases import TestCaseSelector
 from tests_representation.models import Parameter, Test, TestPlan, TestResult

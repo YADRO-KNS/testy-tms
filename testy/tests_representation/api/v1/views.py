@@ -40,10 +40,11 @@ from tests_representation.api.v1.serializers import (
     ParameterSerializer,
     TestPlanInputSerializer,
     TestPlanOutputSerializer,
+    TestPlanTreeSerializer,
     TestPlanUpdateSerializer,
     TestResultRetrieveSerializer,
     TestResultSerializer,
-    TestSerializer, TestPlanTreeSerializer,
+    TestSerializer,
 )
 from tests_representation.choices import TestStatuses
 from tests_representation.selectors.parameters import ParameterSelector
