@@ -55,9 +55,16 @@ class AttachmentSerializer(ModelSerializer):
             'name', 'filename', 'file_extension', 'size', 'content_type', 'object_id', 'user', 'file', 'url'
         )
 
-        read_only_fields = ('project', 'name', 'filename', 'file_extension', 'size', 'user', 'url')
-
+        read_only_fields = ('name', 'filename', 'file_extension', 'size', 'user', 'url')
+    
     def validate(self, attrs):
-        if not attrs['content_type'].model_class().objects.all().filter(pk=attrs['object_id']):
-            raise ValidationError(f'Specified model does not have object with id {attrs["object_id"]}')
+        content_type = attrs.get('content_type')
+        object_id = attrs.get('object_id')
+
+        if content_type is None:
+            return attrs
+
+        if not content_type.model_class().objects.all().filter(pk=object_id):
+            raise ValidationError(f'Specified model does not have object with id {object_id}')
+
         return attrs
