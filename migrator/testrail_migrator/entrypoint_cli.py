@@ -349,7 +349,6 @@ def create_milestones(milestones, project_id):
     for tr_milestone, testy_milestone in zip(milestones, test_plans):
         milestones_mapping.update({tr_milestone['id']: testy_milestone.id})
 
-
     for milestone in milestones:
         if not milestone['milestones']:
             continue
@@ -646,7 +645,8 @@ def create_runs_parent_plan(runs, plan_mappings, config_mappings, tests, case_ma
     #     parameters
     run_data_list = []
     run_mappings = {}
-    for run in runs:
+    for idx, run in enumerate(runs, start=1):
+        print(f'Processing run {idx} of {len(runs)}')
         cases = [case_mappings[test['case_id']] for test in tests if test['run_id'] == run['id']]
         parameters = [config_mappings[config_id] for config_id in run['config_ids']]
         due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run.get('due_on')))
@@ -658,16 +658,17 @@ def create_runs_parent_plan(runs, plan_mappings, config_mappings, tests, case_ma
             'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run['created_on'])),
             'due_date': due_date,
             'parent': plan_mappings[run['plan_id']],
-            'test-cases': cases,
-            'parameter': parameters
+            'test_cases': cases,
+            'parameters': parameters
         }
         run_data_list.append(run_data)
-        serializer = TestPlanInputSerializer(data=run_data_list)
-        serializer.is_valid(raise_exception=True)
-        created_plan = TestPLanService().testplan_create(serializer.validated_data, combine=False)[0]
-        run_mappings.update({run['id']: created_plan.id})
+    serializer = TestPlanInputSerializer(data=run_data_list, many=True)
+    serializer.is_valid(raise_exception=True)
+    created_plans = TestPLanService().testplan_bulk_create_with_tests(serializer.validated_data)
+    # for created_plan in created_plans:
+    #     run_mappings.update({run['id']: created_plan.id})
 
-    return run_mappings
+    return created_plans
 
 
 def create_tests(tests, case_mappings, plans_mappings, project_id):
@@ -724,8 +725,9 @@ def create_results(results, tests_mappings, project_id):
 
 def upload_to_testy(project_id):
     try:
-        with open(f'/Users/r.kabaev/Desktop/testrail_migrator/backup_suites_cases/resulting2022-12-05 13:59:13.870764.json',
-                  'r') as file:
+        with open(
+                f'/Users/r.kabaev/Desktop/testrail_migrator/backup_suites_cases/resulting2022-12-05 13:59:13.870764.json',
+                'r') as file:
             suites_cases = json.loads(file.read())
 
         with open(f'/Users/r.kabaev/Desktop/testrail_migrator/backup_08.12/backup2022-12-08 01:08:34.356653.json',
@@ -741,7 +743,6 @@ def upload_to_testy(project_id):
         #     results_without_test_plans = json.loads(file.read())
         #     runs_without_plans = json.loads(file.read())
         #     tests_without_test_plans = json.loads(file.read())
-
 
         config_mappings = create_configs(configs, project_id)
         print('Configs finished')

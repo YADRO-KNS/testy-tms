@@ -77,7 +77,8 @@ class TestPLanListView(APIView):
         return "Test Plan List"
 
     def get(self, request):
-        qs = TestPlanSelector().testplan_list()
+        # qs = TestPlanSelector().testplan_list()
+        qs = TestPlan.objects.prefetch_related('tests', 'child_test_plans', 'tests__test_results')
         serializer = TestPlanOutputSerializer(qs, many=True, context={'request': request})
         return Response(serializer.data)
 

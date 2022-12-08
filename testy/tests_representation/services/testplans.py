@@ -74,6 +74,18 @@ class TestPLanService:
 
         return test_plans
 
+    def testplan_bulk_create_with_tests(self, data_list):
+        testplan_objects = []
+        for data in data_list:
+            parameters = data.get('parameters')
+            testplan_objects.append(self._make_testplan_model(data, parameters=parameters))
+        test_plans = TestPlan.objects.bulk_create(testplan_objects)
+        TestPlan.objects.rebuild()
+
+        for test_plan, data in zip(test_plans, data_list):
+            if data.get('test_cases'):
+                TestService().bulk_test_create([test_plan], data['test_cases'])
+
     def testplan_bulk_create(self, validated_data):
         testplan_objects = []
         for data in validated_data:
