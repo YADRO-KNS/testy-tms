@@ -72,12 +72,23 @@ class TestPlanInputSerializer(ModelSerializer):
 
 class TestSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:test-detail')
+    name = SerializerMethodField(read_only=True)
+    last_status = SerializerMethodField(read_only=True)
 
     class Meta:
         model = Test
-        fields = ('id', 'project', 'case', 'plan', 'user', 'is_archive', 'created_at', 'updated_at', 'url')
-
+        fields = (
+            'id', 'project', 'case', 'name', 'last_status', 'plan', 'user', 'is_archive', 'created_at', 'updated_at',
+            'url')
         read_only_fields = ('project',)
+
+    def get_name(self, instance):
+        return instance.case.name
+
+    def get_last_status(self, instance):
+        result = TestResultSelector().last_result_by_test_id(instance.id)
+        if result:
+            return result.get_status_display()
 
 
 class TestResultSerializer(ModelSerializer):
