@@ -35,7 +35,10 @@ from tests_representation.models import TestResult
 
 class TestResultSelector:
     def result_list(self) -> QuerySet[TestResult]:
-        return TestResult.objects.all()
+        return TestResult.objects.all().order_by('-created_at')
 
     def result_list_by_test_id(self, test_id) -> QuerySet[TestResult]:
-        return TestResult.objects.select_related('test').filter(test_id=test_id)
+        return TestResult.objects.select_related('test').filter(test_id=test_id).order_by('-created_at')
+
+    def last_result_by_test_id(self, test_id) -> QuerySet[TestResult]:
+        return TestResult.objects.select_related('test').filter(test_id=test_id).order_by('-created_at').first()

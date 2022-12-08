@@ -132,11 +132,10 @@ class TestProjectEndpoints:
             'comment': constants.TEST_COMMENT,
         }
         api_client.send_request(
-            'api:v1:results-by-test',
+            'api:v1:testresult-list',
             result_dict,
             HTTPStatus.CREATED,
             RequestType.POST,
-            reverse_kwargs={'pk': test.id}
         )
 
         expected_project = TestCase.objects.all()[0].project

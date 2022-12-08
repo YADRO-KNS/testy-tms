@@ -30,7 +30,12 @@
 # <http://www.gnu.org/licenses/>.
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.viewsets import ModelViewSet
-from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer, TestSuiteTreeSerializer
+from tests_description.api.v1.serializers import (
+    TestCaseRetrieveSerializer,
+    TestCaseSerializer,
+    TestSuiteSerializer,
+    TestSuiteTreeSerializer,
+)
 from tests_description.selectors.cases import TestCaseSelector
 from tests_description.selectors.suites import TestSuiteSelector
 from tests_description.services.cases import TestCaseService
@@ -49,6 +54,11 @@ class TestCaseViewSet(ModelViewSet):
 
     def perform_update(self, serializer: TestCaseSerializer):
         serializer.instance = TestCaseService().case_update(serializer.instance, serializer.validated_data)
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return TestCaseRetrieveSerializer
+        return TestCaseSerializer
 
 
 class TestSuiteViewSet(ModelViewSet):
