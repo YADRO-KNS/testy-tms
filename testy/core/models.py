@@ -78,10 +78,12 @@ class Attachment(BaseModel):
     content_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
-        validators=[ProjectValidator()]
+        validators=[ProjectValidator()],
+        null=True,
+        blank=True
     )
     # Id of object from table of content_type
-    object_id = models.PositiveIntegerField()
+    object_id = models.PositiveIntegerField(null=True, blank=True)
     comment = models.TextField(blank=True)
     # Instance of parent object
     content_object = GenericForeignKey('content_type', 'object_id')
