@@ -129,6 +129,8 @@ class TestPLanDetailView(APIView):
 class TestListViewSet(mixins.ListModelMixin, GenericViewSet):
     queryset = TestSelector().test_list()
     serializer_class = TestSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['plan']
 
     def get_view_name(self):
         return "Test List"
