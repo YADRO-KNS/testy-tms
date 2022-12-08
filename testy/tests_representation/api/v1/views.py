@@ -59,6 +59,8 @@ from tests_representation.services.tests import TestService
 class ParameterViewSet(ModelViewSet):
     queryset = ParameterSelector().parameter_list()
     serializer_class = ParameterSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['project']
 
     def perform_create(self, serializer: ParameterSerializer):
         serializer.instance = ParameterService().parameter_create(serializer.validated_data)
