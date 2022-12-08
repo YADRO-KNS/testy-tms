@@ -32,7 +32,7 @@ from core.api.v1.serializers import AttachmentSerializer
 from core.selectors.attachments import AttachmentSelector
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import CharField, ModelSerializer
 from tests_description.api.v1.serializers import TestCaseSerializer
 from tests_description.selectors.cases import TestCaseSelector
 from tests_representation.models import Parameter, Test, TestPlan, TestResult
@@ -82,15 +82,21 @@ class TestSerializer(ModelSerializer):
 
 class TestResultSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:testresult-detail')
+    status_text = CharField(source='get_status_display', read_only=True)
+    user_full_name = SerializerMethodField(read_only=True)
 
     class Meta:
         model = TestResult
         fields = (
-            'id', 'project', 'status', 'test', 'user', 'comment', 'is_archive', 'test_case_version', 'created_at',
+            'id', 'project', 'status', 'status_text', 'test', 'user', 'user_full_name', 'comment', 'is_archive',
+            'test_case_version', 'created_at',
             'updated_at', 'url', 'execution_time'
         )
+        read_only_fields = ('test_case_version', 'project', 'user',)
 
-        read_only_fields = ('test_case_version', 'project', 'test')
+    def get_user_full_name(self, instance):
+        if instance.user:
+            return instance.user.get_full_name()
 
 
 class TestResultRetrieveSerializer(ModelSerializer):

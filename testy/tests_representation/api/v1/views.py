@@ -30,10 +30,9 @@
 # <http://www.gnu.org/licenses/>.
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.forms import model_to_dict
 from django.http import Http404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status
-from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
@@ -133,38 +132,19 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
     def get_view_name(self):
         return "Test Instance"
 
-    def get_serializer_class(self):
-        if self.action == 'add_result' or self.action == 'results_by_test':
-            return TestResultSerializer
-        return TestSerializer
 
-    @action(detail=False, methods=['POST'])
-    def add_result(self, request, pk):
-        serializer = self.get_serializer_class()
-        serializer = serializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        result = TestResultService().result_create(serializer.validated_data, pk)
-        return Response(model_to_dict(result), status=status.HTTP_201_CREATED)
-
-    @action(detail=False)
-    def results_by_test(self, request, pk):
-        queryset = self.filter_queryset(TestResultSelector().result_list_by_test_id(pk))
-        page = self.paginate_queryset(queryset)
-        serializer = self.get_serializer_class()
-        if page is not None:
-            serializer = serializer(page, many=True, context={'request': request})
-            return self.get_paginated_response(serializer.data)
-
-        serializer = serializer(queryset, many=True, context={'request': request})
-        return Response(serializer.data)
-
-
-class TestResultViewSet(mixins.UpdateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
+class TestResultViewSet(ModelViewSet):
     queryset = TestResultSelector().result_list()
     serializer_class = TestResultSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['test']
 
     def perform_update(self, serializer: TestResultSerializer):
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
+
+    def perform_create(self, serializer: TestResultSerializer):
+        request = serializer.context.get('request')
+        serializer.instance = TestResultService().result_create(serializer.validated_data, request.user)
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
