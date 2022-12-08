@@ -28,7 +28,7 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from django.conf import settings
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -89,13 +89,6 @@ class TestPLanListView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        if isinstance(request.data, list):
-            serializer = TestPlanInputSerializer(data=request.data, many=True)
-            serializer.is_valid(raise_exception=True)
-            test_plans = TestPLanService().testplan_bulk_create(serializer.validated_data)
-            return Response(TestPlanOutputSerializer(test_plans, many=True, context={'request': request}).data,
-                            status=status.HTTP_201_CREATED)
-
         serializer = TestPlanInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         test_plans = TestPLanService().testplan_create(serializer.validated_data)

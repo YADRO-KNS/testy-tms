@@ -1,5 +1,6 @@
 import asyncio
 
+from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 
 from tests_description.models import TestCase, TestSuite
@@ -24,8 +25,9 @@ class UploaderView(APIView):
 
     def get(self, request):
         # asyncio.run(main())
+        user = get_user_model().objects.get(pk=1)
         try:
-            upload_to_testy(1)
+            upload_to_testy(1, user)
         except Exception as err:
             raise err
 

@@ -97,14 +97,17 @@ class TestRailClient:
     #
     #     # 328
 
-    def get_milestones(self, project_id: int):
-        return self._process_request(f'/get_milestones/{project_id}')
+    def get_milestones(self, project_id: int, query_params=None):
+        return self._process_request(f'/get_milestones/{project_id}', query_params=query_params)
+
+    def get_configs(self, project_id):
+        return self._process_request(f'/get_configs/{project_id}')
 
     def get_milestone(self, milestone_id: int):
         return self._process_request(f'/get_milestone/{milestone_id}')
 
-    def get_plans(self, project_id: int):
-        return self._process_request(f'/get_plans/{project_id}')
+    def get_plans(self, project_id: int, query_params=None):
+        return self._process_request(f'/get_plans/{project_id}', query_params=query_params)
 
     # async def get_plans_with_runs(self, plans_without_runs):
     #     tasks = []
@@ -129,8 +132,8 @@ class TestRailClient:
     def get_plan(self, plan_id: int):
         return self._process_request(f'/get_plan/{plan_id}')
 
-    def get_runs(self, project_id: int):
-        return self._process_request(f'/get_runs/{project_id}')
+    def get_runs(self, project_id: int, query_params=None):
+        return self._process_request(f'/get_runs/{project_id}', query_params=query_params)
 
     def get_run(self, run_id: int):
         return self._process_request(f'/get_run/{run_id}')
@@ -143,11 +146,12 @@ class TestRailClient:
         async with aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password)) as session:
             return await self._process_async_request(f'/get_tests/{run_id}', session=session)
 
-    async def get_results(self, result_id: int):
+    async def get_results(self, test_id: int):
         async with aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password)) as session:
-            return await self._process_async_request(f'/get_results/{result_id}', session=session)
+            return await self._process_async_request(f'/get_results/{test_id}', session=session)
 
-    def _process_request(self, endpoint: str, input_data=None, headers=None) -> Union[list, dict, None]:
+    def _process_request(self, endpoint: str, input_data=None, headers=None, query_params=None) -> Union[
+        list, dict, None]:
         """
         Process request to TestRail REST API.
 
@@ -166,6 +170,8 @@ class TestRailClient:
                 'Content-Type': 'application/json; charset=utf-8'
             }
         url = self.config.api_url + endpoint
+        if query_params:
+            url = f'{url}&{"&".join([f"{field}={field_value}" for field, field_value in query_params.items()])}'
 
         if input_data:
             # logger.debug(f'Request POST - {endpoint}, data: {input_data}')
@@ -201,3 +207,5 @@ class TestRailClient:
                     return response
             except ClientConnectionError:
                 retry_count -= 1
+
+

@@ -10,6 +10,7 @@ from typing import Any
 
 from asgiref.sync import sync_to_async
 from dateutil.relativedelta import relativedelta
+from django.contrib.auth import get_user_model
 
 from tests_representation.services.parameters import ParameterService
 from .migrator_lib import TestRailClient, TestrailConfig, TestyClient, TestyConfig, parse_yaml_config
@@ -84,7 +85,6 @@ async def upload_suites_cases_to_testy(testy_client: TestyClient):
         project_dict = {
             'name': testy_client.dumpfile['name'],
             'is_archive': testy_client.dumpfile['is_completed'],
-            'import_id': session_id
         }
         announcement = testy_client.dumpfile['announcement']
         if announcement:
@@ -98,7 +98,6 @@ async def upload_suites_cases_to_testy(testy_client: TestyClient):
             suite_data = {
                 'name': suite_dict['name'],
                 'project': project['id'],
-                'import_id': session_id
             }
             suite = testy_client.create_suite(suite_data)
 
@@ -111,7 +110,6 @@ async def upload_suites_cases_to_testy(testy_client: TestyClient):
                     'project': project['id'],
                     'suite': suite['id'],
                     'scenario': case_dict['custom_steps'],
-                    'import_id': session_id
                 }
                 setup = case_data.get('custom_preconds')
                 if setup:
@@ -603,11 +601,11 @@ def create_configs(config_groups, project_id):
     return parameters_mappings
 
 
-def create_plans(plans, milestones_mappings, project_id, map_to_plan: bool = False):
+def create_plans(plans, milestones_mappings, project_id, skip_root_plans: bool = True):
     plan_data_list = []
     plan_mappings = {}
     for plan in plans:
-        mapping_id = plan['plan_id' if map_to_plan else 'milestone_id']
+        mapping_id = plan['milestone_id']
         due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan.get('due_on')))
         if not plan.get('due_on'):
             due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
@@ -619,6 +617,8 @@ def create_plans(plans, milestones_mappings, project_id, map_to_plan: bool = Fal
             'finished_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan['completed_on'])),
             'due_date': due_date,
         }
+        if not mapping_id and skip_root_plans:
+            continue
         if mapping_id:
             plan_data['parent'] = milestones_mappings[mapping_id]
         plan_data_list.append(plan_data)
@@ -644,10 +644,15 @@ def create_runs_parent_plan(runs, plan_mappings, config_mappings, tests, case_ma
     #     test_cases = PrimaryKeyRelatedField(queryset=TestCaseSelector().case_list(), many=True, required=False)
     #     parameters
     run_data_list = []
-    run_mappings = {}
+    tests_mappings = {}
+    src_tests = []
     for idx, run in enumerate(runs, start=1):
-        print(f'Processing run {idx} of {len(runs)}')
-        cases = [case_mappings[test['case_id']] for test in tests if test['run_id'] == run['id']]
+        parent = plan_mappings.get(run['plan_id'])
+        if not parent:
+            continue
+        tests_for_run = [test for test in tests if test['run_id'] == run['id']]
+        src_tests.extend(tests_for_run)
+        cases = [case_mappings[test['case_id']] for test in tests_for_run]
         parameters = [config_mappings[config_id] for config_id in run['config_ids']]
         due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run.get('due_on')))
         if not run.get('due_on'):
@@ -657,18 +662,18 @@ def create_runs_parent_plan(runs, plan_mappings, config_mappings, tests, case_ma
             'name': run['name'],
             'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run['created_on'])),
             'due_date': due_date,
-            'parent': plan_mappings[run['plan_id']],
+            'parent': parent,
             'test_cases': cases,
             'parameters': parameters
         }
         run_data_list.append(run_data)
     serializer = TestPlanInputSerializer(data=run_data_list, many=True)
     serializer.is_valid(raise_exception=True)
-    created_plans = TestPLanService().testplan_bulk_create_with_tests(serializer.validated_data)
-    # for created_plan in created_plans:
-    #     run_mappings.update({run['id']: created_plan.id})
-
-    return created_plans
+    created_tests = TestPLanService().testplan_bulk_create_with_tests(serializer.validated_data)
+    return dict(zip(
+        [src_test['id'] for src_test in src_tests],
+        [created_test.id for created_test in created_tests])
+    )
 
 
 def create_tests(tests, case_mappings, plans_mappings, project_id):
@@ -692,7 +697,7 @@ def create_tests(tests, case_mappings, plans_mappings, project_id):
     return tests_mappings
 
 
-def create_results(results, tests_mappings, project_id):
+def create_results(results, tests_mappings, user):
     statuses = {
         1: 1,  # passed
         5: 0,  # failed
@@ -701,29 +706,28 @@ def create_results(results, tests_mappings, project_id):
         3: 5,  # Untested
         4: 3  # Not matching retest in tr / broken in testy
     }
-    results_mappings = {}
     results_data_list = []
-    for result in results:
-        if not tests_mappings.get(str(result['test_id'])):
+    created_results = []
+    for idx, result in enumerate(results):
+        print(f'Processing result {idx} of {len(results)}')
+        if not tests_mappings.get(result['test_id']):
             continue
         result_data = {
-            'project': project_id,
-            'status': statuses.get(result['status_id']),
+            'status': statuses.get(result['status_id'], 5),
             'comment': result['comment'],
-            'test': tests_mappings[str(result['test_id'])],
-            # 'test_case_version': result['version']
+            'test': tests_mappings[result['test_id']],
         }
-        results_data_list.append(result_data)
-    serializer = TestResultSerializer(data=results_data_list, many=True)
-    serializer.is_valid(raise_exception=True)
-    created_results = TestResultService().create_bulk_results(serializer.validated_data)
-    for tr_result, testy_result in zip(results, created_results):
-        results_mappings.update({tr_result['id']: testy_result.id})
+        serializer = TestResultSerializer(data=result_data)
+        serializer.is_valid(raise_exception=True)
+        created_results.append(TestResultService().result_create(serializer.validated_data, user))
+    #     results_data_list.append(result_data)
+    # serializer = TestResultSerializer(data=results_data_list, many=True)
+    # serializer.is_valid(raise_exception=True)
+    # created_results = TestResultService().create_bulk_results(serializer.validated_data)
+    return created_results
 
-    return results_mappings
 
-
-def upload_to_testy(project_id):
+def upload_to_testy(project_id, user):
     try:
         with open(
                 f'/Users/r.kabaev/Desktop/testrail_migrator/backup_suites_cases/resulting2022-12-05 13:59:13.870764.json',
@@ -748,11 +752,11 @@ def upload_to_testy(project_id):
         print('Configs finished')
         cases_mappings = create_cases_suites(suites_cases['suites'], project_id)
         print('Cases finished')
-        milestones_mappings = create_milestones(milestones, project_id)
+        milestones_mappings = create_milestones(milestones, project_id)  # Milestones are working
         print('milestones_mappings finished')
         plans_mappings = create_plans(plans, milestones_mappings, project_id)
         print('plans_mappings finished')
-        runs_parent_plan_mappings = create_runs_parent_plan(
+        test_mappings = create_runs_parent_plan(
             runs=runs_parent_plan,
             plan_mappings=plans_mappings,
             config_mappings=config_mappings,
@@ -760,6 +764,7 @@ def upload_to_testy(project_id):
             case_mappings=cases_mappings,
             project_id=project_id
         )
+        create_results(results_parent_plan, test_mappings, user)
         print('runs_parent_plan_mappings finished')
     except Exception as err:
         logging.error(str(err))

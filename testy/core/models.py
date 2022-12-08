@@ -55,7 +55,6 @@ class Project(BaseModel):
     name = models.CharField('name', max_length=settings.CHAR_FIELD_MAX_LEN)
     description = models.TextField('description', blank=True)
     is_archive = models.BooleanField(default=False)
-    import_id = models.CharField(blank=True, max_length=settings.CHAR_FIELD_MAX_LEN)
 
     class Meta:
         ordering = ('name',)
