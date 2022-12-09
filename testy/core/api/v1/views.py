@@ -58,7 +58,8 @@ class ProjectViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-class AttachmentViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
+class AttachmentViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, mixins.CreateModelMixin,
+                        mixins.DestroyModelMixin, GenericViewSet):
     queryset = AttachmentSelector().attachment_list()
     serializer_class = AttachmentSerializer
 

@@ -56,7 +56,7 @@ class AttachmentSerializer(ModelSerializer):
         )
 
         read_only_fields = ('name', 'filename', 'file_extension', 'size', 'user', 'url')
-    
+
     def validate(self, attrs):
         content_type = attrs.get('content_type')
         object_id = attrs.get('object_id')

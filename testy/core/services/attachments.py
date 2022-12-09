@@ -31,7 +31,7 @@
 import os
 from typing import Any, Dict, List, Union
 
-from core.models import Attachment, Project
+from core.models import Attachment
 
 
 class AttachmentService:
