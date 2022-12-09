@@ -1,5 +1,6 @@
 from setuptools import find_packages, setup
 
+# TODO: remake requirements so testy is needed
 setup(
     name='testrail-migrator',
     version='0.1',

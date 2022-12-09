@@ -56,7 +56,6 @@ class TestResultService:
         return test_result
 
     def create_bulk_results(self, data_list):
-        # TODO: убрать двухэтажные компрехеншены
         fields = self.non_side_effect_fields
         fields.append('project')
         test_objects = [TestResult.model_create(fields=fields, data=data, commit=False) for data in

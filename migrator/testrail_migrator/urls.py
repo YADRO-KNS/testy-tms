@@ -1,23 +1,15 @@
 # from rest_framework.routers import SimpleRouter
-#
-# from testrail_migrator.views import UploaderView
-#
-# router = SimpleRouter()
-#
-# router.register('start', UploaderView.as_view())
-#
-# urlpatterns = router.urls
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 
-from .views import UploaderView, ClearView
-from tests_representation.api.v1.views import ParameterViewSet
+from .views import UploaderView, ClearView, TestrailSettingsViewSet, DownloadViewSet, TestrailBackupViewSet
 
-# router = SimpleRouter()
-#
-# router.register('netbb', ParameterViewSet)
-
+router = SimpleRouter()
+router.register('settings', TestrailSettingsViewSet)
+router.register('backups', TestrailBackupViewSet)
 urlpatterns = [
-    path('start/', UploaderView.as_view(), name='name'),
+    path('upload/', UploaderView.as_view({'post': 'create'}), name='name'),
     path('clear/', ClearView.as_view(), name='name'),
+    path('download/', DownloadViewSet.as_view({'post': 'create'}))
 ]
+urlpatterns += router.urls

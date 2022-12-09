@@ -10,16 +10,6 @@ class TestrailConfig:
     login: str = None
     password: str = None
     api_url: str = None
-    dumpfile_path: str = None
-
-
-@dataclass
-class TestyConfig:
-    login: str = None
-    password: str = None
-    api_url: str = None
-    dumpfile_path: str = None
-    path_to_session_ids: str = None
 
 
 def parse_yaml_config(config_path: str, config_name: str):

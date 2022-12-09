@@ -1,18 +1,16 @@
 import asyncio
-import json
-from copy import deepcopy
-from http import HTTPStatus
-from typing import Union
+import itertools
+import logging
 
 import aiohttp
-import requests
-import urllib3
 from aiohttp import ClientConnectionError
-from requests.adapters import HTTPAdapter
+from tqdm.asyncio import tqdm
 
 from .config import TestrailConfig
+from .utils import timer, split_list_by_chunks
 
 
+# TODO: вынести значение размера чанка в конфиг
 class TestRailClientError(Exception):
     """Raise if error in this module happens."""
 
@@ -37,175 +35,169 @@ class TestRailClient:
         Args:
             config: instance of TestrailConfig
         """
-        urllib3.disable_warnings()
-        self._auth = (config.login, config.password)
         if not config.login or not config.password:
             raise TestRailClientError('No login or password were provided.')
         self.config = config
+        self.session = aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password))
 
-    def get_projects(self):
-        return self._process_request('/get_projects/')
+    async def __aenter__(self):
+        return self
 
-    def get_suites(self, project_id):
-        return self._process_request(f'/get_suites/{project_id}')
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.session.close()
 
-    def get_project(self, project_id):
-        return self._process_request(f'/get_project/{project_id}')
+    async def download_descriptions(self, project_id: int):
+        descriptions_dict = {}
+        with timer('Getting suites'):
+            descriptions_dict['suites'] = await self.get_suites(project_id)
 
-    def get_cases(self, project_id, suite_id):
-        # TODO: add logger
-        print(f'get cases for project "{project_id}" and suite "{suite_id}"')
-        return self._process_request(f'/get_cases/{project_id}&suite_id={suite_id}')
+        with timer('Getting cases'):
+            descriptions_dict['cases'] = await self.get_cases(project_id, descriptions_dict['suites'])
 
-    def get_attachments(self, case_id):
-        print(f'get attachments for case "{case_id}"')
-        return self._process_request(f'/get_attachments_for_case/{case_id}')
+        return descriptions_dict
 
-    def get_suites_cases_for_project(self, project_id):
-        project = self.get_project(project_id)
-        project['suites'] = self.get_suites(project['id'])
-        for suite in project['suites']:
-            suite['cases'] = self.get_cases(project['id'], suite['id'])
-        return deepcopy(project)
+    async def download_representations(self, project_id: int):
+        representations_dict = {}
+        with timer('Getting configs'):
+            configs = await self.get_configs(project_id)
+            representations_dict['configs'] = configs
 
-    def get_case(self, case_id):
-        return self._process_request(f'/get_case/{case_id}')
+        with timer('Getting miles'):
+            milestones = await self.get_milestones(project_id, query_params={'is_completed': 0})
+            for milestone in milestones:
+                filtered_children = [child_milestone for child_milestone in milestone['milestones'] if
+                                     not child_milestone['is_completed']]
+                milestone['milestones'] = filtered_children
 
-    def get_all_for_all_projects(self):
-        result = []
-        for project in self.get_projects():
-            result.append(self.get_suites_cases_attachments_for_project(project))
-        num_suites = 0
-        num_cases = 0
-        for pr in result:
-            num_suites += len(pr['suites'])
-            num_cases += len(pr['suites']['cases'])
-        print('number of suites', num_suites)
-        print('number of cases', num_cases)
-        return result
+            representations_dict['milestones'] = milestones
 
-    # def get_suites_cases_for_single_project(self, project_id):
-    #     project =
-    #     num_suites = 0
-    #     num_cases = 0
-    #     num_suites += len(project['suites'])
-    #     for suite in project['suites']:
-    #         num_cases += len(suite['cases'])
-    #     print('number of suites', num_suites)
-    #     print('number of cases', num_cases)
-    #     return project
-    #
-    #     # 328
+        plans_list = await self.get_plans(project_id, query_params={'is_completed': 0})
+        representations_dict['plans'] = await self.get_plans_with_runs(plans_list)
 
-    def get_milestones(self, project_id: int, query_params=None):
-        return self._process_request(f'/get_milestones/{project_id}', query_params=query_params)
+        runs_parent_plan = []
+        for plan in representations_dict['plans']:
+            for entry in plan['entries']:
+                runs_parent_plan.extend(entry['runs'])
+        representations_dict['runs_parent_plan'] = runs_parent_plan
 
-    def get_configs(self, project_id):
-        return self._process_request(f'/get_configs/{project_id}')
+        with timer('Getting runs with milestone as parent'):
+            representations_dict['runs_parent_mile'] = await self.get_runs(project_id, query_params={'is_completed': 0})
 
-    def get_milestone(self, milestone_id: int):
-        return self._process_request(f'/get_milestone/{milestone_id}')
+        representations_dict['tests_parent_plan'] = await self.get_tests_for_runs(runs_parent_plan)
 
-    def get_plans(self, project_id: int, query_params=None):
-        return self._process_request(f'/get_plans/{project_id}', query_params=query_params)
+        representations_dict['tests_parent_mile'] = await self.get_tests_for_runs(
+            representations_dict['runs_parent_mile']
+        )
 
-    # async def get_plans_with_runs(self, plans_without_runs):
-    #     tasks = []
-    #
-    #     async with aiohttp.ClientSession(
-    #             auth=aiohttp.BasicAuth(self.config.login, self.config.password)
-    #     ) as session:
-    #         for plan in plans_without_runs:
-    #             tasks.append(self.get_plan_async(plan['id'], session))
-    #         plans = await asyncio.gather(*tasks)
-    #         return plans
+        representations_dict['results_parent_plan'] = await self.get_results_for_tests(
+            representations_dict['tests_parent_plan']
+        )
 
-    # async def get_plans_with_runs(self, plans_without_runs):
-    #     tasks = []
-    #     async with aiohttp.ClientSession(
-    #             auth=aiohttp.BasicAuth(self.config.login, self.config.password)
-    #     ) as session:
-    #         for plan in plans_without_runs:
-    #             tasks.append(self.get_plan_async(plan['id'], session))
-    #         return await asyncio.gather(*tasks)
+        representations_dict['results_parent_mile'] = await self.get_results_for_tests(
+            representations_dict['tests_parent_mile']
+        )
+        return representations_dict
 
-    def get_plan(self, plan_id: int):
-        return self._process_request(f'/get_plan/{plan_id}')
+    async def get_plans_with_runs(self, plans_without_runs):
+        plans = []
+        plan_chunks = split_list_by_chunks(plans_without_runs)
+        for chunk in tqdm(plan_chunks, desc='Plans progress'):
+            tasks = []
+            for plan in chunk:
+                tasks.append(self.get_plan(plan['id']))
+            plans.extend(await tqdm.gather(*tasks, desc='Plans chunk progress', leave=False))
+        return plans
 
-    def get_runs(self, project_id: int, query_params=None):
-        return self._process_request(f'/get_runs/{project_id}', query_params=query_params)
+    async def get_results_for_tests(self, tests):
+        results = []
+        test_chunks = split_list_by_chunks(tests)
+        for chunk in tqdm(test_chunks, desc='Getting results for tests'):
+            tasks = []
+            for test in chunk:
+                tasks.append(self.get_results(test['id']))
+            results.extend(
+                list(
+                    itertools.chain.from_iterable(await tqdm.gather(*tasks, desc='Results chunk progress', leave=False))
+                )
+            )
+        return results
 
-    def get_run(self, run_id: int):
-        return self._process_request(f'/get_run/{run_id}')
+    async def get_tests_for_runs(self, runs):
+        tests = []
+        run_chunks = split_list_by_chunks(runs)
+        for chunk in tqdm(run_chunks, desc='Getting tests for runs'):
+            tasks = []
+            for run in chunk:
+                tasks.append(self.get_tests(run['id']))
+            tests.extend(
+                list(itertools.chain.from_iterable(await tqdm.gather(*tasks, desc='Tests chunk progress', leave=False)))
+            )
+        return tests
 
-    async def get_plan_async(self, plan_id):
-        async with aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password)) as session:
-            return await self._process_async_request(f'/get_plan/{plan_id}', session=session)
+    async def get_suites(self, project_id):
+        return await self._process_request(f'/get_suites/{project_id}')
+
+    async def get_project(self, project_id):
+        return await self._process_request(f'/get_project/{project_id}')
+
+    async def get_cases_for_suite(self, project_id, suite_id):
+        return await self._process_request(f'/get_cases/{project_id}', query_params={'suite_id': suite_id})
+
+    async def get_cases(self, project_id, suites):
+        tests = []
+        suite_chunks = split_list_by_chunks(suites)
+        for chunk in tqdm(suite_chunks, desc='Getting cases for suites'):
+            tasks = []
+            for suite in chunk:
+                tasks.append(self.get_cases_for_suite(project_id, suite['id']))
+            tests.extend(
+                list(itertools.chain.from_iterable(await tqdm.gather(*tasks, desc='Cases chunk progress', leave=False)))
+            )
+        return tests
+
+    async def get_milestones(self, project_id: int, query_params=None):
+        return await self._process_request(f'/get_milestones/{project_id}', query_params=query_params)
+
+    async def get_configs(self, project_id):
+        return await self._process_request(f'/get_configs/{project_id}')
+
+    async def get_plans(self, project_id: int, query_params=None):
+        return await self._process_request(f'/get_plans/{project_id}', query_params=query_params)
+
+    async def get_runs(self, project_id: int, query_params=None):
+        return await self._process_request(f'/get_runs/{project_id}', query_params=query_params)
+
+    async def get_plan(self, plan_id):
+        return await self._process_request(f'/get_plan/{plan_id}')
 
     async def get_tests(self, run_id: int):
-        async with aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password)) as session:
-            return await self._process_async_request(f'/get_tests/{run_id}', session=session)
+        return await self._process_request(f'/get_tests/{run_id}')
 
     async def get_results(self, test_id: int):
-        async with aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password)) as session:
-            return await self._process_async_request(f'/get_results/{test_id}', session=session)
+        return await self._process_request(f'/get_results/{test_id}')
 
-    def _process_request(self, endpoint: str, input_data=None, headers=None, query_params=None) -> Union[
-        list, dict, None]:
-        """
-        Process request to TestRail REST API.
-
-        Args:
-            endpoint: endpoint url
-            input_data: content
-
-        Returns:
-            data or None for error
-        """
-        session = requests.Session()
-        retries = urllib3.Retry(total=200, backoff_factor=0.1)
-        session.mount('https://', HTTPAdapter(max_retries=retries))
+    async def _process_request(
+            self, endpoint: str,
+            headers=None,
+            query_params=None,
+            retry_count: int = 30
+    ):
         if not headers:
             headers = {
                 'Content-Type': 'application/json; charset=utf-8'
             }
         url = self.config.api_url + endpoint
+
         if query_params:
             url = f'{url}&{"&".join([f"{field}={field_value}" for field, field_value in query_params.items()])}'
 
-        if input_data:
-            # logger.debug(f'Request POST - {endpoint}, data: {input_data}')
-            response = requests.post(url, json=input_data, auth=self._auth, headers=headers)
-        else:
-            # logger.debug(f'Request GET - {endpoint}')
-            response = session.get(url, auth=self._auth, headers=headers)
-        received = json.loads(response.content)
-        if response.status_code == HTTPStatus.OK:
-            # logger.debug(f'Response ok - {received}')
-            return received
-        else:
-            # logger.warning(f'Response error - status code {response.status_code}, {response.content.decode()}')
-            pass
-
-    async def _process_async_request(self, endpoint: str, input_data=None, session=None, headers=None,
-                                     retry_count: int = 30):
-        # session = requests.Session()
-        # retries = urllib3.Retry(total=200, backoff_factor=0.1)
-        # session.mount('https://', HTTPAdapter(max_retries=retries))
-        if not headers:
-            headers = {
-                'Content-Type': 'application/json; charset=utf-8'
-            }
-        url = self.config.api_url + endpoint
-
         while retry_count:
             try:
-                async with session.get(url=url, headers=headers) as resp:
+                async with self.session.get(url=url, headers=headers) as resp:
                     response = await resp.json()
                     if resp.status != 200:
+                        logging.error(response)
                         raise ClientConnectionError
                     return response
-            except ClientConnectionError:
+            except (ClientConnectionError, asyncio.TimeoutError):
                 retry_count -= 1
-
-

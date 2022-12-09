@@ -76,7 +76,7 @@ class TestSuiteTreeSerializer(ModelSerializer):
 
     def get_test_case_serializer(self, obj):
         serializer_context = {'request': self.context.get('request')}
-        test_cases = TestCase.objects.select_related('suite').filter(suite=obj)
+        test_cases = TestCase.objects.all().filter(suite=obj)
         serializer = TestCaseSerializer(test_cases, many=True, context=serializer_context)
         return serializer.data
 
@@ -87,4 +87,4 @@ class TestSuiteSerializer(ModelSerializer):
 
     class Meta:
         model = TestSuite
-        fields = ('id', 'name', 'parent', 'project', 'url', 'test_cases')
+        fields = ('id', 'name', 'parent', 'project', 'url', 'test_cases',)

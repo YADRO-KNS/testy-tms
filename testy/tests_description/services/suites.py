@@ -49,3 +49,15 @@ class TestSuiteService:
             data=data,
         )
         return suite
+
+    def suites_bulk_create(self, data_list):
+        suites = []
+        for data in data_list:
+            test_suite = TestSuite.model_create(self.non_side_effect_fields, data=data, commit=False)
+            test_suite.lft = 0
+            test_suite.rght = 0
+            test_suite.tree_id = 0
+            test_suite.level = 0
+            suites.append(test_suite)
+        TestSuite.objects.rebuild()
+        return TestSuite.objects.bulk_create(suites)

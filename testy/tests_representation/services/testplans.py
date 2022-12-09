@@ -37,7 +37,7 @@ from tests_representation.services.tests import TestService
 from tests_representation.utils import combination_parameters
 
 
-class TestPLanService:
+class TestPlanService:
     non_side_effect_fields = ('name', 'parent', 'started_at', 'due_date', 'finished_at', 'is_archive', 'project',)
 
     def _make_testplan_model(self, data, parameters=None):
@@ -57,14 +57,14 @@ class TestPLanService:
         return testplan
 
     @transaction.atomic
-    def testplan_create(self, data=Dict[str, Any], combine: bool = True) -> List[TestPlan]:
+    def testplan_create(self, data=Dict[str, Any]) -> List[TestPlan]:
         testplan_objects = []
 
-        if parameters := data.get('parameters', []) and combine:
+        if parameters := data.get('parameters', []):
             for combine_parameter in combination_parameters(parameters):
                 testplan_objects.append(self._make_testplan_model(data, combine_parameter))
         else:
-            testplan_objects.append(self._make_testplan_model(data, parameters=parameters if parameters else None))
+            testplan_objects.append(self._make_testplan_model(data))
 
         test_plans = TestPlan.objects.bulk_create(testplan_objects)
         TestPlan.objects.rebuild()

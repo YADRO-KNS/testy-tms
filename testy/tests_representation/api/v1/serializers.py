@@ -80,7 +80,7 @@ class TestSerializer(ModelSerializer):
         fields = (
             'id', 'project', 'case', 'name', 'last_status', 'plan', 'user', 'is_archive', 'created_at', 'updated_at',
             'url')
-        # read_only_fields = ('project',)
+        read_only_fields = ('project',)
 
     def get_name(self, instance):
         return instance.case.name

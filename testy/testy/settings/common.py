@@ -78,11 +78,6 @@ INSTALLED_APPS = [
     'users',
     'tests_description',
     'tests_representation',
-    # 'debug_toolbar'
-
-    # celery_progress
-    # 'celery',
-    # 'celery_progress',
 ]
 
 TESTY_PLUGINS = [
@@ -96,33 +91,28 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.RemoteUserMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
-    # 'debug_toolbar.middleware.DebugToolbarMiddleware'
 ]
 
-INTERNAL_IPS = [
-    "127.0.0.1",
-]
 INSTALLED_APPS, MIDDLEWARE = insert_plugins(TESTY_PLUGINS, INSTALLED_APPS, MIDDLEWARE, VERSION)
 
 ROOT_URLCONF = 'testy.urls'
 
+# Currently not used
 # REDIS_HOST = 'localhost'
 # REDIS_PORT = 6379
-
-CELERY_BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+#
+# CELERY_BROKER_URL = 'redis://localhost:6379'
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(BASE_DIR, 'templates'),
-
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -223,13 +213,10 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
     ],
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend'
     ],
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    # 'PAGE_SIZE': 100
 }
 
 # Django CORS headers

@@ -38,10 +38,7 @@ router = SimpleRouter()
 router.register('parameters', views.ParameterViewSet)
 router.register('results', views.TestResultViewSet)
 
-test_lists = views.TestListViewSet.as_view({
-    'get': 'list',
-    'post': 'create'
-})
+test_lists = views.TestListViewSet.as_view({'get': 'list'})
 test_detail = views.TestDetailViewSet.as_view({
     'get': 'retrieve',
     'put': 'update',
