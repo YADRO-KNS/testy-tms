@@ -44,7 +44,8 @@ class ParameterService:
         )
 
     def parameter_bulk_create(self, data_list):
-        parameters = [Parameter.model_create(fields=self.non_side_effect_fields, data=data, commit=False) for data in data_list]
+        parameters = [Parameter.model_create(fields=self.non_side_effect_fields, data=data, commit=False) for data in
+                      data_list]
         return Parameter.objects.bulk_create(parameters)
 
     def parameter_update(self, parameter: Parameter, data: Dict[str, Any]) -> Parameter:

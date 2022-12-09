@@ -32,7 +32,6 @@
 from typing import Any, Dict
 
 from simple_history.utils import bulk_create_with_history
-
 from tests_description.models import TestCase
 
 

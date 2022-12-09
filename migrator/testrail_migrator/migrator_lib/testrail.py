@@ -7,7 +7,7 @@ from aiohttp import ClientConnectionError
 from tqdm.asyncio import tqdm
 
 from .config import TestrailConfig
-from .utils import timer, split_list_by_chunks
+from .utils import split_list_by_chunks, timer
 
 
 # TODO: вынести значение размера чанка в конфиг

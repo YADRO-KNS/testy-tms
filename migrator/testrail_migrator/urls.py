@@ -2,7 +2,7 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 
-from .views import UploaderView, ClearView, TestrailSettingsViewSet, DownloadViewSet, TestrailBackupViewSet
+from .views import ClearView, DownloadViewSet, TestrailBackupViewSet, TestrailSettingsViewSet, UploaderView
 
 router = SimpleRouter()
 router.register('settings', TestrailSettingsViewSet)

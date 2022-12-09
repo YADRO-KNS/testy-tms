@@ -2,26 +2,30 @@ import json
 from datetime import datetime
 
 from asgiref.sync import async_to_sync
+from core.models import Project
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.forms import model_to_dict
 from rest_framework import mixins, status
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
-
-from core.models import Project
 from tests_description.models import TestCase, TestSuite
 from tests_representation.api.v1.serializers import TestSerializer
-from tests_representation.models import TestPlan, Test, TestResult, Parameter
-from rest_framework.response import Response
-
+from tests_representation.models import Parameter, Test, TestPlan, TestResult
 from tests_representation.selectors.tests import TestSelector
 from tests_representation.services.tests import TestService
-from .migrator_lib import TestrailConfig, TestRailClient
+
+from .migrator_lib import TestRailClient, TestrailConfig
 from .migrator_lib.testy import TestyCreator
-from .models import TestrailSettings, TestrailBackup
-from .serializers import TestrailSettingsInputSerializer, TestrailSettingsOutputSerializer, DownloadSerializer, \
-    TestrailUploadSerializer, TestrailBackupSerializer
+from .models import TestrailBackup, TestrailSettings
+from .serializers import (
+    DownloadSerializer,
+    TestrailBackupSerializer,
+    TestrailSettingsInputSerializer,
+    TestrailSettingsOutputSerializer,
+    TestrailUploadSerializer,
+)
 
 
 class TestrailSettingsViewSet(ModelViewSet):

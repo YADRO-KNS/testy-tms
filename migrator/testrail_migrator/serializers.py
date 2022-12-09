@@ -1,9 +1,8 @@
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
-from rest_framework.relations import PrimaryKeyRelatedField, HyperlinkedIdentityField
+from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
 from rest_framework.serializers import ModelSerializer
-
-from testrail_migrator.models import TestrailSettings, TestrailBackup
+from testrail_migrator.models import TestrailBackup, TestrailSettings
 from tests_representation.models import Parameter, Test
 from tests_representation.selectors.results import TestResultSelector
 from users.models import User
@@ -42,6 +41,7 @@ class TestrailBackupSerializer(ModelSerializer):
     class Meta:
         model = TestrailBackup
         fields = ('name', 'filepath')
+
 
 class TestSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:test-detail')

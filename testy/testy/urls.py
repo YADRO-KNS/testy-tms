@@ -53,10 +53,9 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
+from plugins.url import plugin_api_urls, plugin_urls
 from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
-from plugins.url import plugin_urls, plugin_api_urls
 
 schema_view = get_schema_view(
     openapi.Info(

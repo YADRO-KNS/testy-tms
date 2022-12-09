@@ -1,13 +1,12 @@
 import time
 from datetime import datetime
 
-from dateutil.relativedelta import relativedelta
-
 from core.api.v1.serializers import ProjectSerializer
 from core.models import Project
 from core.services.projects import ProjectService
+from dateutil.relativedelta import relativedelta
 from testrail_migrator.serializers import ParameterSerializer, TestSerializer
-from tests_description.api.v1.serializers import TestSuiteSerializer, TestCaseSerializer
+from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer
 from tests_description.services.cases import TestCaseService
 from tests_description.services.suites import TestSuiteService
 from tests_representation.api.v1.serializers import TestPlanInputSerializer, TestResultSerializer

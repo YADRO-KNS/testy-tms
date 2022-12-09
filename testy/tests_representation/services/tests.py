@@ -69,7 +69,8 @@ class TestService:
         return Test.objects.bulk_create(test_objects)
 
     def tests_bulk_create_by_data_list(self, data_list):
-        test_objects = [Test.model_create(fields=self.non_side_effect_fields, data=data, commit=False) for data in data_list]
+        test_objects = [Test.model_create(fields=self.non_side_effect_fields, data=data, commit=False) for data in
+                        data_list]
         return Test.objects.bulk_create(test_objects)
 
     def test_update(self, test: Test, data: Dict[str, Any]) -> Test:
