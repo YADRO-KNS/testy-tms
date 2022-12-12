@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime
 
 from asgiref.sync import async_to_sync
@@ -95,17 +96,17 @@ class UploaderView(mixins.CreateModelMixin, GenericViewSet):
             backup = json.loads(file.read())
         creator = TestyCreator()
         project = creator.create_project(backup['project'])
-        print('Project finished')
+        logging.info('Project finished')
         suites_mappings = creator.create_suites(backup['suites'], project.id)
-        print('Suites finished')
+        logging.info('Suites finished')
         cases_mappings = creator.create_cases(backup['cases'], suites_mappings, project.id)
-        print('Cases finished')
+        logging.info('Cases finished')
         config_mappings = creator.create_configs(backup['configs'], project.id)
-        print('Configs finished')
+        logging.info('Configs finished')
         milestones_mappings = creator.create_milestones(backup['milestones'], project.id)
-        print('milestones_mappings finished')
+        logging.info('milestones_mappings finished')
         plans_mappings = creator.create_plans(backup['plans'], milestones_mappings, project.id)
-        print('plans_mappings finished')
+        logging.info('plans_mappings finished')
         test_mappings = creator.create_runs_parent_plan(
             runs=backup['runs_parent_plan'],
             plan_mappings=plans_mappings,
