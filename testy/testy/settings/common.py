@@ -182,16 +182,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
-
+STATIC_URL = '/testy-static/'
+STATIC_ROOT = 'testy-static'
 STATICFILES_DIRS = [
     BASE_DIR / 'testy_static/dist/assets',
 ]
-
-# extensions should be specified with dot (.txt). If no extensions specified all extensions are allowed.
-ALLOWED_FILE_EXTENSIONS = []
-
-STATIC_ROOT = 'static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = 'media'  # noqa: F405
@@ -225,3 +220,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Company
 COMPANY_DOMAIN = os.environ.get('COMPANY_DOMAIN')
+
+# extensions should be specified with dot (.txt). If no extensions specified all extensions are allowed.
+ALLOWED_FILE_EXTENSIONS = []
