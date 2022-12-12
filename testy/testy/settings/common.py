@@ -184,9 +184,6 @@ USE_TZ = True
 
 STATIC_URL = '/testy-static/'
 STATIC_ROOT = 'testy-static'
-STATICFILES_DIRS = [
-    BASE_DIR / 'testy_static/dist/assets',
-]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = 'media'  # noqa: F405
