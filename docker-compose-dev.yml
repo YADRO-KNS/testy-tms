@@ -6,7 +6,7 @@ services:
       dockerfile: scripts/dev/Dockerfile
     volumes:
       - './testy:/testy'
-      - './static:/testy/static'
+      - './testy-static:/testy/testy-static'
     ports:
       - "8001:8000"
     environment:
