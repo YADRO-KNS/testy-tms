@@ -206,6 +206,9 @@ class TestRailClient:
     async def get_results(self, test_id: int):
         return await self._process_request(f'/get_results/{test_id}')
 
+    async def get_attachments_for_case(self, case_id: int):
+        return await self._process_request(f'/get_attachments_for_case/{case_id}')
+
     async def _process_request(
             self, endpoint: str,
             headers=None,
@@ -224,10 +227,10 @@ class TestRailClient:
         while retry_count:
             try:
                 async with self.session.get(url=url, headers=headers) as resp:
-                    response = await resp.json()
                     if resp.status != 200:
-                        logging.error(response)
+                        logging.error(resp)
                         raise ClientConnectionError
+                    response = await resp.json()
                     return response
             except (ClientConnectionError, asyncio.TimeoutError):
                 retry_count -= 1

@@ -158,23 +158,3 @@ class ClearView(APIView):
         TestSuite.objects.all().delete()
         Parameter.objects.all().delete()
         return Response('All cleared!')
-
-
-class Do(APIView):
-    def get(self, request):
-        main()
-        return Response('All cleared!')
-
-
-@async_to_sync
-async def main():
-    config = TestrailConfig(login='r.kabaev', password='Pfchfycbz2022',
-                            api_url='https://testrail.yadro.com/index.php?/api/v2')
-    client = TestRailClient(config)
-
-    with open('/Users/r.kabaev/Desktop/tms/backup2022-12-09 19:38:08.894586.json', 'r') as file:
-        back = json.loads(file.read())
-    cases = back['plans']
-    for idx, case in enumerate(cases):
-        print(f'Case {idx} of {len(cases)}')
-        await client.attach(9135)
