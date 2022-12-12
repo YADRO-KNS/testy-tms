@@ -32,7 +32,7 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 
-from .views import ClearView, Do, DownloadViewSet, TestrailBackupViewSet, TestrailSettingsViewSet, UploaderView
+from .views import ClearView, DownloadViewSet, TestrailBackupViewSet, TestrailSettingsViewSet, UploaderView
 
 router = SimpleRouter()
 router.register('settings', TestrailSettingsViewSet)
@@ -41,6 +41,5 @@ urlpatterns = [
     path('upload/', UploaderView.as_view({'post': 'create'}), name='name'),
     path('clear/', ClearView.as_view(), name='name'),
     path('download/', DownloadViewSet.as_view({'post': 'create'})),
-    path('do/', Do.as_view())
 ]
 urlpatterns += router.urls
