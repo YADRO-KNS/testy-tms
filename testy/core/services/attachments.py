@@ -31,7 +31,7 @@
 import os
 from typing import Any, Dict, List, Union
 
-from core.models import Attachment, Project
+from core.models import Attachment
 
 
 class AttachmentService:
@@ -44,8 +44,6 @@ class AttachmentService:
         attachments_instances = []
         for file in request.data.getlist('file'):
             name, extension = os.path.splitext(file.name)
-            parent_object = data['content_type'].get_object_for_this_type(pk=data['object_id'])
-            project = parent_object if isinstance(parent_object, Project) else parent_object.project
             data.update(
                 {
                     'name': name,
@@ -54,7 +52,6 @@ class AttachmentService:
                     'size': file.size,
                     'user': request.user,
                     'file': file,
-                    'project': project
                 }
             )
             attachments_instances.append(Attachment.model_create(fields=self.non_side_effect_fields, data=data))
