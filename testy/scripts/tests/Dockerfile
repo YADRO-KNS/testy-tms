@@ -14,3 +14,6 @@ WORKDIR /testy
 COPY ./requirements/dev-requirements.txt /testy/requirements/
 
 RUN pip install -r requirements/dev-requirements.txt
+
+COPY ./testy/migrator/ /migrator
+RUN pip install -e /migrator
