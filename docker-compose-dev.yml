@@ -7,6 +7,7 @@ services:
     volumes:
       - './testy:/testy'
       - './testy-static:/testy/testy-static'
+      - './media:/testy/media'
     ports:
       - "8001:8000"
     environment:
