@@ -88,7 +88,7 @@ def download_task(self, project_id, config_dict, create_dump: bool, dumpfile_pat
     results = download(project_id, TestrailConfig(**config_dict))
     results_json = json.dumps(results)
     redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
-    logging.info(f'REDIS CLIEN PING {redis_client.ping()}')
+    logging.info(f'REDIS CLIENT PING {redis_client.ping()}')
     backup_name = f'backup{datetime.now()}'
     TestrailBackup.objects.create(name=backup_name, filepath=backup_name)
     redis_client.set(backup_name, results_json)
@@ -100,6 +100,6 @@ def download_task(self, project_id, config_dict, create_dump: bool, dumpfile_pat
 async def download(project_id: int, config: TestrailConfig):
     async with TestRailClient(config) as testrail_client:
         resulting_data = {'project': await testrail_client.get_project(project_id)}
-        # resulting_data.update(await testrail_client.download_descriptions(project_id))
-        # resulting_data.update(await testrail_client.download_representations(project_id))
+        resulting_data.update(await testrail_client.download_descriptions(project_id))
+        resulting_data.update(await testrail_client.download_representations(project_id))
     return resulting_data
