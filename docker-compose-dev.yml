@@ -24,8 +24,8 @@ services:
       - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - SECRET_KEY=${SECRET_KEY}
-      - CELERY_BROKER_URL=redis://host.docker.internal:6379
-      - CELERY_RESULT_BACKEND=redis://host.docker.internal:6379
+      - CELERY_BROKER_URL=redis://127.0.0.1:6379
+      - CELERY_RESULT_BACKEND=redis://127.0.0.1:6379
     depends_on:
       db:
         condition: service_healthy
@@ -62,15 +62,15 @@ services:
       - POSTGRES_NAME=${POSTGRES_NAME}
       - POSTGRES_USER=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_SERVICE_HOST=host.docker.internal
+      - POSTGRES_SERVICE_HOST=127.0.0.1
       - POSTGRES_SERVICE_PORT=5435
       - COMPANY_DOMAIN=${COMPANY_DOMAIN}
       - SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
       - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - SECRET_KEY=${SECRET_KEY}
-      - CELERY_BROKER_URL=redis://host.docker.internal:6379
-      - CELERY_RESULT_BACKEND=redis://host.docker.internal:6379
+      - CELERY_BROKER_URL=redis://127.0.0.1:6379
+      - CELERY_RESULT_BACKEND=redis://127.0.0.1:6379
     volumes:
       - './testy:/testy'
     depends_on:
