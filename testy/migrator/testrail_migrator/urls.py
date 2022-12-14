@@ -32,8 +32,15 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 
-from .views import ClearView, DownloadViewSet, TestrailBackupViewSet, TestrailSettingsViewSet, UploaderView, Do, \
-    download_status
+from .views import (
+    ClearView,
+    Do,
+    DownloadViewSet,
+    TestrailBackupViewSet,
+    TestrailSettingsViewSet,
+    UploaderView,
+    download_status,
+)
 
 router = SimpleRouter()
 router.register('settings', TestrailSettingsViewSet)

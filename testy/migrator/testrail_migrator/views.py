@@ -30,12 +30,12 @@
 # <http://www.gnu.org/licenses/>.
 import json
 import logging
-from asgiref.sync import async_to_sync
-from django.shortcuts import render, redirect
-from django.urls import reverse
 
+from asgiref.sync import async_to_sync
 from core.models import Project
 from django.contrib.auth import get_user_model
+from django.shortcuts import redirect, render
+from django.urls import reverse
 from rest_framework import mixins, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -47,7 +47,6 @@ from .migrator_lib import TestRailClient, TestrailConfig
 from .migrator_lib.testrail import InstanceType
 from .migrator_lib.testy import TestyCreator
 from .models import TestrailBackup, TestrailSettings
-from .tasks import download_task
 from .serializers import (
     DownloadSerializer,
     TestrailBackupSerializer,
@@ -55,6 +54,7 @@ from .serializers import (
     TestrailSettingsOutputSerializer,
     TestrailUploadSerializer,
 )
+from .tasks import download_task
 
 
 class TestrailSettingsViewSet(ModelViewSet):
@@ -154,7 +154,7 @@ class ClearView(APIView):
 
 class Do(APIView):
     def get(self, request):
-        t = self.gather_attachments()
+        self.gather_attachments()
 
         return Response('123')
 
