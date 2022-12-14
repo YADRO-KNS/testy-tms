@@ -24,8 +24,8 @@ services:
       - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - SECRET_KEY=${SECRET_KEY}
-      - CELERY_BROKER_URL=redis://localhost:6379
-      - CELERY_RESULT_BACKEND=redis://localhost:6379
+      - CELERY_BROKER_URL=redis://host.docker.internal:6379
+      - CELERY_RESULT_BACKEND=redis://host.docker.internal:6379
     depends_on:
       db:
         condition: service_healthy
@@ -47,9 +47,13 @@ services:
   redis:
     image: redis:alpine
     container_name: redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "6379:6379"
   celery:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     network_mode: "host"
     restart: always
     build:
@@ -69,8 +73,8 @@ services:
       - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - SECRET_KEY=${SECRET_KEY}
-      - CELERY_BROKER_URL=redis://localhost:6379
-      - CELERY_RESULT_BACKEND=redis://localhost:6379
+      - CELERY_BROKER_URL=redis://host.docker.internal:6379
+      - CELERY_RESULT_BACKEND=redis://host.docker.internal:6379
     volumes:
       - './testy:/testy'
     depends_on:
