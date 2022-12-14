@@ -82,7 +82,7 @@ urlpatterns = [
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
     # Media
-    re_path(r'^media/(?P<path>.*)', login_required(MediaView.as_view()), name='media-path'),
+    re_path(r'^media/(?P<path>.*)', MediaView.as_view(), name='media-path'),
 ]
 
 if settings.DEBUG:
