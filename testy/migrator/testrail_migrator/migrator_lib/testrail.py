@@ -31,13 +31,22 @@
 import asyncio
 import itertools
 import logging
+from enum import Enum
+from json import JSONDecodeError
 
 import aiohttp
-from aiohttp import ClientConnectionError
+from aiohttp import ClientConnectionError, ContentTypeError
 from tqdm.asyncio import tqdm
 
 from .config import TestrailConfig
 from .utils import split_list_by_chunks, timer
+
+
+class InstanceType(Enum):
+    PLAN = 'plan'
+    CASE = 'case'
+    TEST = 'test'
+    RUN = 'run'
 
 
 # TODO: вынести значение размера чанка в конфиг
@@ -68,6 +77,7 @@ class TestRailClient:
         if not config.login or not config.password:
             raise TestRailClientError('No login or password were provided.')
         self.config = config
+        # TODO: add check if auth failed
         self.session = aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password))
 
     async def __aenter__(self):
@@ -206,8 +216,56 @@ class TestRailClient:
     async def get_results(self, test_id: int):
         return await self._process_request(f'/get_results/{test_id}')
 
-    async def get_attachments_for_case(self, case_id: int):
-        return await self._process_request(f'/get_attachments_for_case/{case_id}')
+    async def get_attachment_with_parent_id(self, instance_id, instance_type: InstanceType):
+        attachments = await self._process_request(f'/get_attachments_for_{instance_type.value}/{instance_id}')
+        if attachments:
+            for attachment in attachments:
+                attachment[f'{instance_type.value}_id'] = instance_id
+        return attachments
+
+    async def get_attachments_for_instances(self, instances: list, instance_type: InstanceType):
+        attachments = []
+        chunks = split_list_by_chunks(instances)
+
+        # for chunk in chunks:
+        #     for instance in chunk:
+        #         attachments.append(await self.get_attachment_with_parent_id(instance, instance_type))
+        for idx, chunk in enumerate(tqdm(chunks, desc=f'{instance_type.value} attachments progress')):
+            tasks = []
+            for instance in chunk:
+                tasks.append(
+                    self.get_attachment_with_parent_id(instance['id'], instance_type)
+                )
+
+            attachments.extend(
+                list(
+                    itertools.chain.from_iterable(
+                        await tqdm.gather(*tasks, desc='attachments chunk progress', leave=False)
+                    )
+                )
+            )
+        return attachments
+
+    async def get_attachments_for_plan(self, plan_id: int):
+        list_of_attachments = await self._process_request(f'/get_attachments_for_plan/{plan_id}')
+        if list_of_attachments:
+            for attachment in list_of_attachments:
+                attachment['plan_id'] = plan_id
+            return list_of_attachments
+
+    async def get_attachments_for_run(self, run_id: int):
+        list_of_attachments = await self._process_request(f'/get_attachments_for_run/{run_id}')
+        if list_of_attachments:
+            for attachment in list_of_attachments:
+                attachment['run_id'] = run_id
+            return list_of_attachments
+
+    async def get_attachments_for_test(self, test_id: int):
+        list_of_attachments = await self._process_request(f'/get_attachments_for_test/{test_id}')
+        if list_of_attachments:
+            for attachment in list_of_attachments:
+                attachment['test_id'] = test_id
+            return list_of_attachments
 
     async def _process_request(
             self, endpoint: str,
@@ -227,8 +285,13 @@ class TestRailClient:
         while retry_count:
             try:
                 async with self.session.get(url=url, headers=headers) as resp:
+                    if resp.status == 400:
+                        return
                     if resp.status != 200:
-                        logging.error(resp)
+                        try:
+                            logging.error(await resp.json())
+                        except (JSONDecodeError, ContentTypeError):
+                            logging.error(await resp.text())
                         raise ClientConnectionError
                     response = await resp.json()
                     return response

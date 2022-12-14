@@ -30,13 +30,12 @@
 # <http://www.gnu.org/licenses/>.
 import json
 import logging
-from datetime import datetime
-
 from asgiref.sync import async_to_sync
+from django.shortcuts import render, redirect
+from django.urls import reverse
+
 from core.models import Project
-from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.forms import model_to_dict
 from rest_framework import mixins, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -45,8 +44,10 @@ from tests_description.models import TestCase, TestSuite
 from tests_representation.models import Parameter, Test, TestPlan, TestResult
 
 from .migrator_lib import TestRailClient, TestrailConfig
+from .migrator_lib.testrail import InstanceType
 from .migrator_lib.testy import TestyCreator
 from .models import TestrailBackup, TestrailSettings
+from .tasks import download_task
 from .serializers import (
     DownloadSerializer,
     TestrailBackupSerializer,
@@ -87,29 +88,18 @@ class DownloadViewSet(mixins.CreateModelMixin, GenericViewSet):
         except TestrailSettings.DoesNotExist:
             return Response('Testrail settings instance were not found', status=status.HTTP_400_BAD_REQUEST)
 
-        config = TestrailConfig(
-            login=testrail_settings.login,
-            password=testrail_settings.password,
-            api_url=testrail_settings.api_url,
-        )
-        results = self.download(project_id, config)
-        if request.POST.get('create_dumpfile'):
-            timestamp = datetime.now()
-            filepath = f'{settings.BASE_DIR.parent}/{testrail_settings.dumpfile_path}{timestamp}.json'
-            testrail_backup = TestrailBackup.objects.create(name=timestamp, filepath=filepath)
-            with open(filepath, 'w') as file:
-                file.write(json.dumps(results, indent=2))
-            return Response(model_to_dict(testrail_backup))
-        return Response('Done')
+        config_dict = {
+            'login': testrail_settings.login,
+            'password': testrail_settings.password,
+            'api_url': testrail_settings.api_url,
+        }
+        task = download_task.delay(project_id, config_dict, request.POST.get('create_dumpfile'),
+                                   testrail_settings.dumpfile_path)
+        return redirect(reverse('plugins:testrail_migrator:download_status', kwargs={'task_id': task.task_id}))
 
-    @staticmethod
-    @async_to_sync
-    async def download(project_id: int, config: TestrailConfig):
-        async with TestRailClient(config) as testrail_client:
-            resulting_data = {'project': await testrail_client.get_project(project_id)}
-            resulting_data.update(await testrail_client.download_descriptions(project_id))
-            resulting_data.update(await testrail_client.download_representations(project_id))
-        return resulting_data
+
+def download_status(request, task_id):
+    return render(request, 'download_status.html', {'task_id': task_id})
 
 
 class UploaderView(mixins.CreateModelMixin, GenericViewSet):
@@ -157,4 +147,25 @@ class ClearView(APIView):
         TestCase.objects.all().delete()
         TestSuite.objects.all().delete()
         Parameter.objects.all().delete()
+        TestrailBackup.objects.all().delete()
+        TestrailSettings.objects.all().delete()
         return Response('All cleared!')
+
+
+class Do(APIView):
+    def get(self, request):
+        t = self.gather_attachments()
+
+        return Response('123')
+
+    @async_to_sync
+    async def gather_attachments(self):
+        config = TestrailConfig(login='r.kabaev', password='Pfchfycbz2022',
+                                api_url='https://testrail.yadro.com/index.php?/api/v2')
+        async with TestRailClient(config) as testrail_client:
+            with open('/Users/r.kabaev/Desktop/testy/backup2022-12-12 13:53:21.886626.json', 'r') as file:
+                cases = json.loads(file.read())['cases']
+            attachments = await testrail_client.get_attachments_for_instances(cases, InstanceType.CASE)
+            with open('/Users/r.kabaev/Desktop/testy/attachments_for_cases.json', 'w') as file:
+                file.write(json.dumps(attachments, indent=2))
+        print()

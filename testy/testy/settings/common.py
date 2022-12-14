@@ -78,6 +78,9 @@ INSTALLED_APPS = [
     'users',
     'tests_description',
     'tests_representation',
+    'celery',
+    'celery_progress',
+    'django_celery_results'
 ]
 
 TESTY_PLUGINS = [
@@ -101,12 +104,8 @@ INSTALLED_APPS, MIDDLEWARE = insert_plugins(TESTY_PLUGINS, INSTALLED_APPS, MIDDL
 
 ROOT_URLCONF = 'testy.urls'
 
-# Currently not used
-# REDIS_HOST = 'localhost'
-# REDIS_PORT = 6379
-#
-# CELERY_BROKER_URL = 'redis://localhost:6379'
-# CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
 
 TEMPLATES = [
     {

@@ -29,7 +29,9 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 from django.apps import AppConfig
-
+__all__=(
+    'TestyPluginConfig'
+)
 
 class TestyPluginConfig(AppConfig):
     name = ''

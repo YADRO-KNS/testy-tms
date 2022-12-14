@@ -90,6 +90,7 @@ urlpatterns = [
 
     # Media
     re_path(r'^media/(?P<path>.*)', login_required(MediaView.as_view()), name='media-path'),
+    re_path(r'^celery-progress/', include('celery_progress.urls')),
 ]
 
 if settings.DEBUG:
