@@ -11,3 +11,4 @@ flake8-copyright-validator==0.0.1
 django-cors-headers==3.13.0
 django-filter==22.1
 gunicorn==20.1.0
+humanize==4.4.0
