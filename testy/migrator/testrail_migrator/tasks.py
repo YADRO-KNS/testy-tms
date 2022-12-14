@@ -48,7 +48,7 @@ def upload_task(self, backup_name, user_id):
     progress_recorder = ProgressRecorder(self)
     max_progress = 7
     progress_recorder.set_progress(0, max_progress, 'Started uploading')
-    redis_client = redis.StrictRedis(settings.REDIS_HOST, port=settings.REDIS_PORT)
+    redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
     backup = json.loads(redis_client.get(backup_name))
     creator = TestyCreator()
     project = creator.create_project(backup['project'])
@@ -86,18 +86,20 @@ def download_task(self, project_id, config_dict, create_dump: bool, dumpfile_pat
     progress_recorder = ProgressRecorder(self)
     progress_recorder.set_progress(0, 1, 'Started downloading')
     results = download(project_id, TestrailConfig(**config_dict))
-
-    r = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
-    p_mydict = json.dumps(results)
+    results_json = json.dumps(results)
+    redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
+    logging.info(f'REDIS CLIEN PING {redis_client.ping()}')
     backup_name = f'backup{datetime.now()}'
     TestrailBackup.objects.create(name=backup_name, filepath=backup_name)
-    r.set(backup_name, p_mydict)
+    redis_client.set(backup_name, results_json)
+    if not redis_client.get(backup_name):
+        logging.error('REDIS CLIENT GET GOT NOTHING')
 
 
 @async_to_sync
 async def download(project_id: int, config: TestrailConfig):
     async with TestRailClient(config) as testrail_client:
         resulting_data = {'project': await testrail_client.get_project(project_id)}
-        resulting_data.update(await testrail_client.download_descriptions(project_id))
-        resulting_data.update(await testrail_client.download_representations(project_id))
+        # resulting_data.update(await testrail_client.download_descriptions(project_id))
+        # resulting_data.update(await testrail_client.download_representations(project_id))
     return resulting_data
