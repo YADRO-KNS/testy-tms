@@ -106,6 +106,8 @@ ROOT_URLCONF = 'testy.urls'
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
+REDIS_PORT = os.environ.get('REDIS_PORT')
+REDIS_HOST = os.environ.get('REDIS_HOST')
 
 TEMPLATES = [
     {

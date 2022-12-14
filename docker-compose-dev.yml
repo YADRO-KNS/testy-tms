@@ -26,6 +26,8 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - CELERY_BROKER_URL=redis://host.docker.internal:6379
       - CELERY_RESULT_BACKEND=redis://host.docker.internal:6379
+      - REDIS_HOST=host.docker.internal
+      - REDIS_PORT=6379
     depends_on:
       db:
         condition: service_healthy
@@ -75,6 +77,8 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - CELERY_BROKER_URL=redis://host.docker.internal:6379
       - CELERY_RESULT_BACKEND=redis://host.docker.internal:6379
+      - REDIS_HOST=host.docker.internal
+      - REDIS_PORT=6379
     volumes:
       - './testy:/testy'
     depends_on:

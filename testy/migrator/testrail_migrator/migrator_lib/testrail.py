@@ -29,11 +29,14 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 import asyncio
+import hashlib
 import itertools
+import json
 import logging
 from enum import Enum
 from json import JSONDecodeError
 
+import aiofiles
 import aiohttp
 from aiohttp import ClientConnectionError, ContentTypeError
 from tqdm.asyncio import tqdm
@@ -245,6 +248,14 @@ class TestRailClient:
                 )
             )
         return attachments
+
+    async def get_attachment(self, attachment_id, file_name, files_dir):
+        resp = await self.session.get(self.config.api_url + f'/get_attachment/{attachment_id}')
+        if resp.status == 200:
+            extension = resp.content_type.split('/')[-1]
+            file_name = hashlib.md5(file_name).hexdigest()
+            with await aiofiles.open(f'{files_dir}/{file_name}.{extension}', mode='wb') as file:
+                await file.write(await resp.read())
 
     async def get_attachments_for_plan(self, plan_id: int):
         list_of_attachments = await self._process_request(f'/get_attachments_for_plan/{plan_id}')
