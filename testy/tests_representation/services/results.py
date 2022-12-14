@@ -32,13 +32,15 @@
 from typing import Any, Dict
 
 from django.db import transaction
+
+from core.services.attachments import AttachmentService
 from tests_description.selectors.cases import TestCaseSelector
 from tests_representation.models import TestResult
 from users.models import User
 
 
 class TestResultService:
-    non_side_effect_fields = ['status', 'user', 'test', 'comment', 'is_archive', 'test_case_version', 'execution_time']
+    non_side_effect_fields = ['status', 'user', 'test', 'comment', 'is_archive', 'test_case_version', 'execution_time',]
 
     @transaction.atomic
     def result_create(self, data: Dict[str, Any], user: User) -> TestResult:
@@ -52,6 +54,9 @@ class TestResultService:
         test_result.test_case_version = TestCaseSelector().case_version(test_result.test.case)
         test_result.full_clean()
         test_result.save()
+
+        for attachment in data.get('attachments', []):
+            AttachmentService().attachment_set_content_object(attachment, test_result)
 
         return test_result
 
