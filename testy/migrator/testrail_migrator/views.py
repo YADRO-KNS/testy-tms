@@ -29,13 +29,9 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 import json
-import logging
 
-import redis
 from asgiref.sync import async_to_sync
 from core.models import Project
-from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from rest_framework import mixins, status
@@ -46,7 +42,6 @@ from tests_description.models import TestCase, TestSuite
 from tests_representation.models import Parameter, Test, TestPlan, TestResult
 
 from .migrator_lib import TestRailClient, TestrailConfig
-from .migrator_lib.testy import TestyCreator
 from .models import TestrailBackup, TestrailSettings
 from .serializers import (
     DownloadSerializer,
@@ -55,7 +50,7 @@ from .serializers import (
     TestrailSettingsOutputSerializer,
     TestrailUploadSerializer,
 )
-from .tasks import download_task
+from .tasks import download_task, upload_task
 
 
 class TestrailSettingsViewSet(ModelViewSet):
@@ -107,34 +102,9 @@ class UploaderView(mixins.CreateModelMixin, GenericViewSet):
     serializer_class = TestrailUploadSerializer
 
     def create(self, request, *args, **kwargs):
-        user = get_user_model().objects.get(pk=request.POST.get('user'))
         backup_instance = TestrailBackup.objects.get(pk=request.POST.get('testrail_backup'))
-        redis_client = redis.StrictRedis(settings.REDIS_HOST, port=settings.REDIS_PORT)
-        backup = json.loads(redis_client.get(backup_instance.name))
-        creator = TestyCreator()
-        project = creator.create_project(backup['project'])
-        logging.info('Project finished')
-        suites_mappings = creator.create_suites(backup['suites'], project.id)
-        logging.info('Suites finished')
-        cases_mappings = creator.create_cases(backup['cases'], suites_mappings, project.id)
-        logging.info('Cases finished')
-        config_mappings = creator.create_configs(backup['configs'], project.id)
-        logging.info('Configs finished')
-        milestones_mappings = creator.create_milestones(backup['milestones'], project.id)
-        logging.info('milestones_mappings finished')
-        plans_mappings = creator.create_plans(backup['plans'], milestones_mappings, project.id)
-        logging.info('plans_mappings finished')
-        test_mappings = creator.create_runs_parent_plan(
-            runs=backup['runs_parent_plan'],
-            plan_mappings=plans_mappings,
-            config_mappings=config_mappings,
-            tests=backup['tests_parent_plan'],
-            case_mappings=cases_mappings,
-            project_id=project.id
-        )
-        creator.create_results(backup['results_parent_plan'], test_mappings, user)
-
-        return Response('Done')
+        task = upload_task.delay(backup_instance.name, request.POST.get('user'))
+        return redirect(reverse('plugins:testrail_migrator:download_status', kwargs={'task_id': task.task_id}))
 
 
 # TODO: remove after debugging is finished
