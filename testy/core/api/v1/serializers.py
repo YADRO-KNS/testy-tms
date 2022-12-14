@@ -51,8 +51,8 @@ class AttachmentSerializer(ModelSerializer):
     class Meta:
         model = Attachment
         fields = (
-            'project', 'comment',
-            'name', 'filename', 'file_extension', 'size', 'content_type', 'object_id', 'user', 'file', 'url'
+            'id', 'project', 'comment', 'name', 'filename', 'file_extension', 'size', 'content_type', 'object_id',
+            'user', 'file', 'url',
         )
 
         read_only_fields = ('name', 'filename', 'file_extension', 'size', 'user', 'url')
