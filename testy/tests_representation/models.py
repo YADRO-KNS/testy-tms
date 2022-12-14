@@ -28,8 +28,9 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from django.contrib.contenttypes.fields import GenericRelation
 
-from core.models import Project
+from core.models import Project, Attachment
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
@@ -100,6 +101,8 @@ class TestResult(BaseModel):
         blank=True,
         validators=[MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)]
     )
+
+    attachments = GenericRelation(Attachment)
 
     class Meta:
         default_related_name = 'test_results'
