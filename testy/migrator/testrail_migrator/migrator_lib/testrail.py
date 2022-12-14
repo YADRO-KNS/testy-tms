@@ -31,7 +31,6 @@
 import asyncio
 import hashlib
 import itertools
-import json
 import logging
 from enum import Enum
 from json import JSONDecodeError

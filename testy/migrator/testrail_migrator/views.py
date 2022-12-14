@@ -33,9 +33,8 @@ import logging
 
 import redis
 from asgiref.sync import async_to_sync
-from django.conf import settings
-
 from core.models import Project
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -47,7 +46,6 @@ from tests_description.models import TestCase, TestSuite
 from tests_representation.models import Parameter, Test, TestPlan, TestResult
 
 from .migrator_lib import TestRailClient, TestrailConfig
-from .migrator_lib.testrail import InstanceType
 from .migrator_lib.testy import TestyCreator
 from .models import TestrailBackup, TestrailSettings
 from .serializers import (
@@ -162,7 +160,8 @@ class Do(APIView):
 
     # @async_to_sync
     # async def gather_attachments(self):
-    #     config = TestrailConfig(login='r.kabaev', password='Pfchfycbz2022', api_url='https://testrail.yadro.com/index.php?/api/v2')
+    #     config = TestrailConfig(login='r.kabaev', password='Pfchfycbz2022', api_url='http
+    #     s://testrail.yadro.com/index.php?/api/v2')
     #     async with TestRailClient(config) as testrail_client:
     #         with open('/Users/r.kabaev/Desktop/testy/backup2022-12-14 12:04:25.813287.json', 'r') as file:
     #             cases = json.loads(file.read())['cases']
@@ -183,13 +182,15 @@ class Do(APIView):
             attachments_cases = json.loads(file.read())
 
         async with TestRailClient(config) as testrail_client:
-            # attachments_cases = await testrail_client.get_attachments_for_instances(backup['cases'], InstanceType.CASE)
+            # attachments_cases = await testrail_client.get_attachments
+            # _for_instances(backup['cases'], InstanceType.CASE)
             # attachments_runs_plans = await testrail_client.get_attachments_for_instances(backup['runs_parent_plan'],
             #                                                                              InstanceType.RUN)
-            # attachments_plans = await testrail_client.get_attachments_for_instances(backup['plans'], InstanceType.PLAN)
+            # attachments_plans = await testrail_client.get_attachme
+            # nts_for_instances(backup['plans'], InstanceType.PLAN)
             # attachments_tests_plans = await testrail_client.get_attachments_for_instances(backup['tests_parent_plan'],
             #                                                                               InstanceType.TEST)
             for attachment in attachments_cases:
                 t = await testrail_client.get_attachment(attachment['id'])
-                print()
+                print(t)
         print()
