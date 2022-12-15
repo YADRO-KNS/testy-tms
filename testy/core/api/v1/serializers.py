@@ -28,8 +28,10 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+import humanize
 from core.models import Attachment, Project
 from rest_framework.exceptions import ValidationError
+from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import HyperlinkedIdentityField, ModelSerializer
 
 __all__ = (
@@ -47,15 +49,19 @@ class ProjectSerializer(ModelSerializer):
 
 class AttachmentSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:attachment-detail')
+    size_humanize = SerializerMethodField()
 
     class Meta:
         model = Attachment
         fields = (
-            'project', 'comment',
-            'name', 'filename', 'file_extension', 'size', 'content_type', 'object_id', 'user', 'file', 'url'
+            'id', 'project', 'comment', 'name', 'filename', 'file_extension', 'size', 'size_humanize', 'content_type',
+            'object_id', 'user', 'file', 'url',
         )
 
         read_only_fields = ('name', 'filename', 'file_extension', 'size', 'user', 'url')
+
+    def get_size_humanize(self, instance):
+        return humanize.naturalsize(instance.size)
 
     def validate(self, attrs):
         content_type = attrs.get('content_type')

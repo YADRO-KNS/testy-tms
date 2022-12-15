@@ -56,3 +56,10 @@ class AttachmentService:
             )
             attachments_instances.append(Attachment.model_create(fields=self.non_side_effect_fields, data=data))
         return attachments_instances
+
+    def attachment_set_content_object(self, attachment, content_object):
+        if attachment.content_object:
+            raise ValueError('Attachment already has content object.')
+        attachment.content_object = content_object
+        attachment.save()
+        return attachment
