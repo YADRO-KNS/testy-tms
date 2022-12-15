@@ -76,6 +76,8 @@ flake8-copyright-validator==0.0.1
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in
+humanize==4.4.0
+    # via -r requirements.in
 idna==3.4
     # via requests
 importlib-metadata==5.0.0

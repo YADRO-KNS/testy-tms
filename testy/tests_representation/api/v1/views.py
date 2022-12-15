@@ -42,7 +42,7 @@ from tests_representation.api.v1.serializers import (
     TestPlanOutputSerializer,
     TestPlanTreeSerializer,
     TestPlanUpdateSerializer,
-    TestResultRetrieveSerializer,
+    TestResultInputSerializer,
     TestResultSerializer,
     TestSerializer,
 )
@@ -164,8 +164,8 @@ class TestResultViewSet(ModelViewSet):
         serializer.instance = TestResultService().result_create(serializer.validated_data, request.user)
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return TestResultRetrieveSerializer
+        if self.action == 'create':
+            return TestResultInputSerializer
         return TestResultSerializer
 
 
