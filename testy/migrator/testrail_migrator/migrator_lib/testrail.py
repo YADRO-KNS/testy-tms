@@ -32,6 +32,7 @@ import asyncio
 import hashlib
 import itertools
 import logging
+import random
 from enum import Enum
 from json import JSONDecodeError
 
@@ -49,6 +50,7 @@ class InstanceType(Enum):
     CASE = 'case'
     TEST = 'test'
     RUN = 'run'
+    ENTRY = 'entry'
 
 
 # TODO: вынести значение размера чанка в конфиг
@@ -223,22 +225,31 @@ class TestRailClient:
         if attachments:
             for attachment in attachments:
                 attachment[f'{instance_type.value}_id'] = instance_id
-        return attachments
+        return attachments if attachments else []
+
+    async def get_attachment_with_parent_id_for_entry(self, plan_id, entry_id):
+        attachments = await self._process_request(f'/get_attachments_for_plan_entry/{plan_id}/{entry_id}')
+        if attachments:
+            for attachment in attachments:
+                attachment['plan_id'] = plan_id
+        return attachments if attachments else []
 
     async def get_attachments_for_instances(self, instances: list, instance_type: InstanceType):
         attachments = []
         chunks = split_list_by_chunks(instances)
 
-        # for chunk in chunks:
-        #     for instance in chunk:
-        #         attachments.append(await self.get_attachment_with_parent_id(instance, instance_type))
         for idx, chunk in enumerate(tqdm(chunks, desc=f'{instance_type.value} attachments progress')):
             tasks = []
-            for instance in chunk:
-                tasks.append(
-                    self.get_attachment_with_parent_id(instance['id'], instance_type)
-                )
-
+            if instance_type == InstanceType.ENTRY:
+                for instance in chunk:
+                    tasks.append(
+                        self.get_attachment_with_parent_id_for_entry(instance['plan_id'], instance['id'])
+                    )
+            else:
+                for instance in chunk:
+                    tasks.append(
+                        self.get_attachment_with_parent_id(instance['id'], instance_type)
+                    )
             attachments.extend(
                 list(
                     itertools.chain.from_iterable(
@@ -248,13 +259,44 @@ class TestRailClient:
             )
         return attachments
 
-    async def get_attachment(self, attachment_id, file_name, files_dir):
-        resp = await self.session.get(self.config.api_url + f'/get_attachment/{attachment_id}')
-        if resp.status == 200:
-            extension = resp.content_type.split('/')[-1]
-            file_name = hashlib.md5(file_name).hexdigest()
-            with await aiofiles.open(f'{files_dir}/{file_name}.{extension}', mode='wb') as file:
-                await file.write(await resp.read())
+    async def get_attachments_from_list(self, attachment_list, parent_key):
+        attachments = []
+        result = {}
+        attachment_chunks = split_list_by_chunks(attachment_list)
+        for chunk in tqdm(attachment_chunks):
+            tasks = []
+            for attachment in chunk:
+                tasks.append(self.get_attachment(attachment, parent_key))
+            attachments.extend(await tqdm.gather(*tasks, leave=False))
+        for attachment in attachments:
+            result.update(attachment)
+        return result
+
+    async def get_attachment(self, attachment, parent_key, retry_count=30):
+        headers = {
+            'Content-Type': 'application/json; charset=utf-8'
+        }
+        while retry_count:
+            try:
+                async with self.session.get(url=self.config.api_url + f'/get_attachment/{attachment["id"]}',
+                                            headers=headers) as resp:
+                    if resp.status == 400:
+                        return
+                    if resp.status != 200:
+                        raise ClientConnectionError
+                    return {
+                        attachment['id']: {
+                            parent_key: attachment[parent_key],
+                            'content_type': resp.content_type,
+                            'size': attachment['size'],
+                            'charset': resp.charset,
+                            'name': attachment['name'],
+                            'field_name': 'file',
+                            'file_bytes': await resp.read()
+                        }
+                    }
+            except (ClientConnectionError, asyncio.TimeoutError):
+                retry_count -= 1
 
     async def get_attachments_for_plan(self, plan_id: int):
         list_of_attachments = await self._process_request(f'/get_attachments_for_plan/{plan_id}')
@@ -281,7 +323,8 @@ class TestRailClient:
             self, endpoint: str,
             headers=None,
             query_params=None,
-            retry_count: int = 30
+            retry_count: int = 30,
+            file: bool = False
     ):
         if not headers:
             headers = {
@@ -303,7 +346,6 @@ class TestRailClient:
                         except (JSONDecodeError, ContentTypeError):
                             logging.error(await resp.text())
                         raise ClientConnectionError
-                    response = await resp.json()
-                    return response
+                    return await resp.read() if file else await resp.json()
             except (ClientConnectionError, asyncio.TimeoutError):
                 retry_count -= 1

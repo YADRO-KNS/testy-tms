@@ -58,6 +58,7 @@ class TestrailSettingsOutputSerializer(ModelSerializer):
 
 class TestrailUploadSerializer(serializers.Serializer):
     testrail_backup = PrimaryKeyRelatedField(queryset=TestrailBackup.objects.all())
+    testrail_settings = PrimaryKeyRelatedField(queryset=TestrailSettings.objects.all())
     user = PrimaryKeyRelatedField(queryset=User.objects.all())
 
 

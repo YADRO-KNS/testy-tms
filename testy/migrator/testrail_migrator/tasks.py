@@ -39,67 +39,141 @@ from celery_progress.backend import ProgressRecorder
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from testrail_migrator.migrator_lib import TestRailClient, TestrailConfig, TestyCreator
+from testrail_migrator.migrator_lib.testrail import InstanceType
 from testrail_migrator.models import TestrailBackup
 
 
+# TODO: переделать чтобы соблюдался принцип DRY
 @shared_task(bind=True)
-def upload_task(self, backup_name, user_id):
+def upload_task(self, backup_name, user_id, config_dict, upload_root_runs: bool = False):
     user = get_user_model().objects.get(pk=user_id)
     progress_recorder = ProgressRecorder(self)
+
+    curr_progress = 0
     max_progress = 7
-    progress_recorder.set_progress(0, max_progress, 'Started uploading')
+
+    progress_recorder.set_progress(curr_progress, max_progress, 'Started uploading')
+
     redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
     backup = json.loads(redis_client.get(backup_name))
     creator = TestyCreator()
+
+    mappings = {}
+
     project = creator.create_project(backup['project'])
-    progress_recorder.set_progress(1, max_progress, 'Uploading project')
-    logging.info('Project finished')
-    suites_mappings = creator.create_suites(backup['suites'], project.id)
-    progress_recorder.set_progress(2, max_progress, 'Uploading suites')
-    logging.info('Suites finished')
-    cases_mappings = creator.create_cases(backup['cases'], suites_mappings, project.id)
-    progress_recorder.set_progress(3, max_progress, 'Uploading cases')
-    logging.info('Cases finished')
-    config_mappings = creator.create_configs(backup['configs'], project.id)
-    progress_recorder.set_progress(4, max_progress, 'Uploading configs')
-    logging.info('Configs finished')
-    milestones_mappings = creator.create_milestones(backup['milestones'], project.id)
-    progress_recorder.set_progress(5, max_progress, 'Uploading milestones')
-    logging.info('milestones_mappings finished')
-    plans_mappings = creator.create_plans(backup['plans'], milestones_mappings, project.id)
-    progress_recorder.set_progress(6, max_progress, 'Uploading plans')
-    logging.info('plans_mappings finished')
-    test_mappings = creator.create_runs_parent_plan(
+
+    keys_without_mappings = ['suites', 'configs', 'milestones']
+    for key in keys_without_mappings:
+        curr_progress += 1
+        create_method = getattr(creator, f'create_{key}')
+        progress_recorder.set_progress(curr_progress, max_progress, f'Uploading {key}')
+        mappings[key] = create_method(backup[key], project.id)
+
+    keys_with_single_mapping = [('cases', 'suites'), ('plans', 'milestones')]
+    for key, mapping_key in keys_with_single_mapping:
+        curr_progress += 1
+        create_method = getattr(creator, f'create_{key}')
+        progress_recorder.set_progress(curr_progress, max_progress, f'Uploading {key}')
+        mappings[key] = create_method(backup[key], mappings[mapping_key], project.id)
+
+    mappings['tests_parent_plan'], mappings['runs_parent_plan'] = creator.create_runs_parent_plan(
         runs=backup['runs_parent_plan'],
-        plan_mappings=plans_mappings,
-        config_mappings=config_mappings,
+        plan_mappings=mappings['plans'],
+        config_mappings=mappings['configs'],
         tests=backup['tests_parent_plan'],
-        case_mappings=cases_mappings,
+        case_mappings=mappings['cases'],
         project_id=project.id
     )
-    progress_recorder.set_progress(7, max_progress, 'Uploading tests')
-    creator.create_results(backup['results_parent_plan'], test_mappings, user)
+    progress_recorder.set_progress(curr_progress, max_progress, 'Uploading tests')
+    mappings['results_parent_plan'] = creator.create_results(backup['results_parent_plan'],
+                                                             mappings['tests_parent_plan'], user)
+
+    if upload_root_runs:
+        mappings['tests_parent_mile'], mappings['runs_parent_mile'] = creator.create_runs_parent_mile(
+            runs=backup['runs_parent_mile'],
+            milestone_mappings=mappings['milestones'],
+            config_mappings=mappings['configs'],
+            tests=backup['tests_parent_mile'],
+            case_mappings=mappings['cases'],
+            project_id=project.id
+        )
+        mappings['results_parent_mile'] = creator.create_results(backup['results_parent_mile'],
+                                                                 mappings['tests_parent_mile'], user)
+
+    upload_attachments(config_dict, project, user, backup['attachments'], mappings, upload_root_runs)
+
+
+@async_to_sync
+async def upload_attachments(config_dict, project, user, attachments, mappings, upload_root_runs: bool):
+    async with TestRailClient(TestrailConfig(**config_dict)) as testrail_client:
+        keys = [
+            ('cases', 'case_id', InstanceType.CASE),
+            ('plans', 'plan_id', InstanceType.PLAN),
+            ('runs_parent_plan', 'run_id', InstanceType.RUN),
+            ('results_parent_plan', 'result_id', InstanceType.TEST)
+        ]
+
+        for key, parent_key, instance_type in keys:
+            file_attachments = await testrail_client.get_attachments_from_list(attachments[key], parent_key)
+            await TestyCreator.attachment_bulk_create(file_attachments, project, user, parent_key, mappings[key],
+                                                      instance_type)
+        if upload_root_runs:
+            keys = [
+                ('results_parent_mile', 'result_id', InstanceType.TEST),
+                ('runs_parent_mile', 'run_id', InstanceType.RUN)
+            ]
+            for key, parent_key, instance_type in keys:
+                file_attachments = await testrail_client.get_attachments_from_list(attachments[key],
+                                                                                   parent_key)
+                await TestyCreator.attachment_bulk_create(file_attachments, project, user, parent_key, mappings[key],
+                                                          instance_type)
 
 
 @shared_task(bind=True)
 def download_task(self, project_id, config_dict, create_dump: bool, dumpfile_path):
     progress_recorder = ProgressRecorder(self)
     progress_recorder.set_progress(0, 1, 'Started downloading')
+
     results = download(project_id, TestrailConfig(**config_dict))
+
     results_json = json.dumps(results)
     redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
+
     logging.info(f'REDIS CLIENT PING {redis_client.ping()}')
+
     backup_name = f'backup{datetime.now()}'
     TestrailBackup.objects.create(name=backup_name, filepath=backup_name)
     redis_client.set(backup_name, results_json)
+
     if not redis_client.get(backup_name):
         logging.error('REDIS CLIENT GET GOT NOTHING')
 
 
 @async_to_sync
-async def download(project_id: int, config: TestrailConfig):
+async def download(project_id: int, config: TestrailConfig, download_attachments: bool = True):
+    # TODO: think about processing entries
     async with TestRailClient(config) as testrail_client:
         resulting_data = {'project': await testrail_client.get_project(project_id)}
         resulting_data.update(await testrail_client.download_descriptions(project_id))
         resulting_data.update(await testrail_client.download_representations(project_id))
+
+        if not download_attachments:
+            return resulting_data
+
+        keys_instance_type = [
+            ('cases', InstanceType.CASE),
+            ('plans', InstanceType.PLAN),
+            ('runs_parent_mile', InstanceType.RUN),
+            ('runs_parent_plan', InstanceType.RUN),
+            ('results_parent_plan', InstanceType.TEST),
+            ('results_parent_mile', InstanceType.TEST)
+        ]
+
+        resulting_data['attachments'] = {}
+
+        for key, instance_type in keys_instance_type:
+            resulting_data['attachments'][key] = await testrail_client.get_attachments_for_instances(
+                resulting_data[key],
+                instance_type
+            )
     return resulting_data

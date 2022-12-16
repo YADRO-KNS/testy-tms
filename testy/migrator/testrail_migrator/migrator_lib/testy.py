@@ -28,18 +28,27 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+import io
+import os
 import time
 from datetime import datetime
 
+from asgiref.sync import sync_to_async
+from django.core.files.uploadedfile import InMemoryUploadedFile
+
 from core.api.v1.serializers import ProjectSerializer
-from core.models import Project
+from core.models import Project, Attachment
 from core.services.projects import ProjectService
 from dateutil.relativedelta import relativedelta
+
+from testrail_migrator.migrator_lib.testrail import InstanceType
 from testrail_migrator.serializers import ParameterSerializer, TestSerializer
 from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer
+from tests_description.models import TestCase
 from tests_description.services.cases import TestCaseService
 from tests_description.services.suites import TestSuiteService
 from tests_representation.api.v1.serializers import TestPlanInputSerializer, TestResultSerializer
+from tests_representation.models import TestPlan, TestResult
 from tests_representation.services.parameters import ParameterService
 from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPlanService
@@ -205,10 +214,49 @@ class TestyCreator:
             run_data_list.append(run_data)
         serializer = TestPlanInputSerializer(data=run_data_list, many=True)
         serializer.is_valid(raise_exception=True)
-        created_tests = TestPlanService().testplan_bulk_create_with_tests(serializer.validated_data)
+        created_tests, created_plans = TestPlanService().testplan_bulk_create_with_tests(serializer.validated_data)
         return dict(zip(
             [src_test['id'] for src_test in src_tests],
             [created_test.id for created_test in created_tests])
+        ), dict(zip(
+            [run['id'] for run in runs],
+            [created_plan.id for created_plan in created_plans])
+        )
+
+    @staticmethod
+    def create_runs_parent_mile(runs, milestone_mappings, config_mappings, tests, case_mappings, project_id):
+        run_data_list = []
+        src_tests = []
+        for idx, run in enumerate(runs, start=1):
+            parent = milestone_mappings.get(run['milestone_id'])
+            if not parent:
+                continue
+            tests_for_run = [test for test in tests if test['run_id'] == run['id']]
+            src_tests.extend(tests_for_run)
+            cases = [case_mappings[test['case_id']] for test in tests_for_run]
+            parameters = [config_mappings[config_id] for config_id in run['config_ids']]
+            due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run.get('due_on')))
+            if not run.get('due_on'):
+                due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
+            run_data = {
+                'project': project_id,
+                'name': run['name'],
+                'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run['created_on'])),
+                'due_date': due_date,
+                'parent': parent,
+                'test_cases': cases,
+                'parameters': parameters
+            }
+            run_data_list.append(run_data)
+        serializer = TestPlanInputSerializer(data=run_data_list, many=True)
+        serializer.is_valid(raise_exception=True)
+        created_tests, created_plans = TestPlanService().testplan_bulk_create_with_tests(serializer.validated_data)
+        return dict(zip(
+            [src_test['id'] for src_test in src_tests],
+            [created_test.id for created_test in created_tests])
+        ), dict(zip(
+            [run['id'] for run in runs],
+            [created_plan.id for created_plan in created_plans])
         )
 
     @staticmethod
@@ -265,4 +313,51 @@ class TestyCreator:
             serializer = TestResultSerializer(data=result_data)
             serializer.is_valid(raise_exception=True)
             created_results.append(TestResultService().result_create(serializer.validated_data, user))
-        return created_results
+        src_ids = [result['id'] for result in results]
+        res_ids = [created_result.id for created_result in created_results]
+        return dict(zip(src_ids, res_ids))
+
+    @staticmethod
+    @sync_to_async
+    def attachment_bulk_create(data_dict, project, user, parent_key, mapping, instance_type):
+        non_side_effect_fields = [
+            'project', 'name', 'filename', 'comment', 'file_extension', 'content_type', 'size', 'object_id', 'user',
+            'file',
+            'url'
+        ]
+
+        attachment_instances = []
+        for data in data_dict.values():
+            file = InMemoryUploadedFile(
+                name=data['name'],
+                field_name='file',
+                size=data['size'],
+                content_type=data['content_type'],
+                charset=data['charset'],
+                file=io.BytesIO(data['file_bytes'])
+            )
+            name, extension = os.path.splitext(file.name)
+            temp = {
+                'project': project,
+                'name': name,
+                'filename': file.name,
+                'file_extension': file.content_type,
+                'size': file.size,
+                'user': user,
+                'file': file,
+            }
+
+            attachment = Attachment.model_create(fields=non_side_effect_fields, data=temp, commit=False)
+            content_object = None
+            pk = mapping.get(data[parent_key])
+            if instance_type.CASE and pk:
+                content_object = TestCase.objects.get(pk=pk)
+            elif (instance_type.RUN or instance_type.PLAN) and pk:
+                content_object = TestPlan.objects.get(pk=pk)
+            elif instance_type.TEST and pk:
+                content_object = TestResult.objects.get(pk=pk)
+            if content_object:
+                attachment.content_object = content_object
+            attachment.save()
+            attachment_instances.append(attachment)
+        return attachment_instances

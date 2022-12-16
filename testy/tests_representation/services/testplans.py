@@ -85,7 +85,7 @@ class TestPlanService:
         for test_plan, data in zip(test_plans, data_list):
             if data.get('test_cases'):
                 created_tests.extend(TestService().bulk_test_create([test_plan], data['test_cases']))
-        return created_tests
+        return created_tests, test_plans
 
     def testplan_bulk_create(self, validated_data):
         testplan_objects = []

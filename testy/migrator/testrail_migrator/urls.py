@@ -34,7 +34,7 @@ from rest_framework.routers import SimpleRouter
 
 from .views import (
     ClearView,
-    Do,
+    # Do,
     DownloadViewSet,
     TestrailBackupViewSet,
     TestrailSettingsViewSet,
@@ -49,7 +49,7 @@ urlpatterns = [
     path('upload/', UploaderView.as_view({'post': 'create'}), name='name'),
     path('clear/', ClearView.as_view(), name='name'),
     path('download/', DownloadViewSet.as_view({'post': 'create'}), name='download'),
-    path('do/', Do.as_view(), name='name'),
+    # path('do/', Do.as_view(), name='name'),
     path('download_status/<str:task_id>/', download_status, name='download_status')
 ]
 urlpatterns += router.urls

@@ -30,18 +30,26 @@
 # <http://www.gnu.org/licenses/>.
 import json
 
+import redis
 from asgiref.sync import async_to_sync
-from core.models import Project
+from django.conf import settings
+from tqdm.asyncio import tqdm
+
+from core.models import Project, Attachment
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from rest_framework import mixins, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
+
+from core.services.attachments import AttachmentService
 from tests_description.models import TestCase, TestSuite
 from tests_representation.models import Parameter, Test, TestPlan, TestResult
+from users.models import User
 
-from .migrator_lib import TestRailClient, TestrailConfig
+from .migrator_lib import TestRailClient, TestrailConfig, TestyCreator
+from .migrator_lib.testrail import InstanceType
 from .models import TestrailBackup, TestrailSettings
 from .serializers import (
     DownloadSerializer,
@@ -71,8 +79,6 @@ class TestrailBackupViewSet(ModelViewSet):
 class DownloadViewSet(mixins.CreateModelMixin, GenericViewSet):
     serializer_class = DownloadSerializer
 
-    # TODO: add celery
-    # TODO: add redis
     def create(self, request, *args, **kwargs):
         project_id = request.POST.get('project_id')
 
@@ -91,6 +97,9 @@ class DownloadViewSet(mixins.CreateModelMixin, GenericViewSet):
         }
         task = download_task.delay(project_id, config_dict, request.POST.get('create_dumpfile'),
                                    testrail_settings.dumpfile_path)
+        # download_task(project_id, config_dict, request.POST.get('create_dumpfile'),
+        #               testrail_settings.dumpfile_path)
+        # return Response(1234)
         return redirect(reverse('plugins:testrail_migrator:download_status', kwargs={'task_id': task.task_id}))
 
 
@@ -103,7 +112,21 @@ class UploaderView(mixins.CreateModelMixin, GenericViewSet):
 
     def create(self, request, *args, **kwargs):
         backup_instance = TestrailBackup.objects.get(pk=request.POST.get('testrail_backup'))
-        task = upload_task.delay(backup_instance.name, request.POST.get('user'))
+
+        try:
+            testrail_settings = TestrailSettings.objects.get(pk=request.POST.get('testrail_settings'))
+        except TestrailSettings.DoesNotExist:
+            return Response('Testrail settings instance were not found', status=status.HTTP_400_BAD_REQUEST)
+
+        config_dict = {
+            'login': testrail_settings.login,
+            'password': testrail_settings.password,
+            'api_url': testrail_settings.api_url,
+        }
+
+        task = upload_task.delay(backup_instance.name, request.POST.get('user'), config_dict)
+        # upload_task(backup_instance.name, request.POST.get('user'), config_dict)
+        # return Response(1234)
         return redirect(reverse('plugins:testrail_migrator:download_status', kwargs={'task_id': task.task_id}))
 
 
@@ -117,50 +140,56 @@ class ClearView(APIView):
         TestCase.objects.all().delete()
         TestSuite.objects.all().delete()
         Parameter.objects.all().delete()
-        TestrailBackup.objects.all().delete()
-        TestrailSettings.objects.all().delete()
+        Attachment.objects.all().delete()
+        # TestrailBackup.objects.all().delete()
+        # TestrailSettings.objects.all().delete()
         return Response('All cleared!')
 
-
-class Do(APIView):
-    def get(self, request):
-        self.gather_attachments()
-
-        return Response('123')
-
-    # @async_to_sync
-    # async def gather_attachments(self):
-    #     config = TestrailConfig(login='r.kabaev', password='Pfchfycbz2022', api_url='http
-    #     s://testrail.yadro.com/index.php?/api/v2')
-    #     async with TestRailClient(config) as testrail_client:
-    #         with open('/Users/r.kabaev/Desktop/testy/backup2022-12-14 12:04:25.813287.json', 'r') as file:
-    #             cases = json.loads(file.read())['cases']
-    #         attachments = await testrail_client.get_attachments_for_instances(cases, InstanceType.CASE)
-    #         with open('/Users/r.kabaev/Desktop/testy/attachments_for_cases.json', 'w') as file:
-    #             file.write(json.dumps(attachments, indent=2))
-    #     print()
-
-    @async_to_sync
-    async def gather_attachments(self):
-        config = TestrailConfig(login='r.kabaev', password='Pfchfycbz2022',
-                                api_url='https://testrail.yadro.com/index.php?/api/v2')
-
-        # with open('/Users/r.kabaev/Desktop/testy/backup2022-12-14 12:04:25.813287.json', 'r') as file:
-        #     backup = json.loads(file.read())
-
-        with open('/Users/r.kabaev/Desktop/testy/attachments_for_cases.json', 'r') as file:
-            attachments_cases = json.loads(file.read())
-
-        async with TestRailClient(config) as testrail_client:
-            # attachments_cases = await testrail_client.get_attachments
-            # _for_instances(backup['cases'], InstanceType.CASE)
-            # attachments_runs_plans = await testrail_client.get_attachments_for_instances(backup['runs_parent_plan'],
-            #                                                                              InstanceType.RUN)
-            # attachments_plans = await testrail_client.get_attachme
-            # nts_for_instances(backup['plans'], InstanceType.PLAN)
-            # attachments_tests_plans = await testrail_client.get_attachments_for_instances(backup['tests_parent_plan'],
-            #                                                                               InstanceType.TEST)
-            for attachment in attachments_cases:
-                t = await testrail_client.get_attachment(attachment['id'])
-                print(t)
-        print()
+# class Do(APIView):
+#     def get(self, request):
+#         self.gather_attachments()
+#         redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
+#         result = redis_client.get('attachments')
+#         result = await testrail_client.get_attachments_from_list(attachments_cases)
+#         instances = TestyCreator.attachment_bulk_create(result, Project.objects.all()[0], User.objects.all()[0])
+#         return Response('123')
+#
+#     # @async_to_sync
+#     # async def gather_attachments(self):
+#     #     config = TestrailConfig(login='r.kabaev', password='Pfchfycbz2022', api_url='http
+#     #     async with TestRailClient(config) as testrail_client:
+#     #         with open('/Users/r.kabaev/Desktop/testy/backup2022-12-14 12:04:25.813287.json', 'r') as file:
+#     #             cases = json.loads(file.read())['cases']
+#     #         attachments = await testrail_client.get_attachments_for_instances(cases, InstanceType.CASE)
+#     #         with open('/Users/r.kabaev/Desktop/testy/attachments_for_cases.json', 'w') as file:
+#     #             file.write(json.dumps(attachments, indent=2))
+#     #     print()
+#
+#     @async_to_sync
+#     async def gather_attachments(self):
+#         config = TestrailConfig(login='r.kabaev', password='Pfchfycbz2022',
+#                                 api_url='https://testrail.yadro.com/index.php?/api/v2')
+#
+#         # with open('/Users/r.kabaev/Desktop/testy/attachments_for_cases.json', 'r') as file:
+#         #     attachments_cases = json.loads(file.read())
+#         with open('/Users/r.kabaev/Desktop/testy/backup2022-12-14 12:04:25.813287.json', 'r') as file:
+#             cases = json.loads(file.read())['cases']
+#         entries = []
+#         # for plan in plans:
+#         #     for entry in plan['entries']:
+#         #         entry['plan_id'] = plan['id']
+#         #     entries.extend(plan['entries'])
+#
+#         result = []
+#         async with TestRailClient(config) as testrail_client:
+#             # TODO: подумать куда относить plan entries
+#             attachments_cases = await testrail_client.get_attachments_for_instances(cases, InstanceType.CASE)
+#             attachments_plans = await testrail_client.get_attachments_for_instances(plans, InstanceType.PLAN)
+#             attachments_entries = await testrail_client.get_attachments_for_instances(entries, InstanceType.ENTRY)
+#             attachments_result_mile = await testrail_client.get_attachments_for_instances(tests, InstanceType.TEST)
+#             attachments_result_plan = await testrail_client.get_attachments_for_instances(tests, InstanceType.TEST)
+#             attachments_runs_plan = await testrail_client.get_attachments_for_instances(runs, InstanceType.RUN)
+#             attachments_runs_mile = await testrail_client.get_attachments_for_instances(tests, InstanceType.TEST)
+#             redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
+#             redis_client.set('attachments', bytes(result))
+#             return result
