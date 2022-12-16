@@ -163,8 +163,12 @@ class TestyCreator:
     def create_plans(plans, milestones_mappings, project_id, skip_root_plans: bool = True):
         plan_data_list = []
         plan_mappings = {}
+        src_plan_ids = []
         for plan in plans:
             mapping_id = plan['milestone_id']
+            if not mapping_id and skip_root_plans:
+                continue
+            src_plan_ids.append(plan['id'])
             due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan.get('due_on')))
             if not plan.get('due_on'):
                 due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
@@ -176,8 +180,7 @@ class TestyCreator:
                 'finished_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan['completed_on'])),
                 'due_date': due_date,
             }
-            if not mapping_id and skip_root_plans:
-                continue
+
             if mapping_id:
                 plan_data['parent'] = milestones_mappings[mapping_id]
             plan_data_list.append(plan_data)
@@ -185,8 +188,8 @@ class TestyCreator:
         serializer = TestPlanInputSerializer(data=plan_data_list, many=True)
         serializer.is_valid(raise_exception=True)
         test_plans = TestPlanService().testplan_bulk_create(serializer.validated_data)
-        for tr_milestone, testy_milestone in zip(plans, test_plans):
-            plan_mappings.update({tr_milestone['id']: testy_milestone.id})
+        for src_plan_id, testy_milestone in zip(src_plan_ids, test_plans):
+            plan_mappings.update({src_plan_id: testy_milestone.id})
 
         return plan_mappings
 
@@ -195,10 +198,12 @@ class TestyCreator:
                                 upload_root_runs):
         run_data_list = []
         src_tests = []
+        src_run_ids = []
         for idx, run in enumerate(runs, start=1):
             parent = plan_mappings.get(run['plan_id'])
             if not parent and not upload_root_runs:
                 continue
+            src_run_ids.append(run['id'])
             tests_for_run = [test for test in tests if test['run_id'] == run['id']]
             src_tests.extend(tests_for_run)
             cases = [case_mappings[test['case_id']] for test in tests_for_run]
@@ -223,7 +228,7 @@ class TestyCreator:
             [src_test['id'] for src_test in src_tests],
             [created_test.id for created_test in created_tests])
         ), dict(zip(
-            [run['id'] for run in runs],
+            src_run_ids,
             [created_plan.id for created_plan in created_plans])
         )
 
@@ -232,10 +237,12 @@ class TestyCreator:
                                 upload_root_runs):
         run_data_list = []
         src_tests = []
+        src_run_ids = []
         for idx, run in enumerate(runs, start=1):
             parent = milestone_mappings.get(run['milestone_id'])
             if not parent and not upload_root_runs:
                 continue
+            src_run_ids.append(run['id'])
             tests_for_run = [test for test in tests if test['run_id'] == run['id']]
             src_tests.extend(tests_for_run)
             cases = [case_mappings[test['case_id']] for test in tests_for_run]
@@ -261,7 +268,7 @@ class TestyCreator:
             [src_test['id'] for src_test in src_tests],
             [created_test.id for created_test in created_tests])
         ), dict(zip(
-            [run['id'] for run in runs],
+            src_run_ids,
             [created_plan.id for created_plan in created_plans])
         )
 
@@ -279,9 +286,11 @@ class TestyCreator:
     def create_tests(tests, case_mappings, plans_mappings, project_id):
         test_data_list = []
         tests_mappings = {}
+        src_ids = []
         for test in tests:
             if not case_mappings.get(test['case_id']) or not plans_mappings.get(test['run_id']):
                 continue
+            src_ids.append(test['id'])
             test_data = {
                 'project': project_id,
                 'case': case_mappings[test['case_id']],
@@ -291,8 +300,8 @@ class TestyCreator:
         serializer = TestSerializer(data=test_data_list, many=True)
         serializer.is_valid(raise_exception=True)
         created_tests = TestService().tests_bulk_create_by_data_list(serializer.validated_data)
-        for tr_test, testy_test in zip(tests, created_tests):
-            tests_mappings.update({tr_test['id']: testy_test.id})
+        for src_id, testy_test in zip(src_ids, created_tests):
+            tests_mappings.update({src_id: testy_test.id})
 
         return tests_mappings
 
@@ -306,10 +315,12 @@ class TestyCreator:
             4: 3  # Not matching retest in tr / broken in testy
         }
         created_results = []
+        src_ids = []
         for idx, result in enumerate(results):
             print(f'Processing result {idx} of {len(results)}')
             if not tests_mappings.get(result['test_id']):
                 continue
+            src_ids.append(result['id'])
             result_data = {
                 'status': statuses.get(result['status_id'], 5),
                 'comment': result['comment'],
@@ -320,7 +331,6 @@ class TestyCreator:
             serializer = TestResultSerializer(data=result_data)
             serializer.is_valid(raise_exception=True)
             created_results.append(TestResultService().result_create(serializer.validated_data, user))
-        src_ids = [result['id'] for result in results]
         res_ids = [created_result.id for created_result in created_results]
         return dict(zip(src_ids, res_ids))
 
