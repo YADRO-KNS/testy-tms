@@ -45,7 +45,7 @@ from testrail_migrator.models import TestrailBackup
 
 # TODO: переделать чтобы соблюдался принцип DRY
 @shared_task(bind=True)
-def upload_task(self, backup_name, user_id, config_dict, upload_root_runs: bool = False):
+def upload_task(self, backup_name, user_id, config_dict, upload_root_runs: bool = True):
     user = get_user_model().objects.get(pk=user_id)
     progress_recorder = ProgressRecorder(self)
 
@@ -84,6 +84,7 @@ def upload_task(self, backup_name, user_id, config_dict, upload_root_runs: bool 
         case_mappings=mappings['cases'],
         project_id=project.id
     )
+    curr_progress += 1
     progress_recorder.set_progress(curr_progress, max_progress, 'Uploading tests')
     mappings['results_parent_plan'] = creator.create_results(backup['results_parent_plan'],
                                                              mappings['tests_parent_plan'], user)
