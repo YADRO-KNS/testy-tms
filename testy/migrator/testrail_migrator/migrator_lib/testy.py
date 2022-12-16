@@ -33,17 +33,13 @@ import os
 import time
 from datetime import datetime
 
-from asgiref.sync import sync_to_async
+from core.api.v1.serializers import ProjectSerializer
+from core.models import Attachment, Project
+from core.services.projects import ProjectService
+from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import IntegrityError
-
-from core.api.v1.serializers import ProjectSerializer
-from core.models import Project, Attachment
-from core.services.projects import ProjectService
-from dateutil.relativedelta import relativedelta
-
-from testrail_migrator.migrator_lib.testrail import InstanceType
 from testrail_migrator.serializers import ParameterSerializer, TestSerializer
 from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer
 from tests_description.models import TestCase
@@ -55,9 +51,9 @@ from tests_representation.services.parameters import ParameterService
 from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPlanService
 from tests_representation.services.tests import TestService
-from users.services.users import UserService
 
 UserModel = get_user_model()
+
 
 class TestyCreator:
     def __init__(self, service_login: str = 'admin'):

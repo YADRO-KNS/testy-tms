@@ -37,7 +37,6 @@ from asgiref.sync import async_to_sync
 from celery import shared_task
 from celery_progress.backend import ProgressRecorder
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from testrail_migrator.migrator_lib import TestRailClient, TestrailConfig, TestyCreator
 from testrail_migrator.migrator_lib.testrail import InstanceType
 from testrail_migrator.models import TestrailBackup
@@ -49,7 +48,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool = False, 
     progress_recorder = ProgressRecorder(self)
 
     curr_progress = 0
-    max_progress = 7
+    max_progress = 14
 
     progress_recorder.set_progress(curr_progress, max_progress, 'Started uploading')
 
@@ -89,7 +88,8 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool = False, 
     mappings['results_parent_plan'] = creator.create_results(backup['results_parent_plan'],
                                                              mappings['tests_parent_plan'],
                                                              mappings['users'])
-
+    curr_progress += 1
+    progress_recorder.set_progress(curr_progress, max_progress, 'Uploading runs with milestone parent')
     mappings['tests_parent_mile'], mappings['runs_parent_mile'] = creator.create_runs_parent_mile(
         runs=backup['runs_parent_mile'],
         milestone_mappings=mappings['milestones'],
@@ -99,6 +99,8 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool = False, 
         project_id=project.id,
         upload_root_runs=False
     )
+    curr_progress += 1
+    progress_recorder.set_progress(curr_progress, max_progress, 'Creating results for runs with milestone parent')
     mappings['results_parent_mile'] = creator.create_results(
         backup['results_parent_mile'],
         mappings['tests_parent_mile'],
@@ -113,6 +115,8 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool = False, 
         ('runs_parent_mile', 'run_id', InstanceType.RUN)
     ]
     for key, parent_key, instance_type in keys:
+        curr_progress += 1
+        progress_recorder.set_progress(curr_progress, max_progress, f'Uploading attachments for {key}')
         file_attachments = upload_attachments(config_dict, backup['attachments'][key], parent_key)
         TestyCreator().attachment_bulk_create(file_attachments, project, mappings['users'], parent_key,
                                               mappings[key],

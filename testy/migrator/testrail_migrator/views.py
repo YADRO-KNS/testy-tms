@@ -28,28 +28,17 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-import json
-
-import redis
-from asgiref.sync import async_to_sync
-from django.conf import settings
-from tqdm.asyncio import tqdm
-
-from core.models import Project, Attachment
+from core.models import Attachment, Project
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from rest_framework import mixins, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
-
-from core.services.attachments import AttachmentService
 from tests_description.models import TestCase, TestSuite
 from tests_representation.models import Parameter, Test, TestPlan, TestResult
 from users.models import User
 
-from .migrator_lib import TestRailClient, TestrailConfig, TestyCreator
-from .migrator_lib.testrail import InstanceType
 from .models import TestrailBackup, TestrailSettings
 from .serializers import (
     DownloadSerializer,

@@ -29,14 +29,11 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 import asyncio
-import hashlib
 import itertools
 import logging
-import random
 from enum import Enum
 from json import JSONDecodeError
 
-import aiofiles
 import aiohttp
 from aiohttp import ClientConnectionError, ContentTypeError
 from tqdm.asyncio import tqdm

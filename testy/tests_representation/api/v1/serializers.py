@@ -107,7 +107,7 @@ class TestResultSerializer(ModelSerializer):
     def get_user_full_name(self, instance):
         if instance.user:
             full_name = instance.user.get_full_name()
-            return full_name if full_name else instance.user.id
+            return full_name if full_name else f'user id: {instance.user.id}'
 
 
 class TestResultInputSerializer(TestResultSerializer):

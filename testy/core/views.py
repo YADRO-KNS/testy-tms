@@ -31,6 +31,7 @@
 import mimetypes
 import os
 
+from core.models import Attachment
 from django.conf import settings
 from django.contrib.admin.utils import unquote
 from django.http import FileResponse
@@ -38,8 +39,6 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from core.models import Attachment
 
 
 class MediaView(APIView):
