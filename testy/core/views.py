@@ -39,6 +39,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.models import Attachment
+
 
 class MediaView(APIView):
     permission_classes = [AllowAny, ]
@@ -51,3 +53,12 @@ class MediaView(APIView):
             mimetype = 'text/html'
         file_path = unquote(os.path.join(settings.MEDIA_ROOT, path)).encode('utf-8')
         return FileResponse(open(file_path, 'rb'), content_type=mimetype)
+
+
+class AttachmentView(APIView):
+    def get(self, request, pk):
+        try:
+            attachment = Attachment.objects.get(pk=pk)
+        except Attachment.DoesNotExist:
+            return Response('Attachment was not found', status=status.HTTP_404_NOT_FOUND)
+        return FileResponse(attachment.file)

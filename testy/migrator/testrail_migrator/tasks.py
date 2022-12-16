@@ -45,8 +45,7 @@ from testrail_migrator.models import TestrailBackup
 
 # TODO: переделать чтобы соблюдался принцип DRY
 @shared_task(bind=True)
-def upload_task(self, backup_name, user_id, config_dict, upload_root_runs: bool = True):
-    user = get_user_model().objects.get(pk=user_id)
+def upload_task(self, backup_name, config_dict, upload_root_runs: bool = False, service_user_login='admin'):
     progress_recorder = ProgressRecorder(self)
 
     curr_progress = 0
@@ -56,12 +55,12 @@ def upload_task(self, backup_name, user_id, config_dict, upload_root_runs: bool 
 
     redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
     backup = json.loads(redis_client.get(backup_name))
-    creator = TestyCreator()
+    creator = TestyCreator(service_user_login)
 
     mappings = {}
 
     project = creator.create_project(backup['project'])
-
+    mappings['users'] = creator.create_users(backup['users'])
     keys_without_mappings = ['suites', 'configs', 'milestones']
     for key in keys_without_mappings:
         curr_progress += 1
@@ -82,52 +81,48 @@ def upload_task(self, backup_name, user_id, config_dict, upload_root_runs: bool 
         config_mappings=mappings['configs'],
         tests=backup['tests_parent_plan'],
         case_mappings=mappings['cases'],
-        project_id=project.id
+        project_id=project.id,
+        upload_root_runs=upload_root_runs
     )
     curr_progress += 1
     progress_recorder.set_progress(curr_progress, max_progress, 'Uploading tests')
     mappings['results_parent_plan'] = creator.create_results(backup['results_parent_plan'],
-                                                             mappings['tests_parent_plan'], user)
+                                                             mappings['tests_parent_plan'],
+                                                             mappings['users'])
 
-    if upload_root_runs:
-        mappings['tests_parent_mile'], mappings['runs_parent_mile'] = creator.create_runs_parent_mile(
-            runs=backup['runs_parent_mile'],
-            milestone_mappings=mappings['milestones'],
-            config_mappings=mappings['configs'],
-            tests=backup['tests_parent_mile'],
-            case_mappings=mappings['cases'],
-            project_id=project.id
-        )
-        mappings['results_parent_mile'] = creator.create_results(backup['results_parent_mile'],
-                                                                 mappings['tests_parent_mile'], user)
-
-    upload_attachments(config_dict, project, user, backup['attachments'], mappings, upload_root_runs)
+    mappings['tests_parent_mile'], mappings['runs_parent_mile'] = creator.create_runs_parent_mile(
+        runs=backup['runs_parent_mile'],
+        milestone_mappings=mappings['milestones'],
+        config_mappings=mappings['configs'],
+        tests=backup['tests_parent_mile'],
+        case_mappings=mappings['cases'],
+        project_id=project.id,
+        upload_root_runs=False
+    )
+    mappings['results_parent_mile'] = creator.create_results(
+        backup['results_parent_mile'],
+        mappings['tests_parent_mile'],
+        mappings['users']
+    )
+    keys = [
+        ('cases', 'case_id', InstanceType.CASE),
+        ('plans', 'plan_id', InstanceType.PLAN),
+        ('runs_parent_plan', 'run_id', InstanceType.RUN),
+        ('results_parent_plan', 'result_id', InstanceType.TEST),
+        ('results_parent_mile', 'result_id', InstanceType.TEST),
+        ('runs_parent_mile', 'run_id', InstanceType.RUN)
+    ]
+    for key, parent_key, instance_type in keys:
+        file_attachments = upload_attachments(config_dict, backup['attachments'][key], parent_key)
+        TestyCreator().attachment_bulk_create(file_attachments, project, mappings['users'], parent_key,
+                                              mappings[key],
+                                              instance_type)
 
 
 @async_to_sync
-async def upload_attachments(config_dict, project, user, attachments, mappings, upload_root_runs: bool):
+async def upload_attachments(config_dict, attachments, parent_key):
     async with TestRailClient(TestrailConfig(**config_dict)) as testrail_client:
-        keys = [
-            ('cases', 'case_id', InstanceType.CASE),
-            ('plans', 'plan_id', InstanceType.PLAN),
-            ('runs_parent_plan', 'run_id', InstanceType.RUN),
-            ('results_parent_plan', 'result_id', InstanceType.TEST)
-        ]
-
-        for key, parent_key, instance_type in keys:
-            file_attachments = await testrail_client.get_attachments_from_list(attachments[key], parent_key)
-            await TestyCreator.attachment_bulk_create(file_attachments, project, user, parent_key, mappings[key],
-                                                      instance_type)
-        if upload_root_runs:
-            keys = [
-                ('results_parent_mile', 'result_id', InstanceType.TEST),
-                ('runs_parent_mile', 'run_id', InstanceType.RUN)
-            ]
-            for key, parent_key, instance_type in keys:
-                file_attachments = await testrail_client.get_attachments_from_list(attachments[key],
-                                                                                   parent_key)
-                await TestyCreator.attachment_bulk_create(file_attachments, project, user, parent_key, mappings[key],
-                                                          instance_type)
+        return await testrail_client.get_attachments_from_list(attachments, parent_key)
 
 
 @shared_task(bind=True)
@@ -157,7 +152,7 @@ async def download(project_id: int, config: TestrailConfig, download_attachments
         resulting_data = {'project': await testrail_client.get_project(project_id)}
         resulting_data.update(await testrail_client.download_descriptions(project_id))
         resulting_data.update(await testrail_client.download_representations(project_id))
-
+        resulting_data['users'] = await testrail_client.get_users()
         if not download_attachments:
             return resulting_data
 

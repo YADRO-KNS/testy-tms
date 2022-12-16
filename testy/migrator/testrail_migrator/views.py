@@ -124,8 +124,8 @@ class UploaderView(mixins.CreateModelMixin, GenericViewSet):
             'api_url': testrail_settings.api_url,
         }
 
-        task = upload_task.delay(backup_instance.name, request.POST.get('user'), config_dict)
-        # upload_task(backup_instance.name, request.POST.get('user'), config_dict)
+        task = upload_task.delay(backup_name=backup_instance.name, config_dict=config_dict)
+        # upload_task.delay(backup_instance.name, config_dict)
         # return Response(1234)
         return redirect(reverse('plugins:testrail_migrator:download_status', kwargs={'task_id': task.task_id}))
 
@@ -141,6 +141,7 @@ class ClearView(APIView):
         TestSuite.objects.all().delete()
         Parameter.objects.all().delete()
         Attachment.objects.all().delete()
+        User.objects.all().exclude(username='admin').delete()
         # TestrailBackup.objects.all().delete()
         # TestrailSettings.objects.all().delete()
         return Response('All cleared!')

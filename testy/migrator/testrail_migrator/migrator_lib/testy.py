@@ -34,7 +34,9 @@ import time
 from datetime import datetime
 
 from asgiref.sync import sync_to_async
+from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db import IntegrityError
 
 from core.api.v1.serializers import ProjectSerializer
 from core.models import Project, Attachment
@@ -53,16 +55,21 @@ from tests_representation.services.parameters import ParameterService
 from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPlanService
 from tests_representation.services.tests import TestService
+from users.services.users import UserService
 
+UserModel = get_user_model()
 
 class TestyCreator:
+    def __init__(self, service_login: str = 'admin'):
+        self.service_user = UserModel.objects.get(username=service_login)
+
     @staticmethod
     def create_suites(suites, project_id):
         suite_data_list = []
         src_ids = []
         for suite in suites:
             src_ids.append(suite['id'])
-            suite_data_list.append({'name': suite['name'], 'project': project_id, })
+            suite_data_list.append({'name': suite['name'], 'project': project_id})
         serializer = TestSuiteSerializer(data=suite_data_list, many=True)
         serializer.is_valid(raise_exception=True)
         created_suites = TestSuiteService().suites_bulk_create(serializer.validated_data)
@@ -188,12 +195,13 @@ class TestyCreator:
         return plan_mappings
 
     @staticmethod
-    def create_runs_parent_plan(runs, plan_mappings, config_mappings, tests, case_mappings, project_id):
+    def create_runs_parent_plan(runs, plan_mappings, config_mappings, tests, case_mappings, project_id,
+                                upload_root_runs):
         run_data_list = []
         src_tests = []
         for idx, run in enumerate(runs, start=1):
             parent = plan_mappings.get(run['plan_id'])
-            if not parent:
+            if not parent and not upload_root_runs:
                 continue
             tests_for_run = [test for test in tests if test['run_id'] == run['id']]
             src_tests.extend(tests_for_run)
@@ -224,12 +232,13 @@ class TestyCreator:
         )
 
     @staticmethod
-    def create_runs_parent_mile(runs, milestone_mappings, config_mappings, tests, case_mappings, project_id):
+    def create_runs_parent_mile(runs, milestone_mappings, config_mappings, tests, case_mappings, project_id,
+                                upload_root_runs):
         run_data_list = []
         src_tests = []
         for idx, run in enumerate(runs, start=1):
             parent = milestone_mappings.get(run['milestone_id'])
-            if not parent:
+            if not parent and not upload_root_runs:
                 continue
             tests_for_run = [test for test in tests if test['run_id'] == run['id']]
             src_tests.extend(tests_for_run)
@@ -243,10 +252,11 @@ class TestyCreator:
                 'name': run['name'],
                 'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run['created_on'])),
                 'due_date': due_date,
-                'parent': parent,
                 'test_cases': cases,
                 'parameters': parameters
             }
+            if parent:
+                run_data['parent'] = parent
             run_data_list.append(run_data)
         serializer = TestPlanInputSerializer(data=run_data_list, many=True)
         serializer.is_valid(raise_exception=True)
@@ -290,8 +300,7 @@ class TestyCreator:
 
         return tests_mappings
 
-    @staticmethod
-    def create_results(results, tests_mappings, user):
+    def create_results(self, results, tests_mappings, user_mappings):
         statuses = {
             1: 1,  # passed
             5: 0,  # failed
@@ -310,6 +319,8 @@ class TestyCreator:
                 'comment': result['comment'],
                 'test': tests_mappings[result['test_id']],
             }
+            user_id = user_mappings.get(result['created_by'])
+            user = UserModel.objects.get(pk=user_id) if user_id else self.service_user
             serializer = TestResultSerializer(data=result_data)
             serializer.is_valid(raise_exception=True)
             created_results.append(TestResultService().result_create(serializer.validated_data, user))
@@ -317,15 +328,12 @@ class TestyCreator:
         res_ids = [created_result.id for created_result in created_results]
         return dict(zip(src_ids, res_ids))
 
-    @staticmethod
-    @sync_to_async
-    def attachment_bulk_create(data_dict, project, user, parent_key, mapping, instance_type):
+    def attachment_bulk_create(self, data_dict, project, user_mappings, parent_key, mapping, instance_type):
         non_side_effect_fields = [
             'project', 'name', 'filename', 'comment', 'file_extension', 'content_type', 'size', 'object_id', 'user',
             'file',
             'url'
         ]
-
         attachment_instances = []
         for data in data_dict.values():
             file = InMemoryUploadedFile(
@@ -337,16 +345,16 @@ class TestyCreator:
                 file=io.BytesIO(data['file_bytes'])
             )
             name, extension = os.path.splitext(file.name)
+            user_id = user_mappings.get(data['user_id'])
             temp = {
                 'project': project,
                 'name': name,
                 'filename': file.name,
                 'file_extension': file.content_type,
                 'size': file.size,
-                'user': user,
                 'file': file,
+                'user': UserModel.objects.get(pk=user_id) if user_id else self.service_user
             }
-
             attachment = Attachment.model_create(fields=non_side_effect_fields, data=temp, commit=False)
             content_object = None
             pk = mapping.get(data[parent_key])
@@ -361,3 +369,32 @@ class TestyCreator:
             attachment.save()
             attachment_instances.append(attachment)
         return attachment_instances
+
+    @staticmethod
+    def user_create(data) -> UserModel:
+        non_side_effect_fields = ['username', 'first_name', 'last_name', 'email', 'is_staff', 'is_active']
+        user = UserModel.model_create(
+            fields=non_side_effect_fields,
+            data=data,
+            commit=False,
+        )
+        try:
+            user.save()
+        except IntegrityError:
+            user = UserModel.objects.get(username=data['username'])
+
+        return user
+
+    def create_users(self, users):
+        dst_ids = []
+        src_ids = []
+        for user in users:
+            src_ids.append(user['id'])
+            user_data = {
+                'username': user['email'].split('@')[0],
+                'email': user['email'],
+                'is_active': user['is_active']
+            }
+            created_user = self.user_create(user_data)
+            dst_ids.append(created_user.id)
+        return dict(zip(src_ids, dst_ids))

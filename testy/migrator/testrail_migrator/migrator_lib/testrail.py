@@ -100,6 +100,9 @@ class TestRailClient:
 
         return descriptions_dict
 
+    async def get_users(self, project_id=''):
+        return await self._process_request(f'/get_users/{project_id}')
+
     async def download_representations(self, project_id: int):
         representations_dict = {}
         with timer('Getting configs'):
@@ -292,7 +295,8 @@ class TestRailClient:
                             'charset': resp.charset,
                             'name': attachment['name'],
                             'field_name': 'file',
-                            'file_bytes': await resp.read()
+                            'file_bytes': await resp.read(),
+                            'user_id': attachment['user_id'],
                         }
                     }
             except (ClientConnectionError, asyncio.TimeoutError):
