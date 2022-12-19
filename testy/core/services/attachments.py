@@ -32,6 +32,7 @@ import os
 from typing import Any, Dict, List, Union
 
 from core.models import Attachment
+from core.selectors.attachments import AttachmentSelector
 
 
 class AttachmentService:
@@ -57,9 +58,24 @@ class AttachmentService:
             attachments_instances.append(Attachment.model_create(fields=self.non_side_effect_fields, data=data))
         return attachments_instances
 
-    def attachment_set_content_object(self, attachment, content_object):
+    def attachment_set_content_object(self, attachment: Attachment, content_object):
         if attachment.content_object:
             raise ValueError('Attachment already has content object.')
         attachment.content_object = content_object
         attachment.save()
         return attachment
+
+    def attachments_update_content_object(self, attachments, content_object):
+        old_attachments = AttachmentSelector().attachment_list_by_parent_object(
+            content_object, content_object.id
+        )
+
+        for attachment in attachments:
+            if attachment not in old_attachments:
+                self.attachment_set_content_object(attachment, content_object)
+
+        for old_attachment in old_attachments:
+            if old_attachment not in attachments:
+                old_attachment.content_type = None
+                old_attachment.object_id = None
+                old_attachment.save()

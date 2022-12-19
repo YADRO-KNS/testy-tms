@@ -31,33 +31,35 @@
 from core.api.v1.serializers import AttachmentSerializer
 from core.selectors.attachments import AttachmentSelector
 from rest_framework import serializers
-from rest_framework.fields import SerializerMethodField
-from rest_framework.relations import HyperlinkedIdentityField
+from rest_framework.fields import IntegerField, SerializerMethodField
+from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
 from rest_framework.serializers import ModelSerializer
 from tests_description.models import TestCase, TestSuite
 
 
 class TestCaseSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:testcase-detail')
+    key = IntegerField(source='id', read_only=True)
+    value = IntegerField(source='id', read_only=True)
+    attachments = PrimaryKeyRelatedField(
+        many=True, queryset=AttachmentSelector().attachment_list(), required=False
+    )
 
     class Meta:
         model = TestCase
-        fields = ('id', 'name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'url')
+        fields = (
+            'id', 'key', 'value', 'name', 'project', 'attachments', 'suite', 'setup', 'scenario', 'teardown',
+            'estimate', 'url'
+        )
 
 
 class TestCaseRetrieveSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:testcase-detail')
-    attachments = SerializerMethodField()
+    attachments = AttachmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = TestCase
         fields = ('id', 'name', 'project', 'attachments', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'url')
-
-    def get_attachments(self, obj):
-        serializer_context = {'request': self.context.get('request')}
-        attachments = AttachmentSelector().attachment_list_by_parent_object(TestCase, obj.id)
-        serializer = AttachmentSerializer(attachments, many=True, context=serializer_context)
-        return serializer.data
 
 
 class TestSuiteTreeSerializer(ModelSerializer):
