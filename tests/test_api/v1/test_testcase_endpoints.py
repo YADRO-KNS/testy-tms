@@ -51,7 +51,11 @@ class TestCaseEndpoints:
     def test_list(self, api_client, authorized_superuser, test_case_factory):
         expected_instances = []
         for _ in range(constants.NUMBER_OF_OBJECTS_TO_CREATE):
-            expected_instances.append(model_to_dict(test_case_factory()))
+            expected_dict = model_to_dict(test_case_factory())
+            expected_dict['attachments'] = []
+            expected_dict['key'] = expected_dict['id']
+            expected_dict['value'] = expected_dict['id']
+            expected_instances.append(expected_dict)
 
         response = api_client.send_request(self.view_name_list)
 
