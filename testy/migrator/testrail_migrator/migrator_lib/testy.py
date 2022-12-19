@@ -32,6 +32,7 @@ import io
 import os
 import time
 from datetime import datetime
+from enum import Enum
 
 from core.api.v1.serializers import ProjectSerializer
 from core.models import Attachment, Project
@@ -53,6 +54,11 @@ from tests_representation.services.testplans import TestPlanService
 from tests_representation.services.tests import TestService
 
 UserModel = get_user_model()
+
+
+class ParentType(Enum):
+    MILESTONE = 0
+    PLAN = 1
 
 
 class TestyCreator:
@@ -194,52 +200,20 @@ class TestyCreator:
         return plan_mappings
 
     @staticmethod
-    def create_runs_parent_plan(runs, plan_mappings, config_mappings, tests, case_mappings, project_id,
-                                upload_root_runs):
+    def create_runs(runs, mapping, config_mappings, tests, case_mappings, project_id,
+                    parent_type: ParentType, upload_root_runs: bool):
         run_data_list = []
         src_tests = []
         src_run_ids = []
-        for idx, run in enumerate(runs, start=1):
-            parent = plan_mappings.get(run['plan_id'])
-            if not parent and not upload_root_runs:
-                continue
-            src_run_ids.append(run['id'])
-            tests_for_run = [test for test in tests if test['run_id'] == run['id']]
-            src_tests.extend(tests_for_run)
-            cases = [case_mappings[test['case_id']] for test in tests_for_run]
-            parameters = [config_mappings[config_id] for config_id in run['config_ids']]
-            due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run.get('due_on')))
-            if not run.get('due_on'):
-                due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
-            run_data = {
-                'project': project_id,
-                'name': run['name'],
-                'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run['created_on'])),
-                'due_date': due_date,
-                'parent': parent,
-                'test_cases': cases,
-                'parameters': parameters
-            }
-            run_data_list.append(run_data)
-        serializer = TestPlanInputSerializer(data=run_data_list, many=True)
-        serializer.is_valid(raise_exception=True)
-        created_tests, created_plans = TestPlanService().testplan_bulk_create_with_tests(serializer.validated_data)
-        return dict(zip(
-            [src_test['id'] for src_test in src_tests],
-            [created_test.id for created_test in created_tests])
-        ), dict(zip(
-            src_run_ids,
-            [created_plan.id for created_plan in created_plans])
-        )
+        if parent_type == ParentType.PLAN:
+            parent_id_key = 'plan_id'
+        elif parent_type == ParentType.MILESTONE:
+            parent_id_key = 'milestone_id'
+        else:
+            raise TypeError('Parent type for test run was not specified')
 
-    @staticmethod
-    def create_runs_parent_mile(runs, milestone_mappings, config_mappings, tests, case_mappings, project_id,
-                                upload_root_runs):
-        run_data_list = []
-        src_tests = []
-        src_run_ids = []
         for idx, run in enumerate(runs, start=1):
-            parent = milestone_mappings.get(run['milestone_id'])
+            parent = mapping.get(run[parent_id_key])
             if not parent and not upload_root_runs:
                 continue
             src_run_ids.append(run['id'])
@@ -271,6 +245,86 @@ class TestyCreator:
             src_run_ids,
             [created_plan.id for created_plan in created_plans])
         )
+
+    # @staticmethod
+    # def create_runs_parent_plan(runs, plan_mappings, config_mappings, tests, case_mappings, project_id,
+    #                             upload_root_runs):
+    #     run_data_list = []
+    #     src_tests = []
+    #     src_run_ids = []
+    #     for idx, run in enumerate(runs, start=1):
+    #         parent = plan_mappings.get(run['plan_id'])
+    #         if not parent and not upload_root_runs:
+    #             continue
+    #         src_run_ids.append(run['id'])
+    #         tests_for_run = [test for test in tests if test['run_id'] == run['id']]
+    #         src_tests.extend(tests_for_run)
+    #         cases = [case_mappings[test['case_id']] for test in tests_for_run]
+    #         parameters = [config_mappings[config_id] for config_id in run['config_ids']]
+    #         due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run.get('due_on')))
+    #         if not run.get('due_on'):
+    #             due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
+    #         run_data = {
+    #             'project': project_id,
+    #             'name': run['name'],
+    #             'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run['created_on'])),
+    #             'due_date': due_date,
+    #             'test_cases': cases,
+    #             'parameters': parameters
+    #         }
+    #         if parent:
+    #             run_data['parent'] = parent
+    #         run_data_list.append(run_data)
+    #     serializer = TestPlanInputSerializer(data=run_data_list, many=True)
+    #     serializer.is_valid(raise_exception=True)
+    #     created_tests, created_plans = TestPlanService().testplan_bulk_create_with_tests(serializer.validated_data)
+    #     return dict(zip(
+    #         [src_test['id'] for src_test in src_tests],
+    #         [created_test.id for created_test in created_tests])
+    #     ), dict(zip(
+    #         src_run_ids,
+    #         [created_plan.id for created_plan in created_plans])
+    #     )
+    #
+    # @staticmethod
+    # def create_runs_parent_mile(runs, milestone_mappings, config_mappings, tests, case_mappings, project_id,
+    #                             upload_root_runs):
+    #     run_data_list = []
+    #     src_tests = []
+    #     src_run_ids = []
+    #     for idx, run in enumerate(runs, start=1):
+    #         parent = milestone_mappings.get(run['milestone_id'])
+    #         if not parent and not upload_root_runs:
+    #             continue
+    #         src_run_ids.append(run['id'])
+    #         tests_for_run = [test for test in tests if test['run_id'] == run['id']]
+    #         src_tests.extend(tests_for_run)
+    #         cases = [case_mappings[test['case_id']] for test in tests_for_run]
+    #         parameters = [config_mappings[config_id] for config_id in run['config_ids']]
+    #         due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run.get('due_on')))
+    #         if not run.get('due_on'):
+    #             due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
+    #         run_data = {
+    #             'project': project_id,
+    #             'name': run['name'],
+    #             'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run['created_on'])),
+    #             'due_date': due_date,
+    #             'test_cases': cases,
+    #             'parameters': parameters
+    #         }
+    #         if parent:
+    #             run_data['parent'] = parent
+    #         run_data_list.append(run_data)
+    #     serializer = TestPlanInputSerializer(data=run_data_list, many=True)
+    #     serializer.is_valid(raise_exception=True)
+    #     created_tests, created_plans = TestPlanService().testplan_bulk_create_with_tests(serializer.validated_data)
+    #     return dict(zip(
+    #         [src_test['id'] for src_test in src_tests],
+    #         [created_test.id for created_test in created_tests])
+    #     ), dict(zip(
+    #         src_run_ids,
+    #         [created_plan.id for created_plan in created_plans])
+    #     )
 
     @staticmethod
     def create_project(project) -> Project:

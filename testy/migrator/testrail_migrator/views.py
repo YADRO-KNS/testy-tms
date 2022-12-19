@@ -70,10 +70,12 @@ class DownloadViewSet(mixins.CreateModelMixin, GenericViewSet):
 
     def create(self, request, *args, **kwargs):
         project_id = request.POST.get('project_id')
+        download_attachments = True if request.POST.get('download_attachments') == 'true' else False
+        ignore_completed = True if request.POST.get('ignore_completed') == 'true' else False
+        backup_filename = request.POST.get('backup_filename')
 
         if not project_id:
             return Response('testrail project id was not specified', status.HTTP_400_BAD_REQUEST)
-
         try:
             testrail_settings = TestrailSettings.objects.get(pk=request.POST.get('testrail_settings'))
         except TestrailSettings.DoesNotExist:
@@ -84,11 +86,7 @@ class DownloadViewSet(mixins.CreateModelMixin, GenericViewSet):
             'password': testrail_settings.password,
             'api_url': testrail_settings.api_url,
         }
-        task = download_task.delay(project_id, config_dict, request.POST.get('create_dumpfile'),
-                                   testrail_settings.dumpfile_path)
-        # download_task(project_id, config_dict, request.POST.get('create_dumpfile'),
-        #               testrail_settings.dumpfile_path)
-        # return Response(1234)
+        task = download_task.delay(project_id, config_dict, download_attachments, ignore_completed, backup_filename)
         return redirect(reverse('plugins:testrail_migrator:download_status', kwargs={'task_id': task.task_id}))
 
 
@@ -101,6 +99,7 @@ class UploaderView(mixins.CreateModelMixin, GenericViewSet):
 
     def create(self, request, *args, **kwargs):
         backup_instance = TestrailBackup.objects.get(pk=request.POST.get('testrail_backup'))
+        upload_root_runs = True if request.POST.get('upload_root_runs') == 'true' else False
 
         try:
             testrail_settings = TestrailSettings.objects.get(pk=request.POST.get('testrail_settings'))
@@ -113,9 +112,12 @@ class UploaderView(mixins.CreateModelMixin, GenericViewSet):
             'api_url': testrail_settings.api_url,
         }
 
-        task = upload_task.delay(backup_name=backup_instance.name, config_dict=config_dict)
-        # upload_task.delay(backup_instance.name, config_dict)
-        # return Response(1234)
+        task = upload_task.delay(
+            backup_name=backup_instance.name,
+            config_dict=config_dict,
+            upload_root_runs=upload_root_runs
+
+        )
         return redirect(reverse('plugins:testrail_migrator:download_status', kwargs={'task_id': task.task_id}))
 
 

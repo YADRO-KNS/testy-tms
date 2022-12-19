@@ -31,6 +31,7 @@
 import json
 import logging
 from datetime import datetime
+from typing import Dict
 
 import redis
 from asgiref.sync import async_to_sync
@@ -39,12 +40,13 @@ from celery_progress.backend import ProgressRecorder
 from django.conf import settings
 from testrail_migrator.migrator_lib import TestRailClient, TestrailConfig, TestyCreator
 from testrail_migrator.migrator_lib.testrail import InstanceType
+from testrail_migrator.migrator_lib.testy import ParentType
 from testrail_migrator.models import TestrailBackup
 
 
 # TODO: переделать чтобы соблюдался принцип DRY
 @shared_task(bind=True)
-def upload_task(self, backup_name, config_dict, upload_root_runs: bool = False, service_user_login='admin'):
+def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_user_login='admin'):
     progress_recorder = ProgressRecorder(self)
 
     curr_progress = 0
@@ -74,14 +76,15 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool = False, 
         progress_recorder.set_progress(curr_progress, max_progress, f'Uploading {key}')
         mappings[key] = create_method(backup[key], mappings[mapping_key], project.id)
 
-    mappings['tests_parent_plan'], mappings['runs_parent_plan'] = creator.create_runs_parent_plan(
+    mappings['tests_parent_plan'], mappings['runs_parent_plan'] = creator.create_runs(
         runs=backup['runs_parent_plan'],
-        plan_mappings=mappings['plans'],
+        mapping=mappings['plans'],
         config_mappings=mappings['configs'],
         tests=backup['tests_parent_plan'],
         case_mappings=mappings['cases'],
         project_id=project.id,
-        upload_root_runs=upload_root_runs
+        upload_root_runs=upload_root_runs,
+        parent_type=ParentType.PLAN
     )
     curr_progress += 1
     progress_recorder.set_progress(curr_progress, max_progress, 'Uploading tests')
@@ -90,14 +93,15 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool = False, 
                                                              mappings['users'])
     curr_progress += 1
     progress_recorder.set_progress(curr_progress, max_progress, 'Uploading runs with milestone parent')
-    mappings['tests_parent_mile'], mappings['runs_parent_mile'] = creator.create_runs_parent_mile(
+    mappings['tests_parent_mile'], mappings['runs_parent_mile'] = creator.create_runs(
         runs=backup['runs_parent_mile'],
-        milestone_mappings=mappings['milestones'],
+        mapping=mappings['milestones'],
         config_mappings=mappings['configs'],
         tests=backup['tests_parent_mile'],
         case_mappings=mappings['cases'],
         project_id=project.id,
-        upload_root_runs=False
+        upload_root_runs=upload_root_runs,
+        parent_type=ParentType.MILESTONE
     )
     curr_progress += 1
     progress_recorder.set_progress(curr_progress, max_progress, 'Creating results for runs with milestone parent')
@@ -119,8 +123,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool = False, 
         progress_recorder.set_progress(curr_progress, max_progress, f'Uploading attachments for {key}')
         file_attachments = upload_attachments(config_dict, backup['attachments'][key], parent_key)
         TestyCreator().attachment_bulk_create(file_attachments, project, mappings['users'], parent_key,
-                                              mappings[key],
-                                              instance_type)
+                                              mappings[key], instance_type)
 
 
 @async_to_sync
@@ -130,18 +133,18 @@ async def upload_attachments(config_dict, attachments, parent_key):
 
 
 @shared_task(bind=True)
-def download_task(self, project_id, config_dict, create_dump: bool, dumpfile_path):
+def download_task(self, project_id: int, config_dict: Dict, download_attachments, ignore_completed, backup_filename):
     progress_recorder = ProgressRecorder(self)
     progress_recorder.set_progress(0, 1, 'Started downloading')
 
-    results = download(project_id, TestrailConfig(**config_dict))
+    results = download(project_id, TestrailConfig(**config_dict), download_attachments, ignore_completed)
 
     results_json = json.dumps(results)
     redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
 
     logging.info(f'REDIS CLIENT PING {redis_client.ping()}')
 
-    backup_name = f'backup{datetime.now()}'
+    backup_name = f'{backup_filename}{datetime.now()}'
     TestrailBackup.objects.create(name=backup_name, filepath=backup_name)
     redis_client.set(backup_name, results_json)
 
@@ -150,12 +153,12 @@ def download_task(self, project_id, config_dict, create_dump: bool, dumpfile_pat
 
 
 @async_to_sync
-async def download(project_id: int, config: TestrailConfig, download_attachments: bool = True):
+async def download(project_id: int, config: TestrailConfig, download_attachments: bool, ignore_completed: bool):
     # TODO: think about processing entries
     async with TestRailClient(config) as testrail_client:
         resulting_data = {'project': await testrail_client.get_project(project_id)}
         resulting_data.update(await testrail_client.download_descriptions(project_id))
-        resulting_data.update(await testrail_client.download_representations(project_id))
+        resulting_data.update(await testrail_client.download_representations(project_id, ignore_completed))
         resulting_data['users'] = await testrail_client.get_users()
         if not download_attachments:
             return resulting_data

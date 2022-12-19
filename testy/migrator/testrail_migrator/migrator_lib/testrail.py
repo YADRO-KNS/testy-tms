@@ -36,6 +36,7 @@ from json import JSONDecodeError
 
 import aiohttp
 from aiohttp import ClientConnectionError, ContentTypeError
+from asgiref.sync import async_to_sync
 from tqdm.asyncio import tqdm
 
 from .config import TestrailConfig
@@ -100,22 +101,23 @@ class TestRailClient:
     async def get_users(self, project_id=''):
         return await self._process_request(f'/get_users/{project_id}')
 
-    async def download_representations(self, project_id: int):
+    async def download_representations(self, project_id: int, ignore_completed: bool):
         representations_dict = {}
-        with timer('Getting configs'):
-            configs = await self.get_configs(project_id)
-            representations_dict['configs'] = configs
+        query_params = {'is_completed': 0 if ignore_completed else 1}
+        configs = await self.get_configs(project_id)
+        representations_dict['configs'] = configs
+        milestones = await self.get_milestones(project_id, query_params=query_params)
+        for milestone in milestones:
+            filtered_children = []
+            for child_milestone in milestone['milestones']:
+                if ignore_completed and child_milestone['is_completed']:
+                    continue
+                filtered_children.append(child_milestone)
+            milestone['milestones'] = filtered_children
 
-        with timer('Getting miles'):
-            milestones = await self.get_milestones(project_id, query_params={'is_completed': 0})
-            for milestone in milestones:
-                filtered_children = [child_milestone for child_milestone in milestone['milestones'] if
-                                     not child_milestone['is_completed']]
-                milestone['milestones'] = filtered_children
+        representations_dict['milestones'] = milestones
 
-            representations_dict['milestones'] = milestones
-
-        plans_list = await self.get_plans(project_id, query_params={'is_completed': 0})
+        plans_list = await self.get_plans(project_id, query_params=query_params)
         representations_dict['plans'] = await self.get_plans_with_runs(plans_list)
 
         runs_parent_plan = []
@@ -124,8 +126,7 @@ class TestRailClient:
                 runs_parent_plan.extend(entry['runs'])
         representations_dict['runs_parent_plan'] = runs_parent_plan
 
-        with timer('Getting runs with milestone as parent'):
-            representations_dict['runs_parent_mile'] = await self.get_runs(project_id, query_params={'is_completed': 0})
+        representations_dict['runs_parent_mile'] = await self.get_runs(project_id, query_params=query_params)
 
         representations_dict['tests_parent_plan'] = await self.get_tests_for_runs(runs_parent_plan)
 

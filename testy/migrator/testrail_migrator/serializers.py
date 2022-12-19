@@ -59,13 +59,15 @@ class TestrailSettingsOutputSerializer(ModelSerializer):
 class TestrailUploadSerializer(serializers.Serializer):
     testrail_backup = PrimaryKeyRelatedField(queryset=TestrailBackup.objects.all())
     testrail_settings = PrimaryKeyRelatedField(queryset=TestrailSettings.objects.all())
-    user = PrimaryKeyRelatedField(queryset=User.objects.all())
+    upload_root_runs = serializers.BooleanField(default=False)
 
 
 class DownloadSerializer(serializers.Serializer):
     project_id = serializers.IntegerField()
-    create_dumpfile = serializers.BooleanField()
+    download_attachments = serializers.BooleanField(default=True)
+    ignore_completed = serializers.BooleanField(default=True)
     testrail_settings = PrimaryKeyRelatedField(queryset=TestrailSettings.objects.all())
+    backup_filename = serializers.CharField(default='testrail_backup')
 
 
 class TestrailBackupSerializer(ModelSerializer):
