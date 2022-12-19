@@ -33,6 +33,7 @@ import os
 import time
 from datetime import datetime
 from enum import Enum
+from operator import itemgetter
 
 from core.api.v1.serializers import ProjectSerializer
 from core.models import Attachment, Project
@@ -41,7 +42,6 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import IntegrityError
-from operator import itemgetter
 from testrail_migrator.serializers import ParameterSerializer, TestSerializer
 from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer
 from tests_description.models import TestCase

@@ -36,7 +36,6 @@ from json import JSONDecodeError
 
 import aiohttp
 from aiohttp import ClientConnectionError, ContentTypeError
-from asgiref.sync import async_to_sync
 from tqdm.asyncio import tqdm
 
 from .config import TestrailConfig

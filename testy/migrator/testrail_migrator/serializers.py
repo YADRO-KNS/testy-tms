@@ -35,7 +35,6 @@ from rest_framework.serializers import ModelSerializer
 from testrail_migrator.models import TestrailBackup, TestrailSettings
 from tests_representation.models import Parameter, Test
 from tests_representation.selectors.results import TestResultSelector
-from users.models import User
 
 
 class ParameterSerializer(ModelSerializer):
