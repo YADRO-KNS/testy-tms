@@ -31,15 +31,13 @@
 import asyncio
 import itertools
 import logging
-from http import HTTPStatus
-
-import requests
 from enum import Enum
+from http import HTTPStatus
 from json import JSONDecodeError
 
 import aiohttp
+import requests
 from aiohttp import ClientConnectionError, ContentTypeError
-from asgiref.sync import async_to_sync
 from tqdm.asyncio import tqdm
 
 from .config import TestrailConfig

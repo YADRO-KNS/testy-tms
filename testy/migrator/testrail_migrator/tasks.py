@@ -42,19 +42,18 @@ from testrail_migrator.migrator_lib import TestRailClient, TestrailConfig, Testy
 from testrail_migrator.migrator_lib.testrail import InstanceType
 from testrail_migrator.migrator_lib.testy import ParentType
 from testrail_migrator.models import TestrailBackup
-from testrail_migrator.migrator_lib.utils import find_idx_by_key_value
 
 
 # TODO: переделать чтобы соблюдался принцип DRY
 @shared_task(bind=True)
 def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_user_login='admin',
                 testy_attachment_url: bool = None):
-    # progress_recorder = ProgressRecorder(self)
+    progress_recorder = ProgressRecorder(self)
 
     curr_progress = 0
     max_progress = 14
 
-    # progress_recorder.set_progress(curr_progress, max_progress, 'Started uploading')
+    progress_recorder.set_progress(curr_progress, max_progress, 'Started uploading')
 
     redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
     backup = json.loads(redis_client.get(backup_name))
@@ -68,14 +67,14 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     for key in keys_without_mappings:
         curr_progress += 1
         create_method = getattr(creator, f'create_{key}')
-        # progress_recorder.set_progress(curr_progress, max_progress, f'Uploading {key}')
+        progress_recorder.set_progress(curr_progress, max_progress, f'Uploading {key}')
         mappings[key] = create_method(backup[key], project.id)
 
     keys_with_single_mapping = [('cases', 'suites'), ('plans', 'milestones')]
     for key, mapping_key in keys_with_single_mapping:
         curr_progress += 1
         create_method = getattr(creator, f'create_{key}')
-        # progress_recorder.set_progress(curr_progress, max_progress, f'Uploading {key}')
+        progress_recorder.set_progress(curr_progress, max_progress, f'Uploading {key}')
         mappings[key] = create_method(backup[key], mappings[mapping_key], project.id)
     mappings['tests_parent_plan'], mappings['runs_parent_plan'] = creator.create_runs(
         runs=backup['runs_parent_plan'],
@@ -89,12 +88,12 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
         user_mappings=mappings['users']
     )
     curr_progress += 1
-    # progress_recorder.set_progress(curr_progress, max_progress, 'Uploading tests')
+    progress_recorder.set_progress(curr_progress, max_progress, 'Uploading tests')
     mappings['results_parent_plan'] = creator.create_results(backup['results_parent_plan'],
                                                              mappings['tests_parent_plan'],
                                                              mappings['users'])
     curr_progress += 1
-    # progress_recorder.set_progress(curr_progress, max_progress, 'Uploading runs with milestone parent')
+    progress_recorder.set_progress(curr_progress, max_progress, 'Uploading runs with milestone parent')
     mappings['tests_parent_mile'], mappings['runs_parent_mile'] = creator.create_runs(
         runs=backup['runs_parent_mile'],
         mapping=mappings['milestones'],
@@ -107,7 +106,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
         user_mappings=mappings['users']
     )
     curr_progress += 1
-    # progress_recorder.set_progress(curr_progress, max_progress, 'Creating results for runs with milestone parent')
+    progress_recorder.set_progress(curr_progress, max_progress, 'Creating results for runs with milestone parent')
     mappings['results_parent_mile'] = creator.create_results(
         backup['results_parent_mile'],
         mappings['tests_parent_mile'],
@@ -122,7 +121,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     ]
     for key, parent_key, instance_type in keys:
         curr_progress += 1
-        # progress_recorder.set_progress(curr_progress, max_progress, f'Uploading attachments for {key}')
+        progress_recorder.set_progress(curr_progress, max_progress, f'Uploading attachments for {key}')
         file_attachments = upload_attachments(config_dict, backup['attachments'][key], parent_key)
         mappings['attachments'].update(
             creator.attachment_bulk_create(file_attachments, project, mappings['users'], parent_key,
@@ -136,7 +135,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
 
     for key, parent_key, instance_type in keys:
         curr_progress += 1
-        # progress_recorder.set_progress(curr_progress, max_progress, f'Uploading attachments for {key}')
+        progress_recorder.set_progress(curr_progress, max_progress, f'Uploading attachments for {key}')
         file_attachments = upload_attachments(config_dict, backup['attachments'][f'tests_{key}'], parent_key)
         mappings['attachments'].update(
             creator.attachment_bulk_create(file_attachments, project, mappings['users'], parent_key,
@@ -155,8 +154,8 @@ async def upload_attachments(config_dict, attachments, parent_key):
 
 @shared_task(bind=True)
 def download_task(self, project_id: int, config_dict: Dict, download_attachments, ignore_completed, backup_filename):
-    # progress_recorder = ProgressRecorder(self)
-    # progress_recorder.set_progress(0, 1, 'Started downloading')
+    progress_recorder = ProgressRecorder(self)
+    progress_recorder.set_progress(0, 1, 'Started downloading')
 
     results = download(project_id, TestrailConfig(**config_dict), download_attachments, ignore_completed)
 

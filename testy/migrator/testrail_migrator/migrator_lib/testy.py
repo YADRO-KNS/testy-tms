@@ -31,24 +31,21 @@
 import io
 import logging
 import os
-import time
 import re
+import time
 from datetime import datetime
 from enum import Enum
 from operator import itemgetter
 
-from asgiref.sync import async_to_sync, sync_to_async
-
 from core.api.v1.serializers import ProjectSerializer
 from core.models import Attachment, Project
-from core.services.attachments import AttachmentService
 from core.services.projects import ProjectService
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import IntegrityError
-
 from testrail_migrator.migrator_lib import TestrailConfig
+from testrail_migrator.migrator_lib.testrail import InstanceType, TestrailClientSync
 from testrail_migrator.serializers import ParameterSerializer, TestSerializer
 from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer
 from tests_description.models import TestCase
@@ -60,8 +57,6 @@ from tests_representation.services.parameters import ParameterService
 from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPlanService
 from tests_representation.services.tests import TestService
-from django.db import models
-from testrail_migrator.migrator_lib.testrail import InstanceType, TestRailClient, TestrailClientSync
 
 UserModel = get_user_model()
 
