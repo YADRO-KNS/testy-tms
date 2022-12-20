@@ -55,11 +55,10 @@ class AttachmentSerializer(ModelSerializer):
         model = Attachment
         fields = (
             'id', 'project', 'comment', 'name', 'filename', 'file_extension', 'size', 'size_humanize', 'content_type',
-            'object_id', 'user', 'file', 'url', 'link'
+            'object_id', 'user', 'file', 'url',
         )
 
-        read_only_fields = ('name', 'filename', 'file_extension', 'size', 'user', 'url', 'link')
-        extra_kwargs = {'file': {'write_only': True}}
+        read_only_fields = ('name', 'filename', 'file_extension', 'size', 'user', 'url')
 
     def get_size_humanize(self, instance):
         return humanize.naturalsize(instance.size)
