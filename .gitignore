@@ -1,8 +1,9 @@
 *.pyc
 __pycache__/
 /venv/
-/static/
-/media/
+static/
+testy-static/
+media/
 /pg-data/
 .env
 .env.local
