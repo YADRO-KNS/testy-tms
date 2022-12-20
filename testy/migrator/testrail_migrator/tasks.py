@@ -143,7 +143,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
                                            mappings[f'results_{key}'], instance_type)
         )
 
-    creator.update_testy_attachment_urls(mappings)
+    creator.update_testy_attachment_urls(mappings, TestrailConfig(**config_dict))
 
 
 @async_to_sync

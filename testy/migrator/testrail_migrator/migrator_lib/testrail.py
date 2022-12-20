@@ -36,6 +36,7 @@ from json import JSONDecodeError
 
 import aiohttp
 from aiohttp import ClientConnectionError, ContentTypeError
+from asgiref.sync import async_to_sync
 from tqdm.asyncio import tqdm
 
 from .config import TestrailConfig
@@ -65,6 +66,48 @@ class TestRailClientError(Exception):
         super().__init__(msg)
 
 
+class TestrailClientSync:
+    def __init__(self, config: TestrailConfig):
+        """
+        Init method for TestRailClient.
+
+        Args:
+            config: instance of TestrailConfig
+        """
+        if not config.login or not config.password:
+            raise TestRailClientError('No login or password were provided.')
+        self.config = config
+
+    def get_single_attachment(self, attachment_id):
+        headers = {
+            'Content-Type': 'application/json; charset=utf-8'
+        }
+
+        return self._process_request(endpoint=f'/get_attachment/{attachment_id}')
+
+    def _process_request(self, endpoint: str, retry_count=30):
+        """
+        Process request to TestRail REST API.
+
+        Args:
+            endpoint: endpoint url
+            input_data: content
+
+        Returns:
+            data or None for error
+        """
+        headers = {
+            'Content-Type': 'application/json; charset=utf-8'
+        }
+        url = self.config.api_url + endpoint
+        while retry_count:
+            response = requests.get(url, auth=(self.config.login, self.config.password), headers=headers)
+            if response.status_code != HTTPStatus.OK:
+                logger.error(f'Response ok - {response}')
+                retry_count -= 1
+        return response
+
+
 class TestRailClient:
     """Implement testrail client."""
 
@@ -86,6 +129,12 @@ class TestRailClient:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.session.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        async_to_sync(self.session.close)()
 
     async def download_descriptions(self, project_id: int):
         descriptions_dict = {}
@@ -304,6 +353,30 @@ class TestRailClient:
                     }
             except (ClientConnectionError, asyncio.TimeoutError):
                 retry_count -= 1
+
+    async def get_single_attachment(self, attachment_id, retry_count=30):
+        headers = {
+            'Content-Type': 'application/json; charset=utf-8'
+        }
+        while retry_count:
+            try:
+                async with self.session.get(url=self.config.api_url + f'/get_attachment/{attachment_id}',
+                                            headers=headers) as resp:
+                    if resp.status != 200:
+                        logging.error(resp)
+                        raise ClientConnectionError
+                    return await resp.read()
+            except (ClientConnectionError, asyncio.TimeoutError):
+                retry_count -= 1
+
+    # def get_single_attachment(self, attachment_id):
+    #     headers = {
+    #         'Content-Type': 'application/json; charset=utf-8'
+    #     }
+    #     url = self.config.api_url + endpoint
+    #     logger.debug(f'Request GET - {endpoint}')
+    #     response = requests.get(url, auth=(self.config.login, self.config.password), headers=headers)
+    #     return response
 
     async def get_attachments_for_plan(self, plan_id: int):
         list_of_attachments = await self._process_request(f'/get_attachments_for_plan/{plan_id}')

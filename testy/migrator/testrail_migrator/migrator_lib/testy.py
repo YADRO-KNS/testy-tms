@@ -37,13 +37,18 @@ from datetime import datetime
 from enum import Enum
 from operator import itemgetter
 
+from asgiref.sync import async_to_sync, sync_to_async
+
 from core.api.v1.serializers import ProjectSerializer
 from core.models import Attachment, Project
+from core.services.attachments import AttachmentService
 from core.services.projects import ProjectService
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import IntegrityError
+
+from testrail_migrator.migrator_lib import TestrailConfig
 from testrail_migrator.serializers import ParameterSerializer, TestSerializer
 from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer
 from tests_description.models import TestCase
@@ -56,8 +61,7 @@ from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPlanService
 from tests_representation.services.tests import TestService
 from django.db import models
-from testrail_migrator.migrator_lib.testrail import InstanceType
-from testrail_migrator.migrator_lib.testrail import TestRailClient
+from testrail_migrator.migrator_lib.testrail import InstanceType, TestRailClient, TestrailClientSync
 
 UserModel = get_user_model()
 
@@ -77,22 +81,40 @@ class TestyCreator:
             logging.error('Testy attachment url was not provided')
         self.testy_attachment_url = testy_attachment_url
 
-    def replace_testrail_attachment_url(self, text_to_check, attachments_mapping, testrail_client: TetrailClient):
+    def replace_testrail_attachment_url(self, text_to_check, attachments_mapping,
+                                        testrail_client: TestrailClientSync, parent_object):
         if not text_to_check:
             return False, text_to_check
         search = re.search(self.replace_pattern, text_to_check)
         if not search:
             return False, text_to_check
-        attachment_id = attachments_mapping.get(int(search.group('attachment_id')))
+        src_attachment_id = int(search.group('attachment_id'))
+        attachment_id = attachments_mapping.get(src_attachment_id)
         if not attachment_id:
-            testrail_client
+            file_bytes = testrail_client.get_single_attachment(src_attachment_id)
+            data = {
+                'project': Project.objects.get(pk=parent_object.project_id),
+                'name': 'unknown name',
+                'filename': 'unknown name.png',
+                'file_extension': 'image/png',
+                'size': '123',
+                'file': io.BytesIO(file_bytes),
+                'content_object': parent_object
+            }
+
+            attachment = Attachment.objects.create(**data)
+            attachment_id = attachment.id
+
         return True, re.sub(self.replace_pattern, f'{self.testy_attachment_url}{attachment_id}', text_to_check)
 
-    def update_testy_attachment_urls(self, mappings):
+    def update_testy_attachment_urls(self, mappings, config: TestrailConfig):
+        testrail_client = TestRailClientSync(config)
         for result_id in mappings['results_parent_mile'].values():
             test_result = TestResult.objects.get(pk=result_id)
             is_replaced, new_comment = self.replace_testrail_attachment_url(test_result.comment,
-                                                                            mappings['attachments'])
+                                                                                  mappings['attachments'],
+                                                                                  testrail_client,
+                                                                                  test_result)
             if not is_replaced:
                 continue
             data = {'comment': new_comment}
@@ -101,7 +123,9 @@ class TestyCreator:
         for result_id in mappings['results_parent_plan'].values():
             test_result = TestResult.objects.get(pk=result_id)
             is_replaced, new_comment = self.replace_testrail_attachment_url(test_result.comment,
-                                                                            mappings['attachments'])
+                                                                                  mappings['attachments'],
+                                                                                  testrail_client,
+                                                                                  test_result)
             if not is_replaced:
                 continue
             data = {'comment': new_comment}
@@ -110,7 +134,9 @@ class TestyCreator:
         for case_id in mappings['cases'].values():
             test_case = TestCase.objects.get(pk=case_id)
             is_replaced, new_scenario = self.replace_testrail_attachment_url(test_case.scenario,
-                                                                             mappings['attachments'])
+                                                                                   mappings['attachments'],
+                                                                                   testrail_client,
+                                                                                   test_case)
             if not is_replaced:
                 continue
             data = {'scenario': new_scenario}
