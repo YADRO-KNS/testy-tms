@@ -49,7 +49,7 @@ urlpatterns = [
     path('tests/', test_lists, name='test-list'),
     path('tests/<int:pk>/', test_detail, name='test-detail'),
 
-    path('testplans/', TestPLanListView.as_view(), name='testplan-list'),
+    path('testplans/', TestPLanListView.as_view({'get': 'list', 'post': 'create'}), name='testplan-list'),
     path('testplans/<int:pk>/', TestPLanDetailView.as_view(), name='testplan-detail'),
 
     path('test-results/', TestResultChoicesView.as_view(), name='test-results'),
