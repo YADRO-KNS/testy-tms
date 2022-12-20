@@ -31,6 +31,7 @@
 import mimetypes
 import os
 
+from core.models import Attachment
 from django.conf import settings
 from django.contrib.admin.utils import unquote
 from django.http import FileResponse
@@ -51,3 +52,12 @@ class MediaView(APIView):
             mimetype = 'text/html'
         file_path = unquote(os.path.join(settings.MEDIA_ROOT, path)).encode('utf-8')
         return FileResponse(open(file_path, 'rb'), content_type=mimetype)
+
+
+class AttachmentView(APIView):
+    def get(self, request, pk):
+        try:
+            attachment = Attachment.objects.get(pk=pk)
+        except Attachment.DoesNotExist:
+            return Response('Attachment was not found', status=status.HTTP_404_NOT_FOUND)
+        return FileResponse(attachment.file)

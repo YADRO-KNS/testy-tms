@@ -44,7 +44,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from core.views import MediaView
+from core.views import AttachmentView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -81,7 +81,7 @@ urlpatterns = [
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
     # Media
-    re_path(r'^media/(?P<path>.*)', MediaView.as_view(), name='media-path'),
+    path('attachments/<int:pk>/', AttachmentView.as_view(), name='attachment-path'),
 ]
 
 if settings.DEBUG:
