@@ -92,13 +92,24 @@ class TestyCreator:
         attachment_id = attachments_mapping.get(src_attachment_id)
         if not attachment_id:
             file_bytes = testrail_client.get_single_attachment(src_attachment_id)
+            temp_file = io.BytesIO(file_bytes)
+            name = f'unknown name{time.time()}.png'
+            file = InMemoryUploadedFile(
+                name=name,
+                field_name='file',
+                content_type='image/png',
+                size=temp_file.__sizeof__(),
+                charset='utf-8',
+                file=temp_file
+            )
             data = {
-                'project': Project.objects.get(pk=parent_object.project_id),
-                'name': 'unknown name',
-                'filename': 'unknown name.png',
+                'project': parent_object.project,
+                'name': name,
+                'filename': name,
                 'file_extension': 'image/png',
                 'size': '123',
-                'file': io.BytesIO(file_bytes),
+                'file': file,
+                'user': self.service_user,
                 'content_object': parent_object
             }
 
@@ -108,13 +119,13 @@ class TestyCreator:
         return True, re.sub(self.replace_pattern, f'{self.testy_attachment_url}{attachment_id}', text_to_check)
 
     def update_testy_attachment_urls(self, mappings, config: TestrailConfig):
-        testrail_client = TestRailClientSync(config)
+        testrail_client = TestrailClientSync(config)
         for result_id in mappings['results_parent_mile'].values():
             test_result = TestResult.objects.get(pk=result_id)
             is_replaced, new_comment = self.replace_testrail_attachment_url(test_result.comment,
-                                                                                  mappings['attachments'],
-                                                                                  testrail_client,
-                                                                                  test_result)
+                                                                            mappings['attachments'],
+                                                                            testrail_client,
+                                                                            test_result)
             if not is_replaced:
                 continue
             data = {'comment': new_comment}
@@ -123,9 +134,9 @@ class TestyCreator:
         for result_id in mappings['results_parent_plan'].values():
             test_result = TestResult.objects.get(pk=result_id)
             is_replaced, new_comment = self.replace_testrail_attachment_url(test_result.comment,
-                                                                                  mappings['attachments'],
-                                                                                  testrail_client,
-                                                                                  test_result)
+                                                                            mappings['attachments'],
+                                                                            testrail_client,
+                                                                            test_result)
             if not is_replaced:
                 continue
             data = {'comment': new_comment}
@@ -134,9 +145,9 @@ class TestyCreator:
         for case_id in mappings['cases'].values():
             test_case = TestCase.objects.get(pk=case_id)
             is_replaced, new_scenario = self.replace_testrail_attachment_url(test_case.scenario,
-                                                                                   mappings['attachments'],
-                                                                                   testrail_client,
-                                                                                   test_case)
+                                                                             mappings['attachments'],
+                                                                             testrail_client,
+                                                                             test_case)
             if not is_replaced:
                 continue
             data = {'scenario': new_scenario}

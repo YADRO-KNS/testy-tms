@@ -31,6 +31,9 @@
 import asyncio
 import itertools
 import logging
+from http import HTTPStatus
+
+import requests
 from enum import Enum
 from json import JSONDecodeError
 
@@ -79,10 +82,6 @@ class TestrailClientSync:
         self.config = config
 
     def get_single_attachment(self, attachment_id):
-        headers = {
-            'Content-Type': 'application/json; charset=utf-8'
-        }
-
         return self._process_request(endpoint=f'/get_attachment/{attachment_id}')
 
     def _process_request(self, endpoint: str, retry_count=30):
@@ -102,10 +101,10 @@ class TestrailClientSync:
         url = self.config.api_url + endpoint
         while retry_count:
             response = requests.get(url, auth=(self.config.login, self.config.password), headers=headers)
-            if response.status_code != HTTPStatus.OK:
-                logger.error(f'Response ok - {response}')
-                retry_count -= 1
-        return response
+            if response.status_code == HTTPStatus.OK:
+                return response.content
+            logging.error(f'Response not ok - {response}')
+            retry_count -= 1
 
 
 class TestRailClient:
@@ -129,12 +128,6 @@ class TestRailClient:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.session.close()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        async_to_sync(self.session.close)()
 
     async def download_descriptions(self, project_id: int):
         descriptions_dict = {}
