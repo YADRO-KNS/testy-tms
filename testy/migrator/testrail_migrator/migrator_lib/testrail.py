@@ -245,11 +245,17 @@ class TestRailClient:
                     tasks.append(
                         self.get_attachment_with_parent_id_for_entry(instance['plan_id'], instance['id'])
                     )
+            # elif instance_type == InstanceType.TEST:
+            #     for instance in chunk:
+            #         tasks.append(
+            #             self.get_attachment_with_parent_id(instance['test_id'], instance_type)
+            #         )
             else:
                 for instance in chunk:
                     tasks.append(
                         self.get_attachment_with_parent_id(instance['id'], instance_type)
                     )
+
             attachments.extend(
                 list(
                     itertools.chain.from_iterable(

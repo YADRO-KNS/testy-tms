@@ -29,8 +29,10 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 import io
+import logging
 import os
 import time
+import re
 from datetime import datetime
 from enum import Enum
 from operator import itemgetter
@@ -53,6 +55,9 @@ from tests_representation.services.parameters import ParameterService
 from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPlanService
 from tests_representation.services.tests import TestService
+from django.db import models
+from testrail_migrator.migrator_lib.testrail import InstanceType
+from testrail_migrator.migrator_lib.testrail import TestRailClient
 
 UserModel = get_user_model()
 
@@ -63,8 +68,53 @@ class ParentType(Enum):
 
 
 class TestyCreator:
-    def __init__(self, service_login: str = 'admin'):
+    def __init__(self, service_login: str = 'admin',
+                 testy_attachment_url: str = None,
+                 replace_pattern: str = r'index\.php\?/attachments/get/(?P<attachment_id>\d*)'):
         self.service_user = UserModel.objects.get(username=service_login)
+        self.replace_pattern = replace_pattern
+        if not testy_attachment_url:
+            logging.error('Testy attachment url was not provided')
+        self.testy_attachment_url = testy_attachment_url
+
+    def replace_testrail_attachment_url(self, text_to_check, attachments_mapping, testrail_client: TetrailClient):
+        if not text_to_check:
+            return False, text_to_check
+        search = re.search(self.replace_pattern, text_to_check)
+        if not search:
+            return False, text_to_check
+        attachment_id = attachments_mapping.get(int(search.group('attachment_id')))
+        if not attachment_id:
+            testrail_client
+        return True, re.sub(self.replace_pattern, f'{self.testy_attachment_url}{attachment_id}', text_to_check)
+
+    def update_testy_attachment_urls(self, mappings):
+        for result_id in mappings['results_parent_mile'].values():
+            test_result = TestResult.objects.get(pk=result_id)
+            is_replaced, new_comment = self.replace_testrail_attachment_url(test_result.comment,
+                                                                            mappings['attachments'])
+            if not is_replaced:
+                continue
+            data = {'comment': new_comment}
+            TestResultService().result_update(test_result, data)
+
+        for result_id in mappings['results_parent_plan'].values():
+            test_result = TestResult.objects.get(pk=result_id)
+            is_replaced, new_comment = self.replace_testrail_attachment_url(test_result.comment,
+                                                                            mappings['attachments'])
+            if not is_replaced:
+                continue
+            data = {'comment': new_comment}
+            TestResultService().result_update(test_result, data)
+
+        for case_id in mappings['cases'].values():
+            test_case = TestCase.objects.get(pk=case_id)
+            is_replaced, new_scenario = self.replace_testrail_attachment_url(test_case.scenario,
+                                                                             mappings['attachments'])
+            if not is_replaced:
+                continue
+            data = {'scenario': new_scenario}
+            TestCaseService().case_update(test_case, data)
 
     @staticmethod
     def create_suites(suites, project_id):
@@ -202,7 +252,7 @@ class TestyCreator:
 
     @staticmethod
     def create_runs(runs, mapping, config_mappings, tests, case_mappings, project_id,
-                    parent_type: ParentType, upload_root_runs: bool):
+                    parent_type: ParentType, upload_root_runs: bool, user_mappings):
         run_data_list = []
         src_tests = []
         src_run_ids = []
@@ -239,6 +289,13 @@ class TestyCreator:
         serializer = TestPlanInputSerializer(data=run_data_list, many=True)
         serializer.is_valid(raise_exception=True)
         created_tests, created_plans = TestPlanService().testplan_bulk_create_with_tests(serializer.validated_data)
+
+        # Add assignation for tests
+        for src_test, created_test in zip(src_tests, created_tests):
+            if src_test['assignedto_id']:
+                user_id = user_mappings.get(src_test['assignedto_id'])
+                TestService().test_update(created_test, {'user': UserModel.objects.get(pk=user_id)})
+
         return dict(zip(
             [src_test['id'] for src_test in src_tests],
             [created_test.id for created_test in created_tests])
@@ -246,86 +303,6 @@ class TestyCreator:
             src_run_ids,
             [created_plan.id for created_plan in created_plans])
         )
-
-    # @staticmethod
-    # def create_runs_parent_plan(runs, plan_mappings, config_mappings, tests, case_mappings, project_id,
-    #                             upload_root_runs):
-    #     run_data_list = []
-    #     src_tests = []
-    #     src_run_ids = []
-    #     for idx, run in enumerate(runs, start=1):
-    #         parent = plan_mappings.get(run['plan_id'])
-    #         if not parent and not upload_root_runs:
-    #             continue
-    #         src_run_ids.append(run['id'])
-    #         tests_for_run = [test for test in tests if test['run_id'] == run['id']]
-    #         src_tests.extend(tests_for_run)
-    #         cases = [case_mappings[test['case_id']] for test in tests_for_run]
-    #         parameters = [config_mappings[config_id] for config_id in run['config_ids']]
-    #         due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run.get('due_on')))
-    #         if not run.get('due_on'):
-    #             due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
-    #         run_data = {
-    #             'project': project_id,
-    #             'name': run['name'],
-    #             'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run['created_on'])),
-    #             'due_date': due_date,
-    #             'test_cases': cases,
-    #             'parameters': parameters
-    #         }
-    #         if parent:
-    #             run_data['parent'] = parent
-    #         run_data_list.append(run_data)
-    #     serializer = TestPlanInputSerializer(data=run_data_list, many=True)
-    #     serializer.is_valid(raise_exception=True)
-    #     created_tests, created_plans = TestPlanService().testplan_bulk_create_with_tests(serializer.validated_data)
-    #     return dict(zip(
-    #         [src_test['id'] for src_test in src_tests],
-    #         [created_test.id for created_test in created_tests])
-    #     ), dict(zip(
-    #         src_run_ids,
-    #         [created_plan.id for created_plan in created_plans])
-    #     )
-    #
-    # @staticmethod
-    # def create_runs_parent_mile(runs, milestone_mappings, config_mappings, tests, case_mappings, project_id,
-    #                             upload_root_runs):
-    #     run_data_list = []
-    #     src_tests = []
-    #     src_run_ids = []
-    #     for idx, run in enumerate(runs, start=1):
-    #         parent = milestone_mappings.get(run['milestone_id'])
-    #         if not parent and not upload_root_runs:
-    #             continue
-    #         src_run_ids.append(run['id'])
-    #         tests_for_run = [test for test in tests if test['run_id'] == run['id']]
-    #         src_tests.extend(tests_for_run)
-    #         cases = [case_mappings[test['case_id']] for test in tests_for_run]
-    #         parameters = [config_mappings[config_id] for config_id in run['config_ids']]
-    #         due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run.get('due_on')))
-    #         if not run.get('due_on'):
-    #             due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
-    #         run_data = {
-    #             'project': project_id,
-    #             'name': run['name'],
-    #             'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run['created_on'])),
-    #             'due_date': due_date,
-    #             'test_cases': cases,
-    #             'parameters': parameters
-    #         }
-    #         if parent:
-    #             run_data['parent'] = parent
-    #         run_data_list.append(run_data)
-    #     serializer = TestPlanInputSerializer(data=run_data_list, many=True)
-    #     serializer.is_valid(raise_exception=True)
-    #     created_tests, created_plans = TestPlanService().testplan_bulk_create_with_tests(serializer.validated_data)
-    #     return dict(zip(
-    #         [src_test['id'] for src_test in src_tests],
-    #         [created_test.id for created_test in created_tests])
-    #     ), dict(zip(
-    #         src_run_ids,
-    #         [created_plan.id for created_plan in created_plans])
-    #     )
 
     @staticmethod
     def create_project(project) -> Project:
@@ -376,7 +353,11 @@ class TestyCreator:
             print(f'Processing result {idx} of {len(results)}')
             if not tests_mappings.get(result['test_id']):
                 continue
+            # Drop all results that serve as assignation message
+            if not result['status_id'] and result['assignedto_id']:
+                continue
             src_ids.append(result['id'])
+
             result_data = {
                 'status': statuses.get(result['status_id'], 5),
                 'comment': result['comment'],
@@ -420,17 +401,21 @@ class TestyCreator:
             attachment = Attachment.model_create(fields=non_side_effect_fields, data=temp, commit=False)
             content_object = None
             pk = mapping.get(data[parent_key])
-            if instance_type.CASE and pk:
+            if instance_type == InstanceType.CASE and pk:
                 content_object = TestCase.objects.get(pk=pk)
-            elif (instance_type.RUN or instance_type.PLAN) and pk:
+            elif (instance_type == InstanceType.RUN or instance_type == InstanceType.PLAN) and pk:
                 content_object = TestPlan.objects.get(pk=pk)
-            elif instance_type.TEST and pk:
+            elif instance_type == InstanceType.TEST and pk:
                 content_object = TestResult.objects.get(pk=pk)
             if content_object:
                 attachment.content_object = content_object
             attachment.save()
             attachment_instances.append(attachment)
-        return attachment_instances
+
+        return dict(zip(
+            [data for data in data_dict],
+            [created_attachment.id for created_attachment in attachment_instances])
+        )
 
     @staticmethod
     def user_create(data) -> UserModel:

@@ -46,13 +46,13 @@ class ParameterSerializer(ModelSerializer):
 class TestrailSettingsInputSerializer(ModelSerializer):
     class Meta:
         model = TestrailSettings
-        fields = ('login', 'password', 'api_url', 'dumpfile_path')
+        fields = ('login', 'password', 'api_url', 'testy_attachments_url')
 
 
 class TestrailSettingsOutputSerializer(ModelSerializer):
     class Meta:
         model = TestrailSettings
-        fields = ('login', 'api_url', 'dumpfile_path')
+        fields = ('login', 'api_url', 'testy_attachments_url')
 
 
 class TestrailUploadSerializer(serializers.Serializer):

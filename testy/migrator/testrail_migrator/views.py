@@ -86,7 +86,8 @@ class DownloadViewSet(mixins.CreateModelMixin, GenericViewSet):
             'password': testrail_settings.password,
             'api_url': testrail_settings.api_url,
         }
-        task = download_task.delay(project_id, config_dict, download_attachments, ignore_completed, backup_filename)
+        # task = download_task.delay(project_id, config_dict, download_attachments, ignore_completed, backup_filename)
+        task = download_task(project_id, config_dict, download_attachments, ignore_completed, backup_filename)
         return redirect(reverse('plugins:testrail_migrator:download_status', kwargs={'task_id': task.task_id}))
 
 
@@ -112,9 +113,15 @@ class UploaderView(mixins.CreateModelMixin, GenericViewSet):
             'api_url': testrail_settings.api_url,
         }
 
-        task = upload_task.delay(
+        # task = upload_task.delay(
+        #     backup_name=backup_instance.name,
+        #     config_dict=config_dict,
+        #     upload_root_runs=upload_root_runs
+        # )
+        task = upload_task(
             backup_name=backup_instance.name,
             config_dict=config_dict,
+            testy_attachment_url=testrail_settings.testy_attachments_url,
             upload_root_runs=upload_root_runs
 
         )
