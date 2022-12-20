@@ -93,6 +93,7 @@ class Attachment(BaseModel):
         upload_to=get_attachments_file_path,
         validators=[ExtensionValidator()]
     )
+    link = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN, null=True, blank=True)
 
     def __str__(self):
         return str(self.file.url)

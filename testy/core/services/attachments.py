@@ -33,6 +33,7 @@ from typing import Any, Dict, List, Union
 
 from core.models import Attachment
 from core.selectors.attachments import AttachmentSelector
+from rest_framework.reverse import reverse
 
 
 class AttachmentService:
@@ -55,7 +56,10 @@ class AttachmentService:
                     'file': file,
                 }
             )
-            attachments_instances.append(Attachment.model_create(fields=self.non_side_effect_fields, data=data))
+            attachment = Attachment.model_create(fields=self.non_side_effect_fields, data=data)
+            attachment.link = request.build_absolute_uri(reverse('attachment-path', kwargs={'pk': attachment.id}))
+            attachment.save()
+            attachments_instances.append(attachment)
         return attachments_instances
 
     def attachment_set_content_object(self, attachment: Attachment, content_object):
