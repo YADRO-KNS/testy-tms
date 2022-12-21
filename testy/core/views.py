@@ -55,6 +55,8 @@ class MediaView(APIView):
 
 
 class AttachmentView(APIView):
+    permission_classes = [AllowAny, ]
+
     def get(self, request, pk):
         try:
             attachment = Attachment.objects.get(pk=pk)
