@@ -71,24 +71,26 @@ class ParameterViewSet(ModelViewSet):
         serializer.instance = ParameterService().parameter_update(serializer.instance, serializer.validated_data)
 
 
-class TestPLanListView(APIView):
+class TestPLanListView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
+    serializer_class = TestPlanOutputSerializer
+    queryset = TestPlanSelector().testplan_list()
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['project']
 
     def get_view_name(self):
         return "Test Plan List"
 
-    def get(self, request):
+    def get_queryset(self):
         if get_boolean(self.request, 'treeview'):
-            qs = TestPlanSelector().testplan_without_parent()
-            serializer_class = TestPlanTreeSerializer
-        else:
-            qs = TestPlanSelector().testplan_list()
-            serializer_class = TestPlanOutputSerializer
-        serializer = serializer_class(qs, many=True, context={'request': request})
-        return Response(serializer.data)
+            return TestPlanSelector().testplan_without_parent()
+        return super().get_queryset()
 
-    def post(self, request):
+    def get_serializer_class(self):
+        if get_boolean(self.request, 'treeview'):
+            return TestPlanTreeSerializer
+        return super().get_serializer_class()
+
+    def create(self, request, *args, **kwargs):
         serializer = TestPlanInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         test_plans = TestPlanService().testplan_create(serializer.validated_data)

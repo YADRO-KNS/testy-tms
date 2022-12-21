@@ -30,6 +30,7 @@
 # <http://www.gnu.org/licenses/>.
 import humanize
 from core.models import Attachment, Project
+from django.urls import reverse
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import HyperlinkedIdentityField, ModelSerializer
@@ -50,18 +51,25 @@ class ProjectSerializer(ModelSerializer):
 class AttachmentSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:attachment-detail')
     size_humanize = SerializerMethodField()
+    link = SerializerMethodField(read_only=True)
 
     class Meta:
         model = Attachment
         fields = (
             'id', 'project', 'comment', 'name', 'filename', 'file_extension', 'size', 'size_humanize', 'content_type',
-            'object_id', 'user', 'file', 'url',
+            'object_id', 'user', 'file', 'url', 'link'
         )
 
         read_only_fields = ('name', 'filename', 'file_extension', 'size', 'user', 'url')
+        extra_kwargs = {'file': {'write_only': True}}
 
     def get_size_humanize(self, instance):
         return humanize.naturalsize(instance.size)
+
+    def get_link(self, instance):
+        return self.context['request'].build_absolute_uri(
+            reverse('attachment-path', kwargs={'pk': instance.id})
+        )
 
     def validate(self, attrs):
         content_type = attrs.get('content_type')

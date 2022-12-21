@@ -180,11 +180,11 @@ USE_L10N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
-
 STATIC_URL = '/testy-static/'
 STATIC_ROOT = 'testy-static'
+
+# extensions should be specified with dot (.txt). If no extensions specified all extensions are allowed.
+ALLOWED_FILE_EXTENSIONS = []
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = 'media'  # noqa: F405

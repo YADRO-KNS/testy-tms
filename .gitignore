@@ -1,6 +1,7 @@
 *.pyc
 __pycache__/
 /venv/
+static/
 testy-static/
 media/
 /pg-data/
