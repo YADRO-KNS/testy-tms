@@ -113,40 +113,24 @@ class TestyCreator:
 
         return True, re.sub(self.replace_pattern, f'{self.testy_attachment_url}{attachment_id}', text_to_check)
 
-    def update_testy_attachment_urls(self, mappings, config: TestrailConfig):
-        testrail_client = TestrailClientSync(config)
-        for result_id in mappings['results_parent_mile'].values():
-            test_result = TestResult.objects.get(pk=result_id)
-            is_replaced, new_comment = self.replace_testrail_attachment_url(test_result.comment,
-                                                                            mappings['attachments'],
-                                                                            testrail_client,
-                                                                            test_result)
-            if not is_replaced:
+    def update_testy_attachment_urls(self, mapping, model_class, update_method, field_list, config_dict):
+        testrail_client = TestrailClientSync(TestrailConfig(**config_dict))
+        for instance_id in mapping.values():
+            data = {}
+            instance = model_class.objects.get(pk=instance_id)
+            for field in field_list:
+                is_replaced, new_instance = self.replace_testrail_attachment_url(
+                    getattr(instance, field),
+                    mapping,
+                    testrail_client,
+                    instance
+                )
+                if not is_replaced:
+                    continue
+                data[field] = new_instance
+            if not data:
                 continue
-            data = {'comment': new_comment}
-            TestResultService().result_update(test_result, data)
-
-        for result_id in mappings['results_parent_plan'].values():
-            test_result = TestResult.objects.get(pk=result_id)
-            is_replaced, new_comment = self.replace_testrail_attachment_url(test_result.comment,
-                                                                            mappings['attachments'],
-                                                                            testrail_client,
-                                                                            test_result)
-            if not is_replaced:
-                continue
-            data = {'comment': new_comment}
-            TestResultService().result_update(test_result, data)
-
-        for case_id in mappings['cases'].values():
-            test_case = TestCase.objects.get(pk=case_id)
-            is_replaced, new_scenario = self.replace_testrail_attachment_url(test_case.scenario,
-                                                                             mappings['attachments'],
-                                                                             testrail_client,
-                                                                             test_case)
-            if not is_replaced:
-                continue
-            data = {'scenario': new_scenario}
-            TestCaseService().case_update(test_case, data)
+            update_method(instance, data)
 
     @staticmethod
     def create_suites(suites, project_id):
@@ -173,6 +157,9 @@ class TestyCreator:
                 'suite': suite_mappings.get(case['suite_id']),
                 'scenario': case['custom_steps'],
             }
+            setup = case.get('custom_preconds')
+            if setup:
+                case_data['setup'] = setup
             cases_data_list.append(case_data)
         serializer = TestCaseSerializer(data=cases_data_list, many=True)
         serializer.is_valid(raise_exception=True)

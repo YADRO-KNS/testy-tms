@@ -42,6 +42,10 @@ from testrail_migrator.migrator_lib import TestRailClient, TestrailConfig, Testy
 from testrail_migrator.migrator_lib.testrail import InstanceType
 from testrail_migrator.migrator_lib.testy import ParentType
 from testrail_migrator.models import TestrailBackup
+from tests_description.models import TestCase
+from tests_description.services.cases import TestCaseService
+from tests_representation.models import TestResult
+from tests_representation.services.results import TestResultService
 
 
 # TODO: переделать чтобы соблюдался принцип DRY
@@ -143,7 +147,14 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
         )
 
     logging.info('started uploading attachments')
-    creator.update_testy_attachment_urls(mappings, TestrailConfig(**config_dict))
+    mappings_keys = [
+        ('cases', TestCase, TestCaseService().case_update, ['scenario', 'setup']),
+        ('results_parent_mile', TestResult, TestResultService().result_update, ['comment']),
+        ('results_parent_plan', TestResult, TestResultService().result_update, ['comment']),
+        # ('milestones', TestPlan, ['description'])
+    ]
+    for mapping_key, model_class, update_method, field_list in mappings_keys:
+        creator.update_testy_attachment_urls(mappings[mapping_key], model_class, update_method, field_list, config_dict)
 
 
 @async_to_sync
