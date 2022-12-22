@@ -46,6 +46,7 @@ from tests.error_messages import INVALID_EMAIL_MSG, REQUIRED_FIELD_MSG, UNAUTHOR
 class TestUserEndpoints:
     view_name_list = 'api:v1:user-list'
     view_name_detail = 'api:v1:user-detail'
+    view_name_me = 'api:v1:user-me'
 
     def test_list(self, api_client, authorized_superuser, user_factory):
         expected_instances = [self._form_dict_user_model(authorized_superuser)]
@@ -60,6 +61,13 @@ class TestUserEndpoints:
     def test_retrieve(self, api_client, authorized_superuser, user):
         expected_dict = self._form_dict_user_model(user)
         response = api_client.send_request(self.view_name_detail, reverse_kwargs={'pk': user.pk})
+        actual_dict = json.loads(response.content)
+        actual_dict.pop('url')
+        assert actual_dict == expected_dict, 'Actual model dict is different from expected'
+
+    def test_me(self, api_client, authorized_superuser):
+        expected_dict = self._form_dict_user_model(authorized_superuser)
+        response = api_client.send_request(self.view_name_me)
         actual_dict = json.loads(response.content)
         actual_dict.pop('url')
         assert actual_dict == expected_dict, 'Actual model dict is different from expected'
