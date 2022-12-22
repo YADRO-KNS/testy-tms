@@ -244,7 +244,6 @@ class TestyCreator:
             mapping_id = plan['milestone_id']
             if not mapping_id and skip_root_plans:
                 continue
-            src_plan_ids.append(plan['id'])
             due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan.get('due_on')))
             if not plan.get('due_on'):
                 due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
@@ -256,9 +255,12 @@ class TestyCreator:
                 'finished_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan['completed_on'])),
                 'due_date': due_date,
             }
-
             if mapping_id:
-                plan_data['parent'] = milestones_mappings[mapping_id]
+                parent_id = milestones_mappings.get(mapping_id)
+                if not parent_id:
+                    continue
+                plan_data['parent'] = parent_id
+            src_plan_ids.append(plan['id'])
             plan_data_list.append(plan_data)
 
         serializer = TestPlanInputSerializer(data=plan_data_list, many=True)

@@ -58,17 +58,6 @@ class AttachmentService:
             attachments_instances.append(Attachment.model_create(fields=self.non_side_effect_fields, data=data))
         return attachments_instances
 
-    def attachment_create_single(self, file) -> Union[List[Attachment], str]:
-        data = {
-            'name': 'unknown name',
-            'filename': 'unknown name.png',
-            'file_extension': 'image/png',
-            'size': '123',
-            'file': file,
-        }
-
-        return Attachment.objects.create(**data)
-
     def attachment_set_content_object(self, attachment: Attachment, content_object):
         if attachment.content_object:
             raise ValueError('Attachment already has content object.')
