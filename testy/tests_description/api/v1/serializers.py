@@ -68,10 +68,14 @@ class TestSuiteTreeSerializer(ModelSerializer):
     key = serializers.IntegerField(source='id')
     value = serializers.IntegerField(source='id')
     title = serializers.CharField(source='name')
+    descendant_count = SerializerMethodField()
 
     class Meta:
         model = TestSuite
-        fields = ('id', 'value', 'name', 'key', 'title', 'level', 'children', 'test_cases')
+        fields = ('id', 'value', 'name', 'key', 'title', 'level', 'children', 'test_cases', 'descendant_count')
+
+    def get_descendant_count(self, instance):
+        return instance.get_descendant_count()
 
     def get_children(self, value):
         return self.__class__(value.get_children(), many=True).data
