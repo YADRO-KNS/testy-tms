@@ -69,12 +69,14 @@ class ParentType(Enum):
 class TestyCreator:
     def __init__(self, service_login: str = 'admin',
                  testy_attachment_url: str = None,
-                 replace_pattern: str = r'index\.php\?/attachments/get/(?P<attachment_id>\d*)'):
+                 replace_pattern: str = r'index\.php\?/attachments/get/(?P<attachment_id>\d*)',
+                 default_root_section_name: str = 'Test cases'):
         self.service_user = UserModel.objects.get(username=service_login)
         self.replace_pattern = replace_pattern
         if not testy_attachment_url:
             logging.error('Testy attachment url was not provided')
         self.testy_attachment_url = testy_attachment_url
+        self.default_root_section_name = default_root_section_name
 
     def replace_testrail_attachment_url(self, text_to_check, attachments_mapping,
                                         testrail_client: TestrailClientSync, parent_object):
@@ -146,15 +148,16 @@ class TestyCreator:
         return dict(zip(src_ids, [created_suite.id for created_suite in created_suites]))
 
     @staticmethod
-    def create_cases(cases, suite_mappings, project_id):
+    def create_cases(cases, suite_mappings, section_mappings, project_id):
         cases_data_list = []
         src_case_ids = []
         for case in cases:
             src_case_ids.append(case['id'])
+            suite_id = section_mappings.get(case['section_id'], suite_mappings.get(case['suite_id']))
             case_data = {
                 'name': case['title'],
                 'project': project_id,
-                'suite': suite_mappings.get(case['suite_id']),
+                'suite': suite_id,
                 'scenario': case['custom_steps'],
             }
             setup = case.get('custom_preconds')
@@ -165,6 +168,26 @@ class TestyCreator:
         serializer.is_valid(raise_exception=True)
         created_cases = TestCaseService().cases_bulk_create(serializer.validated_data)
         return dict(zip(src_case_ids, [created_case.id for created_case in created_cases]))
+
+    def create_sections(self, sections, suite_mappings, project_id, drop_default_section: bool = True):
+        sections = sorted(sections, key=itemgetter('depth'))
+        sections_mappings = {}
+        for section in sections:
+            if drop_default_section and section['name'] == self.default_root_section_name:
+                continue
+            section_data = {
+                'name': section['name'],
+                'project': project_id
+            }
+            if section['parent_id']:
+                section_data['parent'] = sections_mappings.get(section['parent_id'])
+            else:
+                section_data['parent'] = suite_mappings.get(section['suite_id'])
+            serializer = TestSuiteSerializer(data=section_data)
+            serializer.is_valid(raise_exception=True)
+            sections_mappings[section['id']] = TestSuiteService().suite_create(serializer.validated_data).id
+
+        return sections_mappings
 
     @staticmethod
     def create_configs(config_groups, project_id):

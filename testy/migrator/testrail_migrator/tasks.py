@@ -74,12 +74,15 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
         progress_recorder.set_progress(curr_progress, max_progress, f'Uploading {key}')
         mappings[key] = create_method(backup[key], project.id)
 
-    keys_with_single_mapping = [('cases', 'suites'), ('plans', 'milestones')]
+    keys_with_single_mapping = [('sections', 'suites'), ('plans', 'milestones')]
     for key, mapping_key in keys_with_single_mapping:
         curr_progress += 1
         create_method = getattr(creator, f'create_{key}')
         progress_recorder.set_progress(curr_progress, max_progress, f'Uploading {key}')
         mappings[key] = create_method(backup[key], mappings[mapping_key], project.id)
+
+    mappings['cases'] = creator.create_cases(backup['cases'], mappings['suites'], mappings['sections'], project.id)
+
     mappings['tests_parent_plan'], mappings['runs_parent_plan'] = creator.create_runs(
         runs=backup['runs_parent_plan'],
         mapping=mappings['plans'],

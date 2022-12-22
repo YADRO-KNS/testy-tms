@@ -135,6 +135,8 @@ class TestRailClient:
         with timer('Getting cases'):
             descriptions_dict['cases'] = await self.get_cases(project_id, descriptions_dict['suites'])
 
+            descriptions_dict['sections'] = await self.get_sections(project_id, descriptions_dict['suites'])
+
         return descriptions_dict
 
     async def get_users(self, project_id=''):
@@ -227,6 +229,9 @@ class TestRailClient:
     async def get_cases_for_suite(self, project_id, suite_id):
         return await self._process_request(f'/get_cases/{project_id}', query_params={'suite_id': suite_id})
 
+    async def get_sections_for_suite(self, project_id, suite_id):
+        return await self._process_request(f'/get_sections/{project_id}', query_params={'suite_id': suite_id})
+
     async def get_cases(self, project_id, suites):
         tests = []
         suite_chunks = split_list_by_chunks(suites)
@@ -238,6 +243,20 @@ class TestRailClient:
                 list(itertools.chain.from_iterable(await tqdm.gather(*tasks, desc='Cases chunk progress', leave=False)))
             )
         return tests
+
+    async def get_sections(self, project_id, suites):
+        sections = []
+        suite_chunks = split_list_by_chunks(suites)
+        for chunk in tqdm(suite_chunks, desc='Getting sections for suites'):
+            tasks = []
+            for suite in chunk:
+                tasks.append(self.get_sections_for_suite(project_id, suite['id']))
+            sections.extend(
+                list(itertools.chain.from_iterable(
+                    await tqdm.gather(*tasks, desc='Section chunk progress', leave=False))
+                )
+            )
+        return sections
 
     async def get_milestones(self, project_id: int, query_params=None):
         return await self._process_request(f'/get_milestones/{project_id}', query_params=query_params)
