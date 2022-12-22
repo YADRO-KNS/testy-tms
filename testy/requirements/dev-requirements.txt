@@ -24,11 +24,12 @@ coreschema==0.0.4
     # via
     #   coreapi
     #   drf-yasg
-django==3.2
+django==3.2.4
     # via
     #   -r ci-requirements.in
     #   -r requirements.in
     #   django-cors-headers
+    #   django-debug-toolbar
     #   django-extensions
     #   django-filter
     #   django-js-asset
@@ -37,6 +38,8 @@ django==3.2
     #   drf-yasg
 django-cors-headers==3.13.0
     # via -r requirements.in
+django-debug-toolbar==3.8.1
+    # via -r dev-requirements.in
 django-extensions==3.2.1
     # via
     #   -r ci-requirements.in
@@ -161,7 +164,9 @@ ruamel-yaml-clib==0.2.7
 six==1.16.0
     # via python-dateutil
 sqlparse==0.4.2
-    # via django
+    # via
+    #   django
+    #   django-debug-toolbar
 tomli==2.0.1
     # via
     #   build
