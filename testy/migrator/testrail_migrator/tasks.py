@@ -30,6 +30,7 @@
 # <http://www.gnu.org/licenses/>.
 import json
 import logging
+from contextlib import contextmanager
 from datetime import datetime
 from typing import Dict
 
@@ -48,16 +49,35 @@ from tests_representation.models import TestResult
 from tests_representation.services.results import TestResultService
 
 
+class ProgressRecorderContext(ProgressRecorder):
+    def __init__(self, task, total, debug=False):
+        self.debug = debug
+        self.current = 0
+        self.total = total
+        if self.debug:
+            return
+        super().__init__(task)
+        self.set_progress(current=self.current, total=total, description='Task started')
+
+    @contextmanager
+    def progress_context(self, description):
+        if self.debug:
+            logging.info(description)
+            yield
+        self.current += 1
+        self.set_progress(self.current, self.total, description)
+        yield
+
+    def clear_progress(self):
+        self.current = 0
+
+
 # TODO: переделать чтобы соблюдался принцип DRY
 @shared_task(bind=True)
 def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_user_login='admin',
                 testy_attachment_url: bool = None):
-    progress_recorder = ProgressRecorder(self)
-
-    curr_progress = 0
-    max_progress = 14
-
-    progress_recorder.set_progress(curr_progress, max_progress, 'Started uploading')
+    progress_recorder = ProgressRecorderContext(self, total=21)
+    progress_recorder.set_progress(0, 21, 'Started uploading')
 
     redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
     backup = json.loads(redis_client.get(backup_name))
@@ -65,60 +85,67 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
 
     mappings = {}
 
-    project = creator.create_project(backup['project'])
-    mappings['users'] = creator.create_users(backup['users'])
+    with progress_recorder.progress_context('Creating projects'):
+        project = creator.create_project(backup['project'])
+
+    with progress_recorder.progress_context('Creating users'):
+        mappings['users'] = creator.create_users(backup['users'])
+
     keys_without_mappings = ['suites', 'configs', 'milestones']
     for key in keys_without_mappings:
-        curr_progress += 1
-        create_method = getattr(creator, f'create_{key}')
-        progress_recorder.set_progress(curr_progress, max_progress, f'Uploading {key}')
-        mappings[key] = create_method(backup[key], project.id)
+        with progress_recorder.progress_context(f'Creating {key}'):
+            create_method = getattr(creator, f'create_{key}')
+            mappings[key] = create_method(backup[key], project.id)
 
     keys_with_single_mapping = [('sections', 'suites'), ('plans', 'milestones')]
     for key, mapping_key in keys_with_single_mapping:
-        curr_progress += 1
-        create_method = getattr(creator, f'create_{key}')
-        progress_recorder.set_progress(curr_progress, max_progress, f'Uploading {key}')
-        mappings[key] = create_method(backup[key], mappings[mapping_key], project.id)
+        with progress_recorder.progress_context(f'Creating {key}'):
+            create_method = getattr(creator, f'create_{key}')
+            mappings[key] = create_method(backup[key], mappings[mapping_key], project.id)
 
-    mappings['cases'] = creator.create_cases(backup['cases'], mappings['suites'], mappings['sections'], project.id)
+    with progress_recorder.progress_context('Creating cases'):
+        mappings['cases'] = creator.create_cases(backup['cases'], mappings['suites'], mappings['sections'], project.id)
 
-    mappings['tests_parent_plan'], mappings['runs_parent_plan'] = creator.create_runs(
-        runs=backup['runs_parent_plan'],
-        mapping=mappings['plans'],
-        config_mappings=mappings['configs'],
-        tests=backup['tests_parent_plan'],
-        case_mappings=mappings['cases'],
-        project_id=project.id,
-        upload_root_runs=upload_root_runs,
-        parent_type=ParentType.PLAN,
-        user_mappings=mappings['users']
-    )
-    curr_progress += 1
-    progress_recorder.set_progress(curr_progress, max_progress, 'Uploading tests')
-    mappings['results_parent_plan'] = creator.create_results(backup['results_parent_plan'],
-                                                             mappings['tests_parent_plan'],
-                                                             mappings['users'])
-    curr_progress += 1
-    progress_recorder.set_progress(curr_progress, max_progress, 'Uploading runs with milestone parent')
-    mappings['tests_parent_mile'], mappings['runs_parent_mile'] = creator.create_runs(
-        runs=backup['runs_parent_mile'],
-        mapping=mappings['milestones'],
-        config_mappings=mappings['configs'],
-        tests=backup['tests_parent_mile'],
-        case_mappings=mappings['cases'],
-        project_id=project.id,
-        upload_root_runs=upload_root_runs,
-        parent_type=ParentType.MILESTONE,
-        user_mappings=mappings['users']
-    )
-    curr_progress += 1
-    progress_recorder.set_progress(curr_progress, max_progress, 'Creating results for runs with milestone parent')
-    mappings['results_parent_mile'] = creator.create_results(
-        backup['results_parent_mile'],
-        mappings['tests_parent_mile'],
-        mappings['users'],
-    )
+    with progress_recorder.progress_context(f'Creating runs with plan as parent'):
+        mappings['tests_parent_plan'], mappings['runs_parent_plan'] = creator.create_runs(
+            runs=backup['runs_parent_plan'],
+            mapping=mappings['plans'],
+            config_mappings=mappings['configs'],
+            tests=backup['tests_parent_plan'],
+            case_mappings=mappings['cases'],
+            project_id=project.id,
+            upload_root_runs=upload_root_runs,
+            parent_type=ParentType.PLAN,
+            user_mappings=mappings['users']
+        )
+
+    with progress_recorder.progress_context(f'Creating results with plan as parent'):
+        mappings['results_parent_plan'] = creator.create_results(
+            backup['results_parent_plan'],
+            mappings['tests_parent_plan'],
+            mappings['users']
+        )
+
+    with progress_recorder.progress_context(f'Creating runs with mile as parent'):
+        mappings['tests_parent_mile'], mappings['runs_parent_mile'] = creator.create_runs(
+            runs=backup['runs_parent_mile'],
+            mapping=mappings['milestones'],
+            config_mappings=mappings['configs'],
+            tests=backup['tests_parent_mile'],
+            case_mappings=mappings['cases'],
+            project_id=project.id,
+            upload_root_runs=upload_root_runs,
+            parent_type=ParentType.MILESTONE,
+            user_mappings=mappings['users']
+        )
+
+    with progress_recorder.progress_context(f'Creating runs with mile as parent'):
+        mappings['results_parent_mile'] = creator.create_results(
+            backup['results_parent_mile'],
+            mappings['tests_parent_mile'],
+            mappings['users'],
+        )
+
     mappings['attachments'] = {}
     keys = [
         ('cases', 'case_id', InstanceType.CASE),
@@ -126,14 +153,14 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
         ('runs_parent_plan', 'run_id', InstanceType.RUN),
         ('runs_parent_mile', 'run_id', InstanceType.RUN),
     ]
+
     for key, parent_key, instance_type in keys:
-        curr_progress += 1
-        progress_recorder.set_progress(curr_progress, max_progress, f'Uploading attachments for {key}')
-        file_attachments = upload_attachments(config_dict, backup['attachments'][key], parent_key)
-        mappings['attachments'].update(
-            creator.attachment_bulk_create(file_attachments, project, mappings['users'], parent_key,
-                                           mappings[key], instance_type)
-        )
+        with progress_recorder.progress_context(f'Creating attachments for {key}'):
+            file_attachments = upload_attachments(config_dict, backup['attachments'][key], parent_key)
+            mappings['attachments'].update(
+                creator.attachment_bulk_create(file_attachments, project, mappings['users'], parent_key,
+                                               mappings[key], instance_type)
+            )
 
     keys = [
         ('parent_plan', 'result_id', InstanceType.TEST),
@@ -141,23 +168,30 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     ]
 
     for key, parent_key, instance_type in keys:
-        curr_progress += 1
-        progress_recorder.set_progress(curr_progress, max_progress, f'Uploading attachments for {key}')
-        file_attachments = upload_attachments(config_dict, backup['attachments'][f'tests_{key}'], parent_key)
-        mappings['attachments'].update(
-            creator.attachment_bulk_create(file_attachments, project, mappings['users'], parent_key,
-                                           mappings[f'results_{key}'], instance_type)
-        )
+        with progress_recorder.progress_context(f'Creating attachments for {key}'):
+            file_attachments = upload_attachments(config_dict, backup['attachments'][f'tests_{key}'], parent_key)
+            mappings['attachments'].update(
+                creator.attachment_bulk_create(file_attachments, project, mappings['users'], parent_key,
+                                               mappings[f'results_{key}'], instance_type)
+            )
 
-    logging.info('started uploading attachments')
     mappings_keys = [
         ('cases', TestCase, TestCaseService().case_update, ['scenario', 'setup']),
         ('results_parent_mile', TestResult, TestResultService().result_update, ['comment']),
         ('results_parent_plan', TestResult, TestResultService().result_update, ['comment']),
         # ('milestones', TestPlan, ['description'])
     ]
+
     for mapping_key, model_class, update_method, field_list in mappings_keys:
-        creator.update_testy_attachment_urls(mappings[mapping_key], model_class, update_method, field_list, config_dict)
+        with progress_recorder.progress_context(f'Looking for attachments in fields of {mapping_key}'):
+            creator.update_testy_attachment_urls(
+                mappings[mapping_key],
+                model_class,
+                update_method,
+                field_list,
+                config_dict
+            )
+    logging.error(f'LOOK HERE COUNTED {progress_recorder.current}')
 
 
 @async_to_sync

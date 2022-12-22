@@ -83,7 +83,6 @@ class TestyCreator:
                                         testrail_client: TestrailClientSync, parent_object):
         if not text_to_check:
             return False, text_to_check
-        # search = re.search(self.replace_pattern, text_to_check)
         found_list = re.findall(self.replace_pattern, text_to_check)
         if not found_list:
             return False, text_to_check
@@ -116,8 +115,8 @@ class TestyCreator:
 
                 attachment = Attachment.objects.create(**data)
                 attachment_id = attachment.id
-                resulting_text = re.sub(self.replace_pattern, f'{self.testy_attachment_url}{attachment_id}',
-                                        resulting_text, count=1)
+            resulting_text = re.sub(self.replace_pattern, f'{self.testy_attachment_url}{attachment_id}',
+                                    resulting_text, count=1)
 
         return True, resulting_text
 
