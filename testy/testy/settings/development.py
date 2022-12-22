@@ -44,7 +44,7 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-MIDDLEWARE += [
+MIDDLEWARE += [  # noqa F405
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
