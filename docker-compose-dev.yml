@@ -8,8 +8,7 @@ services:
       dockerfile: scripts/dev/Dockerfile
     volumes:
       - './testy:/testy'
-      - './testy-static:/testy/testy-static'
-      - './media:/testy/media'
+      - './static:/testy/static'
     ports:
       - "8001:8000"
     environment:
