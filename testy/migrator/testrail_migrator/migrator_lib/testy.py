@@ -70,7 +70,7 @@ class TestyCreator:
     def __init__(self, service_login: str = 'admin',
                  testy_attachment_url: str = None,
                  replace_pattern: str = r'index\.php\?/attachments/get/(?P<attachment_id>\d*)',
-                 default_root_section_name: str = 'Test cases'):
+                 default_root_section_name: str = 'Test Cases'):
         self.service_user = UserModel.objects.get(username=service_login)
         self.replace_pattern = replace_pattern
         if not testy_attachment_url:
@@ -82,38 +82,43 @@ class TestyCreator:
                                         testrail_client: TestrailClientSync, parent_object):
         if not text_to_check:
             return False, text_to_check
-        search = re.search(self.replace_pattern, text_to_check)
-        if not search:
+        # search = re.search(self.replace_pattern, text_to_check)
+        found_list = re.findall(self.replace_pattern, text_to_check)
+        if not found_list:
             return False, text_to_check
-        src_attachment_id = int(search.group('attachment_id'))
-        attachment_id = attachments_mapping.get(src_attachment_id)
-        if not attachment_id:
-            file_bytes = testrail_client.get_single_attachment(src_attachment_id)
-            temp_file = io.BytesIO(file_bytes)
-            name = f'unknown name{time.time()}.png'
-            file = InMemoryUploadedFile(
-                name=name,
-                field_name='file',
-                content_type='image/png',
-                size=temp_file.__sizeof__(),
-                charset='utf-8',
-                file=temp_file
-            )
-            data = {
-                'project': parent_object.project,
-                'name': name,
-                'filename': name,
-                'file_extension': 'image/png',
-                'size': '123',
-                'file': file,
-                'user': self.service_user,
-                'content_object': parent_object
-            }
+        resulting_text = text_to_check
+        for found_id in found_list:
+            src_attachment_id = int(found_id)
+            attachment_id = attachments_mapping.get(src_attachment_id)
+            if not attachment_id:
+                file_bytes = testrail_client.get_single_attachment(src_attachment_id)
+                temp_file = io.BytesIO(file_bytes)
+                name = f'unknown name{time.time()}.png'
+                file = InMemoryUploadedFile(
+                    name=name,
+                    field_name='file',
+                    content_type='image/png',
+                    size=temp_file.__sizeof__(),
+                    charset='utf-8',
+                    file=temp_file
+                )
+                data = {
+                    'project': parent_object.project,
+                    'name': name,
+                    'filename': name,
+                    'file_extension': 'image/png',
+                    'size': '123',
+                    'file': file,
+                    'user': self.service_user,
+                    'content_object': parent_object
+                }
 
-            attachment = Attachment.objects.create(**data)
-            attachment_id = attachment.id
+                attachment = Attachment.objects.create(**data)
+                attachment_id = attachment.id
+                resulting_text = re.sub(self.replace_pattern, f'{self.testy_attachment_url}{attachment_id}',
+                                        resulting_text, count=1)
 
-        return True, re.sub(self.replace_pattern, f'{self.testy_attachment_url}{attachment_id}', text_to_check)
+        return True, resulting_text
 
     def update_testy_attachment_urls(self, mapping, model_class, update_method, field_list, config_dict):
         testrail_client = TestrailClientSync(TestrailConfig(**config_dict))
