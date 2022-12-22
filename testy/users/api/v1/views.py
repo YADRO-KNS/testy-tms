@@ -30,6 +30,8 @@
 # <http://www.gnu.org/licenses/>.
 
 from django.contrib.auth import get_user_model
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from users.api.v1.serializers import GroupSerializer, UserSerializer
 from users.selectors.groups import GroupSelector
@@ -60,3 +62,9 @@ class UserViewSet(ModelViewSet):
 
     def perform_update(self, serializer: UserSerializer):
         serializer.instance = UserService().user_update(serializer.instance, serializer.validated_data)
+
+    @action(methods=['get'], url_path='me', url_name='me', detail=False)
+    def me(self, request):
+        serializer_class = self.get_serializer_class()
+        serializer = serializer_class(request.user, context={"request": request})
+        return Response(serializer.data)
