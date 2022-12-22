@@ -119,12 +119,12 @@ class UploaderView(mixins.CreateModelMixin, GenericViewSet):
             testy_attachment_url=testrail_settings.testy_attachments_url,
             upload_root_runs=upload_root_runs
         )
+
         # task = upload_task(
         #     backup_name=backup_instance.name,
         #     config_dict=config_dict,
         #     testy_attachment_url=testrail_settings.testy_attachments_url,
         #     upload_root_runs=upload_root_runs
-        #
         # )
         return redirect(reverse('plugins:testrail_migrator:download_status', kwargs={'task_id': task.task_id}))
 

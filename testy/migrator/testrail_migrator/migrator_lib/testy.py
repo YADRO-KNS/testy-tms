@@ -29,6 +29,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 import io
+import json
 import logging
 import os
 import re
@@ -176,9 +177,12 @@ class TestyCreator:
 
     def create_sections(self, sections, suite_mappings, project_id, drop_default_section: bool = True):
         sections = sorted(sections, key=itemgetter('depth'))
+        with open('/Users/r.kabaev/Desktop/работа/testy/ttt.json', 'w') as file:
+            file.write(json.dumps(sections, indent=2))
         sections_mappings = {}
         for section in sections:
             if drop_default_section and section['name'] == self.default_root_section_name:
+                sections_mappings[section['id']] = suite_mappings[section['suite_id']]
                 continue
             section_data = {
                 'name': section['name'],
