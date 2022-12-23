@@ -15,7 +15,7 @@ COPY ./requirements/dev-requirements.txt /testy/requirements/
 COPY ./migrator /testy/migrator
 
 RUN pip install -r requirements/dev-requirements.txt
-RUN pip install -e /testy/migrator
+RUN pip install -e migrator
 
 COPY ./scripts/entrypoint.sh /testy/scripts/entrypoint.sh
 RUN chmod +x /testy/scripts/entrypoint.sh
