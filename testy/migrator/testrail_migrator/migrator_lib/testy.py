@@ -38,6 +38,7 @@ from datetime import datetime
 from enum import Enum
 from operator import itemgetter
 
+from asgiref.sync import async_to_sync, sync_to_async
 from core.api.v1.serializers import ProjectSerializer
 from core.models import Attachment, Project
 from core.services.projects import ProjectService
@@ -46,7 +47,8 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import IntegrityError
 from testrail_migrator.migrator_lib import TestrailConfig
-from testrail_migrator.migrator_lib.testrail import InstanceType, TestrailClientSync
+from testrail_migrator.migrator_lib.testrail import InstanceType, TestRailClient, TestrailClientSync
+from testrail_migrator.migrator_lib.utils import split_list_by_chunks
 from testrail_migrator.serializers import ParameterSerializer, TestSerializer
 from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer
 from tests_description.models import TestCase
@@ -58,6 +60,7 @@ from tests_representation.services.parameters import ParameterService
 from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPlanService
 from tests_representation.services.tests import TestService
+from tqdm.asyncio import tqdm
 
 UserModel = get_user_model()
 
@@ -79,8 +82,8 @@ class TestyCreator:
         self.testy_attachment_url = testy_attachment_url
         self.default_root_section_name = default_root_section_name
 
-    def replace_testrail_attachment_url(self, text_to_check, attachments_mapping,
-                                        testrail_client: TestrailClientSync, parent_object):
+    async def replace_testrail_attachment_url(self, text_to_check, attachments_mapping,
+                                              testrail_client: TestRailClient, parent_object):
         if not text_to_check:
             return False, text_to_check
         found_list = re.findall(self.replace_pattern, text_to_check)
@@ -91,7 +94,7 @@ class TestyCreator:
             src_attachment_id = int(found_id)
             attachment_id = attachments_mapping.get(src_attachment_id)
             if not attachment_id:
-                file_bytes = testrail_client.get_single_attachment(src_attachment_id)
+                file_bytes = await testrail_client.get_single_attachment(src_attachment_id)
                 temp_file = io.BytesIO(file_bytes)
                 name = f'unknown name{time.time()}.png'
                 file = InMemoryUploadedFile(
@@ -103,7 +106,7 @@ class TestyCreator:
                     file=temp_file
                 )
                 data = {
-                    'project': parent_object.project,
+                    'project': await sync_to_async(lambda: parent_object.project)(),
                     'name': name,
                     'filename': name,
                     'file_extension': 'image/png',
@@ -113,7 +116,7 @@ class TestyCreator:
                     'content_object': parent_object
                 }
 
-                attachment = Attachment.objects.create(**data)
+                attachment = await sync_to_async(Attachment.objects.create)(**data)
                 attachment_id = attachment.id
             resulting_text = re.sub(self.replace_pattern, f'{self.testy_attachment_url}{attachment_id}',
                                     resulting_text, count=1)
@@ -123,6 +126,7 @@ class TestyCreator:
     def update_testy_attachment_urls(self, mapping, model_class, update_method, field_list, config_dict):
         testrail_client = TestrailClientSync(TestrailConfig(**config_dict))
         for instance_id in mapping.values():
+            logging.info(f'Updating attachment for {model_class}, with id {instance_id}')
             data = {}
             instance = model_class.objects.get(pk=instance_id)
             for field in field_list:
@@ -138,6 +142,36 @@ class TestyCreator:
             if not data:
                 continue
             update_method(instance, data)
+
+    async def temp_func(self, model_class, instance_id, field_list, mapping, testrail_client, update_method):
+        logging.info(f'Updating attachment for {model_class}, with id {instance_id}')
+        data = {}
+        instance = await sync_to_async(model_class.objects.get)(pk=instance_id)
+        for field in field_list:
+            is_replaced, new_instance = await self.replace_testrail_attachment_url(
+                getattr(instance, field),
+                mapping,
+                testrail_client,
+                instance
+            )
+            if not is_replaced:
+                continue
+            data[field] = new_instance
+        if not data:
+            return
+        await sync_to_async(update_method)(instance, data)
+
+    @async_to_sync
+    async def update_testy_attachment_urls_async(self, mapping, model_class, update_method, field_list, config_dict):
+        chunks = split_list_by_chunks(list(mapping.values()))
+        async with TestRailClient(TestrailConfig(**config_dict)) as testrail_client:
+            for chunk in tqdm(chunks, desc='Attachments progress'):
+                tasks = []
+                for instance_id in chunk:
+                    tasks.append(
+                        self.temp_func(model_class, instance_id, field_list, mapping, testrail_client, update_method)
+                    )
+                await tqdm.gather(*tasks, desc='attachments chunk progress', leave=False)
 
     @staticmethod
     def create_suites(suites, project_id):
@@ -159,13 +193,22 @@ class TestyCreator:
         for case in cases:
             src_case_ids.append(case['id'])
             suite_id = section_mappings.get(case['section_id'], suite_mappings.get(case['suite_id']))
+            scenario = ''
+            if case['custom_steps']:
+                scenario = case['custom_steps']
+            if case['custom_steps_separated']:
+                temp_string = ''
+                for idx, step in enumerate(case['custom_steps_separated']):
+                    temp_string += f'{idx}. {step.get("content", "")}\n{step.get("expected", "")}\n' \
+                                   f'{step.get("additional_info", "")}\n{step.get("refs", "")}\n'
+                scenario += temp_string
+            setup = case.get('custom_preconds')
             case_data = {
                 'name': case['title'],
                 'project': project_id,
                 'suite': suite_id,
-                'scenario': case['custom_steps'],
+                'scenario': scenario,
             }
-            setup = case.get('custom_preconds')
             if setup:
                 case_data['setup'] = setup
             cases_data_list.append(case_data)

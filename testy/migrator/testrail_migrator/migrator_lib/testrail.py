@@ -379,15 +379,6 @@ class TestRailClient:
             except (ClientConnectionError, asyncio.TimeoutError):
                 retry_count -= 1
 
-    # def get_single_attachment(self, attachment_id):
-    #     headers = {
-    #         'Content-Type': 'application/json; charset=utf-8'
-    #     }
-    #     url = self.config.api_url + endpoint
-    #     logger.debug(f'Request GET - {endpoint}')
-    #     response = requests.get(url, auth=(self.config.login, self.config.password), headers=headers)
-    #     return response
-
     async def get_attachments_for_plan(self, plan_id: int):
         list_of_attachments = await self._process_request(f'/get_attachments_for_plan/{plan_id}')
         if list_of_attachments:

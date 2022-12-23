@@ -64,6 +64,7 @@ class ProgressRecorderContext(ProgressRecorder):
         if self.debug:
             logging.info(description)
             yield
+            return
         self.current += 1
         self.set_progress(self.current, self.total, description)
         yield
@@ -77,7 +78,6 @@ class ProgressRecorderContext(ProgressRecorder):
 def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_user_login='admin',
                 testy_attachment_url: bool = None):
     progress_recorder = ProgressRecorderContext(self, total=21)
-    progress_recorder.set_progress(0, 21, 'Started uploading')
 
     redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
     backup = json.loads(redis_client.get(backup_name))
@@ -106,7 +106,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     with progress_recorder.progress_context('Creating cases'):
         mappings['cases'] = creator.create_cases(backup['cases'], mappings['suites'], mappings['sections'], project.id)
 
-    with progress_recorder.progress_context(f'Creating runs with plan as parent'):
+    with progress_recorder.progress_context('Creating runs with plan as parent'):
         mappings['tests_parent_plan'], mappings['runs_parent_plan'] = creator.create_runs(
             runs=backup['runs_parent_plan'],
             mapping=mappings['plans'],
@@ -119,14 +119,14 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
             user_mappings=mappings['users']
         )
 
-    with progress_recorder.progress_context(f'Creating results with plan as parent'):
+    with progress_recorder.progress_context('Creating results with plan as parent'):
         mappings['results_parent_plan'] = creator.create_results(
             backup['results_parent_plan'],
             mappings['tests_parent_plan'],
             mappings['users']
         )
 
-    with progress_recorder.progress_context(f'Creating runs with mile as parent'):
+    with progress_recorder.progress_context('Creating runs with mile as parent'):
         mappings['tests_parent_mile'], mappings['runs_parent_mile'] = creator.create_runs(
             runs=backup['runs_parent_mile'],
             mapping=mappings['milestones'],
@@ -139,7 +139,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
             user_mappings=mappings['users']
         )
 
-    with progress_recorder.progress_context(f'Creating runs with mile as parent'):
+    with progress_recorder.progress_context('Creating runs with mile as parent'):
         mappings['results_parent_mile'] = creator.create_results(
             backup['results_parent_mile'],
             mappings['tests_parent_mile'],
@@ -184,14 +184,13 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
 
     for mapping_key, model_class, update_method, field_list in mappings_keys:
         with progress_recorder.progress_context(f'Looking for attachments in fields of {mapping_key}'):
-            creator.update_testy_attachment_urls(
+            creator.update_testy_attachment_urls_async(
                 mappings[mapping_key],
                 model_class,
                 update_method,
                 field_list,
                 config_dict
             )
-    logging.error(f'LOOK HERE COUNTED {progress_recorder.current}')
 
 
 @async_to_sync
