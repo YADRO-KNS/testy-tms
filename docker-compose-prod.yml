@@ -5,8 +5,7 @@ services:
       context: testy
       dockerfile: scripts/prod/Dockerfile
     volumes:
-      - './testy:/testy'
-      - './static:/testy/static'
+      - './:/testy'
     ports:
       - "8001:8000"
     environment:

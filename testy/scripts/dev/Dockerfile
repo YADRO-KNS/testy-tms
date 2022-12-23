@@ -20,4 +20,5 @@ RUN chmod +x /testy/scripts/entrypoint.sh
 
 COPY . /testy
 
-CMD ["/testy/scripts/entrypoint.sh"]
+WORKDIR /testy/testy
+CMD ["/testy/testy/scripts/entrypoint.sh"]
