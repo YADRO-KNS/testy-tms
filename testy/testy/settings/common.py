@@ -82,7 +82,6 @@ INSTALLED_APPS = [
     'tests_representation',
     'celery',
     'celery_progress',
-    'django_celery_results'
 ]
 
 TESTY_PLUGINS = [
@@ -221,11 +220,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Company
 COMPANY_DOMAIN = os.environ.get('COMPANY_DOMAIN')
 
-# extensions should be specified with dot (.txt). If no extensions specified all extensions are allowed.
-ALLOWED_FILE_EXTENSIONS = []
-
 # Auth ldap
-
 AUTH_LDAP_SERVER_URI = 'ldap://corp.yadro.com:389'
 AUTH_LDAP_BIND_DN = 'LDAPLookUpUser-spb'
 AUTH_LDAP_BIND_PASSWORD = 'Ue!ng#eeveeCh7r'

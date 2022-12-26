@@ -22,10 +22,10 @@ services:
       - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - SECRET_KEY=${SECRET_KEY}
-      - CELERY_BROKER_URL=redis://host.docker.internal:6379
-      - CELERY_RESULT_BACKEND=redis://host.docker.internal:6379
-      - REDIS_HOST=host.docker.internal
-      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
     depends_on:
       db:
         condition: service_healthy
@@ -47,10 +47,11 @@ services:
   redis:
     image: redis:alpine
     container_name: redis
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    command: "redis-server --save 20 1"
+    volumes:
+      - "./redis_data:/data"
     ports:
-      - "6379:6379"
+      - "6380:6379"
   celery:
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -73,16 +74,13 @@ services:
       - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - SECRET_KEY=${SECRET_KEY}
-      - CELERY_BROKER_URL=redis://host.docker.internal:6379
-      - CELERY_RESULT_BACKEND=redis://host.docker.internal:6379
-      - REDIS_HOST=host.docker.internal
-      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
     volumes:
       - './testy:/testy'
     depends_on:
       - testy
       - db
       - redis
-
-volumes:
-  react_apps:

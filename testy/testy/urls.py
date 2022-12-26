@@ -88,6 +88,7 @@ urlpatterns = [
 
     # Media
     path('attachments/<int:pk>/', AttachmentView.as_view(), name='attachment-path'),
+
     # Celery progress
     re_path(r'^celery-progress/', include('celery_progress.urls')),
 ]
