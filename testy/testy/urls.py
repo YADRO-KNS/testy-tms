@@ -55,6 +55,8 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from plugins.url import plugin_urls, plugin_api_urls
+
 schema_view = get_schema_view(
     openapi.Info(
         title="testy API",
@@ -79,6 +81,11 @@ urlpatterns = [
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+
+    # Plugins
+    # # !!!! REVERSE FOR PLUGINS IS plugins:<your_app_label>:<your view name>
+    path('plugins/', include((plugin_urls, 'plugins'), namespace='plugins')),
+    path('plugins/', include((plugin_api_urls, 'plugins-api'), namespace='plugins-api')),
 
     # Media
     path('attachments/<int:pk>/', AttachmentView.as_view(), name='attachment-path'),
