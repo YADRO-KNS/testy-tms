@@ -30,5 +30,5 @@
 # <http://www.gnu.org/licenses/>.
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(".env.local")
 from testy.settings.development import *  # noqa F401, F403
