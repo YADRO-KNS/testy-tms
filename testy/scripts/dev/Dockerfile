@@ -6,14 +6,12 @@ ENV PYTHONDONTWRITEBYTECODE 1
 RUN apk update && \
     apk add --virtual build-deps gcc musl-dev && \
     apk add postgresql-dev && \
-    apk add netcat-openbsd
+    apk add netcat-openbsd && apk add build-base openldap-dev python3-dev
 
 RUN mkdir /testy
 WORKDIR /testy
 
 COPY ./requirements/dev-requirements.txt /testy/requirements/
-
-RUN apk add build-base openldap-dev python3-dev
 
 RUN pip install -r requirements/dev-requirements.txt
 
