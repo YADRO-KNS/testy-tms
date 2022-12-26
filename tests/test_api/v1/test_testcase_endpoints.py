@@ -34,11 +34,13 @@ from http import HTTPStatus
 
 import pytest
 from django.forms import model_to_dict
+from tests_description.api.v1.serializers import TestCaseSerializer
 from tests_description.models import TestCase
 
 from tests import constants
-from tests.commons import RequestType
+from tests.commons import RequestType, model_to_dict_via_serializer
 from tests.error_messages import REQUIRED_FIELD_MSG
+from tests.factories import ProjectFactory, TestSuiteFactory
 
 
 @pytest.mark.django_db
@@ -49,7 +51,11 @@ class TestCaseEndpoints:
     def test_list(self, api_client, authorized_superuser, test_case_factory):
         expected_instances = []
         for _ in range(constants.NUMBER_OF_OBJECTS_TO_CREATE):
-            expected_instances.append(model_to_dict(test_case_factory()))
+            expected_dict = model_to_dict(test_case_factory())
+            expected_dict['attachments'] = []
+            expected_dict['key'] = expected_dict['id']
+            expected_dict['value'] = expected_dict['id']
+            expected_instances.append(expected_dict)
 
         response = api_client.send_request(self.view_name_list)
 
@@ -59,6 +65,7 @@ class TestCaseEndpoints:
 
     def test_retrieve(self, api_client, authorized_superuser, test_case):
         expected_dict = model_to_dict(test_case)
+        expected_dict['attachments'] = []
         response = api_client.send_request(self.view_name_detail, reverse_kwargs={'pk': test_case.pk})
         actual_dict = json.loads(response.content)
         actual_dict.pop('url')
@@ -131,3 +138,34 @@ class TestCaseEndpoints:
             reverse_kwargs={'pk': test_case.pk}
         )
         assert not TestCase.objects.count(), f'TestCase with id "{test_case.id}" was not deleted.'
+
+
+@pytest.mark.django_db
+class TestCaseEndpointsQueryParams:
+    view_name_list = 'api:v1:testcase-list'
+
+    @pytest.mark.parametrize(
+        'field_name, factory',
+        [('project', ProjectFactory), ('suite', TestSuiteFactory)],
+        ids=['TestCase filter by project query param', 'TestCase filter by suite query param']
+    )
+    def test_case_filter(self, api_client, authorized_superuser, test_case_factory, field_name, factory):
+        instances = [factory() for _ in range(3)]
+        for _ in range(2):
+            for instance in instances:
+                test_case_factory(**{field_name: instance})
+        for instance in instances:
+            filtered_instances = TestCase.objects.filter(**{field_name: instance.id})
+            expected_dict = model_to_dict_via_serializer(
+                filtered_instances,
+                serializer_class=TestCaseSerializer,
+                many=True
+            )
+            response = api_client.send_request(
+                self.view_name_list,
+                expected_status=HTTPStatus.OK,
+                request_type=RequestType.GET,
+                query_params={field_name: instance.id}
+            )
+            actual_dict = json.loads(response.content)
+            assert actual_dict == expected_dict, 'Actual and expected dict are different.'

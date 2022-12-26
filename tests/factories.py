@@ -139,3 +139,4 @@ class TestResultFactory(DjangoModelFactory):
     comment = constants.TEST_COMMENT
     project = SubFactory(ProjectFactory)
     execution_time = constants.EXECUTION_TIME
+    user = SubFactory(UserFactory)

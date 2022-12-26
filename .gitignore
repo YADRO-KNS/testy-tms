@@ -1,10 +1,12 @@
 *.pyc
 __pycache__/
 /venv/
-/static/
-/media/
+static/
+testy-static/
+media/
 /pg-data/
 .env
+.env.local
 db.sqlite3
 .DS_Store
 .idea

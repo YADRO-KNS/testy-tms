@@ -28,14 +28,14 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
-from core.api.v1.serializers import ProjectSerializer
+from core.api.v1.serializers import AttachmentSerializer, ProjectSerializer
+from core.selectors.attachments import AttachmentSelector
 from core.selectors.projects import ProjectSelector
+from core.services.attachments import AttachmentService
+from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-from tests_description.api.v1.serializers import TestSuiteTreeSerializer
-from tests_description.selectors.suites import TestSuiteSelector
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from tests_representation.api.v1.serializers import ParameterSerializer, TestPlanTreeSerializer
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.testplan import TestPlanSelector
@@ -44,12 +44,6 @@ from tests_representation.selectors.testplan import TestPlanSelector
 class ProjectViewSet(ModelViewSet):
     queryset = ProjectSelector.project_list()
     serializer_class = ProjectSerializer
-
-    @action(detail=False)
-    def suites_by_project(self, request, pk):
-        qs = TestSuiteSelector().suite_project_root_list(pk)
-        serializer = TestSuiteTreeSerializer(qs, many=True, context={'request': request})
-        return Response(serializer.data)
 
     @action(detail=False)
     def testplans_by_project(self, request, pk):
@@ -62,3 +56,16 @@ class ProjectViewSet(ModelViewSet):
         qs = ParameterSelector().parameter_project_list(project_id=pk)
         serializer = ParameterSerializer(qs, many=True, context={'request': request})
         return Response(serializer.data)
+
+
+class AttachmentViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, mixins.CreateModelMixin,
+                        mixins.DestroyModelMixin, GenericViewSet):
+    queryset = AttachmentSelector().attachment_list()
+    serializer_class = AttachmentSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        attachments = AttachmentService().attachment_create(serializer.validated_data, request)
+        data = [self.get_serializer(attachment, context={'request': request}).data for attachment in attachments]
+        return Response(data, status=status.HTTP_201_CREATED)

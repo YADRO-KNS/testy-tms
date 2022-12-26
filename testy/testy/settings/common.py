@@ -71,12 +71,10 @@ INSTALLED_APPS = [
     'drf_yasg',
     'mptt',
     'rest_framework',
+    'django_filters',
+    'corsheaders',
     'simple_history',
-    'crispy_forms',
-    'crispy_bootstrap5',
-    'django_tables2',
     'core',
-    'administration',
     'users',
     'tests_description',
     'tests_representation',
@@ -85,6 +83,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -109,7 +108,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'testy.context_processors.settings',
             ],
         },
     },
@@ -168,17 +166,14 @@ USE_L10N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
+STATIC_URL = '/testy-static/'
+STATIC_ROOT = 'testy-static'
 
-STATIC_URL = '/static/'
+# extensions should be specified with dot (.txt). If no extensions specified all extensions are allowed.
+ALLOWED_FILE_EXTENSIONS = []
 
-STATICFILES_DIRS = [
-    BASE_DIR / 'testy_static/dist/assets',
-]
-
-STATIC_ROOT = 'static'
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = 'media'  # noqa: F405
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -198,17 +193,17 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ],
 }
+
+# Django CORS headers
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Company
 COMPANY_DOMAIN = os.environ.get('COMPANY_DOMAIN')
-
-# Django Crispy forms
-CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
-CRISPY_TEMPLATE_PACK = 'bootstrap5'
-
-# Django tables forms
-DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'
 
 # Auth ldap
 

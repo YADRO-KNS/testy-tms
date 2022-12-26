@@ -28,37 +28,38 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from core.models import Project
-from django.views.generic import DetailView
-from views import Tab
+import mimetypes
+import os
+
+from core.models import Attachment
+from django.conf import settings
+from django.contrib.admin.utils import unquote
+from django.http import FileResponse
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 
-class ProjectBaseView:
-    model = Project
-    active_tab = 'project_details'
-    context_object_name = 'project'
+class MediaView(APIView):
+    permission_classes = [AllowAny, ]
 
-    def get_context_data(self, **kwargs):
-        context = super(ProjectBaseView, self).get_context_data(**kwargs)
-        context['tabs'] = [Tab('Overview', 'project_details', self.kwargs['pk']),
-                           Tab('Test Suites & Cases', 'project_suites', self.kwargs['pk']),
-                           Tab('Test Plans & Results', 'project_runs', self.kwargs['pk'])]
-        context['active_tab'] = self.active_tab
-        return context
-
-
-class ProjectOverviewView(ProjectBaseView, DetailView):
-    model = Project
-    template_name = 'testy/project/overview.html'
+    def get(self, request, path):
+        if not os.path.exists(f'{settings.MEDIA_ROOT}/{path}'):
+            return Response('File does not exist.', status=status.HTTP_404_NOT_FOUND)
+        mimetype, encoding = mimetypes.guess_type(path, strict=True)
+        if not mimetype:
+            mimetype = 'text/html'
+        file_path = unquote(os.path.join(settings.MEDIA_ROOT, path)).encode('utf-8')
+        return FileResponse(open(file_path, 'rb'), content_type=mimetype)
 
 
-class ProjectPlansView(ProjectBaseView, DetailView):
-    model = Project
-    template_name = 'testy/project/test_runs.html'
-    active_tab = 'project_runs'
+class AttachmentView(APIView):
+    permission_classes = [AllowAny, ]
 
-
-class ProjectSuitesView(ProjectBaseView, DetailView):
-    model = Project
-    template_name = 'testy/project/test_suites.html'
-    active_tab = 'project_suites'
+    def get(self, request, pk):
+        try:
+            attachment = Attachment.objects.get(pk=pk)
+        except Attachment.DoesNotExist:
+            return Response('Attachment was not found', status=status.HTTP_404_NOT_FOUND)
+        return FileResponse(attachment.file)

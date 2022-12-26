@@ -28,10 +28,11 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
+from core.api.v1.serializers import AttachmentSerializer
+from core.selectors.attachments import AttachmentSelector
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import CharField, IntegerField, ModelSerializer
 from tests_description.api.v1.serializers import TestCaseSerializer
 from tests_description.selectors.cases import TestCaseSelector
 from tests_representation.models import Parameter, Test, TestPlan, TestResult
@@ -71,34 +72,58 @@ class TestPlanInputSerializer(ModelSerializer):
 
 class TestSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:test-detail')
+    name = SerializerMethodField(read_only=True)
+    last_status = SerializerMethodField(read_only=True)
 
     class Meta:
         model = Test
-        fields = ('id', 'project', 'case', 'plan', 'user', 'is_archive', 'created_at', 'updated_at', 'url')
-
+        fields = (
+            'id', 'project', 'case', 'name', 'last_status', 'plan', 'user', 'is_archive', 'created_at', 'updated_at',
+            'url')
         read_only_fields = ('project',)
+
+    def get_name(self, instance):
+        return instance.case.name
+
+    def get_last_status(self, instance):
+        result = TestResultSelector().last_result_by_test_id(instance.id)
+        if result:
+            return result.get_status_display()
 
 
 class TestResultSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:testresult-detail')
+    status_text = CharField(source='get_status_display', read_only=True)
+    user_full_name = SerializerMethodField(read_only=True)
+    attachments = AttachmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = TestResult
-        fields = (
-            'id', 'project', 'status', 'test', 'user', 'comment', 'is_archive', 'test_case_version', 'created_at',
-            'updated_at', 'url', 'execution_time'
-        )
+        fields = ('id', 'project', 'status', 'status_text', 'test', 'user', 'user_full_name', 'comment',
+                  'is_archive', 'test_case_version', 'created_at', 'updated_at', 'url', 'execution_time', 'attachments')
 
-        read_only_fields = ('test_case_version', 'project', 'test')
+        read_only_fields = ('test_case_version', 'project', 'user', 'id')
+
+    def get_user_full_name(self, instance):
+        if instance.user:
+            return instance.user.get_full_name()
+
+
+class TestResultInputSerializer(TestResultSerializer):
+    attachments = PrimaryKeyRelatedField(
+        many=True, queryset=AttachmentSelector().attachment_list(), required=False
+    )
 
 
 class TestPlanTreeSerializer(ModelSerializer):
     children = SerializerMethodField()
     title = SerializerMethodField()
+    key = IntegerField(source='id')
+    value = IntegerField(source='id')
 
     class Meta:
         model = TestPlan
-        fields = ('id', 'name', 'level', 'children', 'title')
+        fields = ('id', 'key', 'value', 'title', 'name', 'level', 'children',)
 
     def get_title(self, instance):
         if instance.parameters is None:

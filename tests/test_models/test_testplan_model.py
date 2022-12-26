@@ -54,6 +54,7 @@ class TestPlanModel:
         assert NOT_NULL_ERR_MSG.format(relation=self.relation_name, column=parameter_name) in str(err.value), \
             'Expected error message was not found.'
 
+    @pytest.mark.skip()
     @pytest.mark.parametrize(
         'parameter_name, incorrect_value, error_type, err_msg', [
             ('parent', 'abc', ValueError, MODEL_VALUE_ERR_MSG.format(value='abc', model_name='TestPlan',

@@ -28,12 +28,12 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+import os
+import time
+from hashlib import md5
 
-from rest_framework.routers import SimpleRouter
-from tests_description.api.v1 import views
 
-router = SimpleRouter()
-router.register('cases', views.TestCaseViewSet)
-router.register('suites', views.TestSuiteViewSet, basename='testsuite')
-
-urlpatterns = router.urls
+def get_attachments_file_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    filename = f'{md5(str(time.time()).encode()).hexdigest()}{extension}'
+    return f'attachments/{filename[0:2]}/{filename}'

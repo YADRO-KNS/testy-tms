@@ -29,11 +29,17 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
-from rest_framework.routers import SimpleRouter
-from tests_description.api.v1 import views
+from core.models import Attachment
+from django.db.models import QuerySet
 
-router = SimpleRouter()
-router.register('cases', views.TestCaseViewSet)
-router.register('suites', views.TestSuiteViewSet, basename='testsuite')
 
-urlpatterns = router.urls
+class AttachmentSelector:
+    def attachment_list(self) -> QuerySet[Attachment]:
+        return Attachment.objects.all()
+
+    def attachment_list_by_parent_object(self, parent_model, object_id) -> QuerySet[Attachment]:
+        from django.contrib.contenttypes.models import ContentType
+        return Attachment.objects.filter(
+            content_type=ContentType.objects.get_for_model(parent_model).id,
+            object_id=object_id
+        )

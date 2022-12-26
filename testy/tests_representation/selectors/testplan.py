@@ -47,3 +47,6 @@ class TestPlanSelector:
 
     def testplan_get_by_pk(self, pk) -> Optional[TestPlan]:
         return TestPlan.objects.get(pk=pk)
+
+    def testplan_without_parent(self) -> QuerySet[TestPlan]:
+        return QuerySet(model=TestPlan).filter(parent=None).order_by('name')

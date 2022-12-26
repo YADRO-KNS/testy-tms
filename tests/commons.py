@@ -31,9 +31,11 @@
 
 from enum import Enum
 from http import HTTPStatus
-from typing import Any, Dict
+from typing import Any, Dict, List, Union
 
+from django.db.models import QuerySet
 from django.forms import model_to_dict
+from django.test.client import RequestFactory
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
@@ -46,6 +48,14 @@ class RequestType(Enum):
     DELETE = 'delete'
 
 
+class RequestMock(RequestFactory):
+    GET = {}
+
+    @staticmethod
+    def build_absolute_uri(url):
+        return f'http://testserver{url}'
+
+
 class CustomAPIClient(APIClient):
     def send_request(
             self,
@@ -54,9 +64,12 @@ class CustomAPIClient(APIClient):
             expected_status: HTTPStatus = HTTPStatus.OK,
             request_type: RequestType = RequestType.GET,
             reverse_kwargs: Dict[str, Any] = None,
-            format='json'
+            format='json',
+            query_params: Dict[str, Any] = None
     ):
         url = reverse(view_name, kwargs=reverse_kwargs)
+        if query_params:
+            url = f'{url}?{"&".join([f"{field}={field_value}" for field, field_value in query_params.items()])}'
         http_request = getattr(self, request_type.value, None)
         if not http_request:
             raise TypeError('Request type is not known')
@@ -73,3 +86,8 @@ def model_with_base_to_dict(instance) -> Dict[str, Any]:
     instance_dict['created_at'] = instance.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     instance_dict['updated_at'] = instance.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     return instance_dict
+
+
+def model_to_dict_via_serializer(instances: Union[QuerySet, Any], serializer_class, many=False) -> List[dict]:
+    serializer = serializer_class(instances if many else instances[0], many=many, context={'request': RequestMock()})
+    return [dict(elem) for elem in serializer.data] if many else dict(serializer.data)

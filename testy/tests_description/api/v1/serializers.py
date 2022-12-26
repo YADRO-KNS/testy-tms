@@ -28,37 +28,58 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
-from rest_framework.fields import SerializerMethodField
-from rest_framework.relations import HyperlinkedIdentityField
+from core.api.v1.serializers import AttachmentSerializer
+from core.selectors.attachments import AttachmentSelector
+from rest_framework import serializers
+from rest_framework.fields import IntegerField, SerializerMethodField
+from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
 from rest_framework.serializers import ModelSerializer
 from tests_description.models import TestCase, TestSuite
 
 
 class TestCaseSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:testcase-detail')
+    key = IntegerField(source='id', read_only=True)
+    value = IntegerField(source='id', read_only=True)
+    attachments = PrimaryKeyRelatedField(
+        many=True, queryset=AttachmentSelector().attachment_list(), required=False
+    )
 
     class Meta:
         model = TestCase
-        fields = ('id', 'name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'url')
+        fields = (
+            'id', 'key', 'value', 'name', 'project', 'attachments', 'suite', 'setup', 'scenario', 'teardown',
+            'estimate', 'url'
+        )
+
+
+class TestCaseRetrieveSerializer(ModelSerializer):
+    url = HyperlinkedIdentityField(view_name='api:v1:testcase-detail')
+    attachments = AttachmentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = TestCase
+        fields = ('id', 'name', 'project', 'attachments', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'url')
 
 
 class TestSuiteTreeSerializer(ModelSerializer):
     children = SerializerMethodField()
-    test_cases = SerializerMethodField('get_test_case_serializer')
+    key = serializers.IntegerField(source='id')
+    value = serializers.IntegerField(source='id')
+    title = serializers.CharField(source='name')
+    descendant_count = SerializerMethodField()
 
     class Meta:
         model = TestSuite
-        fields = ('id', 'name', 'level', 'children', 'test_cases')
+        fields = ('id', 'value', 'name', 'key', 'title', 'level', 'children',
+                  'descendant_count',
+                  )
+
+    def get_descendant_count(self, instance):
+        return instance.get_descendant_count()
 
     def get_children(self, value):
-        return self.__class__(value.get_children(), many=True).data
-
-    def get_test_case_serializer(self, obj):
-        serializer_context = {'request': self.context.get('request')}
-        test_cases = TestCase.objects.all().filter(suite=obj)
-        serializer = TestCaseSerializer(test_cases, many=True, context=serializer_context)
-        return serializer.data
+        return self.__class__(value.child_test_suites.all(), many=True).data
 
 
 class TestSuiteSerializer(ModelSerializer):

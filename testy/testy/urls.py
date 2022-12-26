@@ -44,12 +44,10 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-import views
-from core.views import ProjectOverviewView, ProjectPlansView, ProjectSuitesView
+from core.views import AttachmentView
 from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
-from django.contrib.auth import views as auth_views
-from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path, re_path
 from drf_yasg import openapi
@@ -68,21 +66,6 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('', views.IndexView.as_view(), name='index'),
-    path('profile/', login_required(views.UserProfileView.as_view()), name='user_profile'),
-    path('profile/change-password/', login_required(views.UserChangePasswordView.as_view()),
-         name='user_change_password'),
-
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-
-    # Administration
-    path('administration/', include('administration.urls')),
-
-    # Project
-    path('project/<int:pk>/', login_required(ProjectOverviewView.as_view()), name='project_details'),
-    path('project/<int:pk>/suites/', login_required(ProjectSuitesView.as_view()), name='project_suites'),
-    path('project/<int:pk>/runs/', login_required(ProjectPlansView.as_view()), name='project_runs'),
-
     # API
     path('api/', include('testy.api.urls', namespace='api')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -96,7 +79,16 @@ urlpatterns = [
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+
+    # Media
+    path('attachments/<int:pk>/', AttachmentView.as_view(), name='attachment-path'),
 ]
 
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()
+    urlpatterns += static(
+        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+    )
+    urlpatterns += [
+        path('__debug__/', include('debug_toolbar.urls')),
+    ]

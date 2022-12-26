@@ -6,13 +6,8 @@ services:
     build:
       context: testy
       dockerfile: scripts/dev/Dockerfile
-      args:
-        - NODE_ENV=${NODE_ENV}
-        - REACT_APP_API_ROOT=${REACT_APP_API_ROOT}
     volumes:
-      - './testy:/testy'
-      - './static:/testy/static'
-      - 'react_apps:/testy/testy_static/dist/assets/js/apps'
+      - './:/testy'
     ports:
       - "8001:8000"
     environment:
