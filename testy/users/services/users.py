@@ -62,9 +62,3 @@ class UserService:
         user.full_clean()
         user.save()
         return user
-
-    def user_bulk_create(self, data_list):
-        users = []
-        for data in data_list:
-            users.append(UserModel.model_create(fields=self.non_side_effect_fields, data=data, commit=False))
-        return UserModel.objects.bulk_create(users)
