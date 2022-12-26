@@ -58,6 +58,12 @@ loaded_hosts = os.environ.get('ALLOWED_HOSTS', [])
 
 ALLOWED_HOSTS = json.loads(loaded_hosts) if loaded_hosts else loaded_hosts
 
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
+
+REDIS_PORT = os.environ.get('REDIS_PORT')
+REDIS_HOST = os.environ.get('REDIS_HOST')
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
