@@ -91,6 +91,7 @@ class TestPlanFactory(DjangoModelFactory):
     finished_at = constants.DATE
     project = SubFactory(ProjectFactory)
     is_archive = False
+    description = constants.DESCRIPTION
 
 
 class TestResultsFactory(DjangoModelFactory):
@@ -104,6 +105,7 @@ class TestSuiteFactory(DjangoModelFactory):
 
     name = Sequence(lambda n: f'{constants.TEST_SUITE_NAME}{n}')
     project = SubFactory(ProjectFactory)
+    description = Sequence(lambda n: f'{constants.DESCRIPTION}{n}')
 
 
 class TestCaseFactory(DjangoModelFactory):
@@ -117,6 +119,7 @@ class TestCaseFactory(DjangoModelFactory):
     scenario = constants.SCENARIO
     teardown = constants.TEARDOWN
     estimate = constants.ESTIMATE
+    description = constants.DESCRIPTION
 
 
 class TestFactory(DjangoModelFactory):
