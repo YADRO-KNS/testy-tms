@@ -76,6 +76,8 @@ INSTALLED_APPS = [
     'users',
     'tests_description',
     'tests_representation',
+    'celery',
+    'celery_progress',
 ]
 
 MIDDLEWARE = [
