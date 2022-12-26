@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 RUN apk update && \
     apk add --virtual build-deps gcc musl-dev && \
     apk add postgresql-dev && \
-    apk add netcat-openbsd
+    apk add netcat-openbsd && apk add build-base openldap-dev python3-dev
 
 RUN mkdir /testy
 WORKDIR /testy
