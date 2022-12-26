@@ -35,7 +35,7 @@ from tests_description.models import TestSuite
 
 
 class TestSuiteService:
-    non_side_effect_fields = ['parent', 'project', 'name']
+    non_side_effect_fields = ['parent', 'project', 'name', 'description']
 
     def suite_create(self, data: Dict[str, Any]) -> TestSuite:
         return TestSuite.model_create(

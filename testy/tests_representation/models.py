@@ -67,6 +67,7 @@ class TestPlan(MPTTModel, BaseModel):
     due_date = models.DateTimeField()
     finished_at = models.DateTimeField(null=True, blank=True)
     is_archive = models.BooleanField(default=False)
+    description = models.TextField('description', null=True, blank=True)
 
     class Meta:
         default_related_name = 'test_plans'

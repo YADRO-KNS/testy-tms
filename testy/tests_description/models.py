@@ -43,6 +43,7 @@ class TestSuite(MPTTModel, BaseModel):
     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_test_suites')
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
+    description = models.TextField('description', null=True, blank=True)
 
     class Meta:
         default_related_name = 'test_suites'
@@ -68,6 +69,7 @@ class TestCase(BaseModel):
     )
     attachments = GenericRelation(Attachment)
     history = HistoricalRecords()
+    description = models.TextField('description', null=True, blank=True)
 
     class Meta:
         default_related_name = 'test_cases'
