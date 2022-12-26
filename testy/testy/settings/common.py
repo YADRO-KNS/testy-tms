@@ -80,7 +80,7 @@ INSTALLED_APPS = [
     'tests_representation',
 ]
 
-TESTY_PLUGINS = ['testrail_migrator']
+TESTY_PLUGINS = []
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
