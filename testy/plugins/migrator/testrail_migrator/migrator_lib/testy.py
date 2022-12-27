@@ -38,8 +38,6 @@ from enum import Enum
 from operator import itemgetter
 
 from asgiref.sync import async_to_sync, sync_to_async
-from simple_history.utils import bulk_create_with_history
-
 from core.api.v1.serializers import ProjectSerializer
 from core.models import Attachment, Project
 from core.services.projects import ProjectService
@@ -47,17 +45,16 @@ from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import IntegrityError
+from simple_history.utils import bulk_create_with_history
 from testrail_migrator.migrator_lib import TestrailConfig
 from testrail_migrator.migrator_lib.testrail import InstanceType, TestRailClient, TestrailClientSync
 from testrail_migrator.migrator_lib.utils import split_list_by_chunks
 from testrail_migrator.serializers import ParameterSerializer, TestSerializer
 from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer
 from tests_description.models import TestCase, TestSuite
-from tests_description.services.cases import TestCaseService
 from tests_description.services.suites import TestSuiteService
 from tests_representation.api.v1.serializers import TestPlanInputSerializer, TestResultSerializer
-from tests_representation.models import TestPlan, TestResult, Parameter, Test
-from tests_representation.services.parameters import ParameterService
+from tests_representation.models import Parameter, Test, TestPlan, TestResult
 from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPlanService
 from tests_representation.services.tests import TestService
@@ -165,14 +162,14 @@ class TestyCreator:
     @async_to_sync
     async def update_testy_attachment_urls_async(self, mapping, model_class, update_method, field_list, config_dict):
         chunks = split_list_by_chunks(list(mapping.values()))
-        async with TestRailClient(TestrailConfig(**config_dict)) as testrail_client:
-            for chunk in tqdm(chunks, desc='Attachments progress'):
-                tasks = []
-                for instance_id in chunk:
-                    tasks.append(
-                        self.temp_func(model_class, instance_id, field_list, mapping, testrail_client, update_method)
-                    )
-                await tqdm.gather(*tasks, desc='attachments chunk progress', leave=False)
+        testrail_client = TestRailClient(TestrailConfig(**config_dict))
+        for chunk in tqdm(chunks, desc='Attachments progress'):
+            tasks = []
+            for instance_id in chunk:
+                tasks.append(
+                    self.temp_func(model_class, instance_id, field_list, mapping, testrail_client, update_method)
+                )
+            await tqdm.gather(*tasks, desc='attachments chunk progress', leave=False)
 
     @staticmethod
     def suites_bulk_create(data_list):

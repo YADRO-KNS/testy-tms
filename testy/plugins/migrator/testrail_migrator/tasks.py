@@ -35,7 +35,6 @@ from datetime import datetime
 from typing import Dict
 
 import redis
-from asgiref.sync import async_to_sync
 from celery import shared_task
 from celery_progress.backend import ProgressRecorder
 from django.conf import settings
@@ -50,14 +49,14 @@ from tests_representation.services.results import TestResultService
 
 
 class ProgressRecorderContext(ProgressRecorder):
-    def __init__(self, task, total, debug=False):
+    def __init__(self, task, total, debug=False, description='Task started'):
         self.debug = debug
         self.current = 0
         self.total = total
         if self.debug:
             return
         super().__init__(task)
-        self.set_progress(current=self.current, total=total, description='Task started')
+        self.set_progress(current=self.current, total=total, description=description)
 
     @contextmanager
     def progress_context(self, description):
@@ -77,7 +76,7 @@ class ProgressRecorderContext(ProgressRecorder):
 @shared_task(bind=True)
 def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_user_login='admin',
                 testy_attachment_url: bool = None):
-    progress_recorder = ProgressRecorderContext(self, total=21)
+    progress_recorder = ProgressRecorderContext(self, total=21, description='Upload started')
 
     logging.info('redis about to start')
     redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
@@ -156,9 +155,11 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
         ('runs_parent_mile', 'run_id', InstanceType.RUN),
     ]
 
+    testrail_client = TestRailClient(TestrailConfig(**config_dict))
+
     for key, parent_key, instance_type in keys:
         with progress_recorder.progress_context(f'Creating attachments for {key}'):
-            file_attachments = upload_attachments(config_dict, backup['attachments'][key], parent_key)
+            file_attachments = testrail_client.get_attachments_from_list(backup['attachments'][key], parent_key)
             mappings['attachments'].update(
                 creator.attachment_bulk_create(file_attachments, project, mappings['users'], parent_key,
                                                mappings[key], instance_type)
@@ -171,7 +172,10 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
 
     for key, parent_key, instance_type in keys:
         with progress_recorder.progress_context(f'Creating attachments for {key}'):
-            file_attachments = upload_attachments(config_dict, backup['attachments'][f'tests_{key}'], parent_key)
+            file_attachments = testrail_client.get_attachments_from_list(
+                backup['attachments'][f'tests_{key}'],
+                parent_key
+            )
             mappings['attachments'].update(
                 creator.attachment_bulk_create(file_attachments, project, mappings['users'], parent_key,
                                                mappings[f'results_{key}'], instance_type)
@@ -195,58 +199,80 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
             )
 
 
-@async_to_sync
-async def upload_attachments(config_dict, attachments, parent_key):
-    async with TestRailClient(TestrailConfig(**config_dict)) as testrail_client:
-        return await testrail_client.get_attachments_from_list(attachments, parent_key)
-
-
 @shared_task(bind=True)
 def download_task(self, project_id: int, config_dict: Dict, download_attachments, ignore_completed, backup_filename):
-    progress_recorder = ProgressRecorder(self)
-    progress_recorder.set_progress(0, 1, 'Started downloading')
+    progress_recorder = ProgressRecorderContext(self, total=20, description='Download started')
 
-    results = download(project_id, TestrailConfig(**config_dict), download_attachments, ignore_completed)
+    resulting_data = {}
 
+    testrail_client = TestRailClient(TestrailConfig(**config_dict))
+    with progress_recorder.progress_context('Getting users'):
+        resulting_data['users'] = testrail_client.get_users()
+
+    with progress_recorder.progress_context('Getting project'):
+        resulting_data['project'] = testrail_client.get_project(project_id)
+    with progress_recorder.progress_context('Getting suites'):
+        resulting_data['suites'] = testrail_client.get_suites(project_id)
+    with progress_recorder.progress_context('Getting cases'):
+        resulting_data['cases'] = testrail_client.get_cases(project_id, resulting_data['suites'])
+    with progress_recorder.progress_context('Getting sections'):
+        resulting_data['sections'] = testrail_client.get_sections(project_id, resulting_data['suites'])
+
+    query_params = {'is_completed': 0 if ignore_completed else 1}
+    with progress_recorder.progress_context('Getting configs'):
+        resulting_data['configs'] = testrail_client.get_configs(project_id)
+    with progress_recorder.progress_context('Getting milestones'):
+        resulting_data['milestones'] = testrail_client.get_milestones(project_id, ignore_completed, query_params)
+    with progress_recorder.progress_context('Getting plans'):
+        resulting_data['plans'] = testrail_client.get_plans_with_runs(project_id, query_params)
+    with progress_recorder.progress_context('Getting runs for plans'):
+        resulting_data['runs_parent_plan'] = testrail_client.get_runs_from_plans(resulting_data['plans'])
+    with progress_recorder.progress_context('Getting runs for milestones'):
+        resulting_data['runs_parent_mile'] = testrail_client.get_runs(project_id, query_params=query_params)
+    with progress_recorder.progress_context('Getting tests for runs from plans'):
+        resulting_data['tests_parent_plan'] = testrail_client.get_tests_for_runs(resulting_data['runs_parent_plan'])
+    with progress_recorder.progress_context('Getting tests for runs from miles'):
+        resulting_data['tests_parent_mile'] = testrail_client.get_tests_for_runs(resulting_data['runs_parent_mile'])
+    with progress_recorder.progress_context('Getting results for tests from plans'):
+        resulting_data['results_parent_plan'] = testrail_client.get_results_for_tests(
+            resulting_data['tests_parent_plan']
+        )
+    with progress_recorder.progress_context('Getting results for tests from milestones'):
+        resulting_data['results_parent_mile'] = testrail_client.get_results_for_tests(
+            resulting_data['tests_parent_mile']
+        )
+    if not download_attachments:
+        save_results_to_redis(resulting_data, backup_filename)
+        return
+    keys_instance_type = [
+        ('cases', InstanceType.CASE),
+        ('plans', InstanceType.PLAN),
+        ('runs_parent_mile', InstanceType.RUN),
+        ('runs_parent_plan', InstanceType.RUN),
+        ('tests_parent_mile', InstanceType.TEST),
+        ('tests_parent_plan', InstanceType.TEST)
+    ]
+    resulting_data['attachments'] = {}
+
+    for key, instance_type in keys_instance_type:
+        with progress_recorder.progress_context(f'Getting attachments for {key}'):
+            resulting_data['attachments'][key] = testrail_client.get_attachments_for_instances(
+                resulting_data[key],
+                instance_type
+            )
+    print(f'SUMMARY OF STEPS {progress_recorder.current}')
+    save_results_to_redis(resulting_data, backup_filename)
+
+
+def save_results_to_redis(results, backup_filename):
     results_json = json.dumps(results)
     redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
 
-    logging.info(f'REDIS CLIENT PING {redis_client.ping()}')
+    logging.debug(f'REDIS CLIENT PING {redis_client.ping()}')
 
     backup_name = f'{backup_filename}{datetime.now()}'
     TestrailBackup.objects.create(name=backup_name, filepath=backup_name)
     redis_client.set(backup_name, results_json)
 
     if not redis_client.get(backup_name):
-        logging.error('REDIS CLIENT GET GOT NOTHING')
-
-
-@async_to_sync
-async def download(project_id: int, config: TestrailConfig, download_attachments: bool, ignore_completed: bool):
-    # TODO: think about processing entries
-    async with TestRailClient(config) as testrail_client:
-        print('Entered testrail client')
-        resulting_data = {'project': await testrail_client.get_project(project_id)}
-        resulting_data.update(await testrail_client.download_descriptions(project_id))
-        resulting_data.update(await testrail_client.download_representations(project_id, ignore_completed))
-        resulting_data['users'] = await testrail_client.get_users()
-        if not download_attachments:
-            return resulting_data
-
-        keys_instance_type = [
-            ('cases', InstanceType.CASE),
-            ('plans', InstanceType.PLAN),
-            ('runs_parent_mile', InstanceType.RUN),
-            ('runs_parent_plan', InstanceType.RUN),
-            ('tests_parent_mile', InstanceType.TEST),
-            ('tests_parent_plan', InstanceType.TEST)
-        ]
-
-        resulting_data['attachments'] = {}
-
-        for key, instance_type in keys_instance_type:
-            resulting_data['attachments'][key] = await testrail_client.get_attachments_for_instances(
-                resulting_data[key],
-                instance_type
-            )
-    return resulting_data
+        logging.debug('REDIS CLIENT GOT NOTHING')

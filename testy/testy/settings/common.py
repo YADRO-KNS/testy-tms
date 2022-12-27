@@ -86,7 +86,6 @@ INSTALLED_APPS = [
     'tests_representation',
     'celery',
     'celery_progress',
-    'django_celery_results'
 ]
 
 TESTY_PLUGINS = [

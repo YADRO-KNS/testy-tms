@@ -38,6 +38,7 @@ from json import JSONDecodeError
 import aiohttp
 import requests
 from aiohttp import ClientConnectionError, ContentTypeError
+from asgiref.sync import async_to_sync
 from tqdm.asyncio import tqdm
 
 from .config import TestrailConfig
@@ -120,14 +121,14 @@ class TestRailClient:
         self.config = config
         self.timeout = timeout
         # TODO: add check if auth failed
-        self.session = aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password),
-                                             timeout=self.timeout)
+        # self.session = aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password),
+        #                                      timeout=self.timeout)
 
-    async def __aenter__(self):
-        return self
+    # async def __aenter__(self):
+    #     return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.session.close()
+    # async def __aexit__(self, exc_type, exc_val, exc_tb):
+    #     await self.session.close()
 
     async def download_descriptions(self, project_id: int):
         descriptions_dict = {}
@@ -141,15 +142,24 @@ class TestRailClient:
 
         return descriptions_dict
 
+    @async_to_sync
     async def get_users(self, project_id=''):
         return await self._process_request(f'/get_users/{project_id}')
+
+    @staticmethod
+    def get_runs_from_plans(plans):
+        runs_parent_plan = []
+        for plan in plans:
+            for entry in plan['entries']:
+                runs_parent_plan.extend(entry['runs'])
+        return runs_parent_plan
 
     async def download_representations(self, project_id: int, ignore_completed: bool):
         representations_dict = {}
         query_params = {'is_completed': 0 if ignore_completed else 1}
         configs = await self.get_configs(project_id)
         representations_dict['configs'] = configs
-        milestones = await self.get_milestones(project_id, query_params=query_params)
+        milestones = await self.get_milestones(project_id, ignore_completed, query_params=query_params)
         for milestone in milestones:
             filtered_children = []
             for child_milestone in milestone['milestones']:
@@ -167,6 +177,7 @@ class TestRailClient:
         for plan in representations_dict['plans']:
             for entry in plan['entries']:
                 runs_parent_plan.extend(entry['runs'])
+
         representations_dict['runs_parent_plan'] = runs_parent_plan
 
         representations_dict['runs_parent_mile'] = await self.get_runs(project_id, query_params=query_params)
@@ -186,7 +197,9 @@ class TestRailClient:
         )
         return representations_dict
 
-    async def get_plans_with_runs(self, plans_without_runs):
+    @async_to_sync
+    async def get_plans_with_runs(self, project_id, query_params):
+        plans_without_runs = await self.get_plans(project_id, query_params=query_params)
         plans = []
         plan_chunks = split_list_by_chunks(plans_without_runs)
         for chunk in tqdm(plan_chunks, desc='Plans progress'):
@@ -196,6 +209,7 @@ class TestRailClient:
             plans.extend(await tqdm.gather(*tasks, desc='Plans chunk progress', leave=False))
         return plans
 
+    @async_to_sync
     async def get_results_for_tests(self, tests):
         results = []
         test_chunks = split_list_by_chunks(tests)
@@ -210,6 +224,7 @@ class TestRailClient:
             )
         return results
 
+    @async_to_sync
     async def get_tests_for_runs(self, runs):
         tests = []
         run_chunks = split_list_by_chunks(runs)
@@ -222,9 +237,11 @@ class TestRailClient:
             )
         return tests
 
+    @async_to_sync
     async def get_suites(self, project_id):
         return await self._process_request(f'/get_suites/{project_id}')
 
+    @async_to_sync
     async def get_project(self, project_id):
         return await self._process_request(f'/get_project/{project_id}')
 
@@ -234,6 +251,7 @@ class TestRailClient:
     async def get_sections_for_suite(self, project_id, suite_id):
         return await self._process_request(f'/get_sections/{project_id}', query_params={'suite_id': suite_id})
 
+    @async_to_sync
     async def get_cases(self, project_id, suites):
         tests = []
         suite_chunks = split_list_by_chunks(suites)
@@ -246,6 +264,7 @@ class TestRailClient:
             )
         return tests
 
+    @async_to_sync
     async def get_sections(self, project_id, suites):
         sections = []
         suite_chunks = split_list_by_chunks(suites)
@@ -260,15 +279,26 @@ class TestRailClient:
             )
         return sections
 
-    async def get_milestones(self, project_id: int, query_params=None):
-        return await self._process_request(f'/get_milestones/{project_id}', query_params=query_params)
+    @async_to_sync
+    async def get_milestones(self, project_id: int, ignore_completed: bool, query_params=None):
+        milestones = await self._process_request(f'/get_milestones/{project_id}', query_params=query_params)
+        for milestone in milestones:
+            filtered_children = []
+            for child_milestone in milestone['milestones']:
+                if ignore_completed and child_milestone['is_completed']:
+                    continue
+                filtered_children.append(child_milestone)
+            milestone['milestones'] = filtered_children
+        return milestones
 
+    @async_to_sync
     async def get_configs(self, project_id):
         return await self._process_request(f'/get_configs/{project_id}')
 
     async def get_plans(self, project_id: int, query_params=None):
         return await self._process_request(f'/get_plans/{project_id}', query_params=query_params)
 
+    @async_to_sync
     async def get_runs(self, project_id: int, query_params=None):
         return await self._process_request(f'/get_runs/{project_id}', query_params=query_params)
 
@@ -295,6 +325,7 @@ class TestRailClient:
                 attachment['plan_id'] = plan_id
         return attachments if attachments else []
 
+    @async_to_sync
     async def get_attachments_for_instances(self, instances: list, instance_type: InstanceType):
         attachments = []
         chunks = split_list_by_chunks(instances)
@@ -326,6 +357,7 @@ class TestRailClient:
             )
         return attachments
 
+    @async_to_sync
     async def get_attachments_from_list(self, attachment_list, parent_key):
         attachments = []
         result = {}
@@ -343,43 +375,47 @@ class TestRailClient:
         headers = {
             'Content-Type': 'application/json; charset=utf-8'
         }
-        while retry_count:
-            try:
-                async with self.session.get(url=self.config.api_url + f'/get_attachment/{attachment["id"]}',
-                                            headers=headers, timeout=self.timeout) as resp:
-                    if resp.status == 400:
-                        return
-                    if resp.status != 200:
-                        raise ClientConnectionError
-                    return {
-                        attachment['id']: {
-                            parent_key: attachment[parent_key],
-                            'content_type': resp.content_type,
-                            'size': attachment['size'],
-                            'charset': resp.charset,
-                            'name': attachment['name'],
-                            'field_name': 'file',
-                            'file_bytes': await resp.read(),
-                            'user_id': attachment['user_id'],
+        async with aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password),
+                                         timeout=self.timeout) as session:
+            while retry_count:
+                try:
+                    async with session.get(url=self.config.api_url + f'/get_attachment/{attachment["id"]}',
+                                           headers=headers, timeout=self.timeout) as resp:
+                        if resp.status == 400:
+                            return
+                        if resp.status != 200:
+                            raise ClientConnectionError
+                        return {
+                            attachment['id']: {
+                                parent_key: attachment[parent_key],
+                                'content_type': resp.content_type,
+                                'size': attachment['size'],
+                                'charset': resp.charset,
+                                'name': attachment['name'],
+                                'field_name': 'file',
+                                'file_bytes': await resp.read(),
+                                'user_id': attachment['user_id'],
+                            }
                         }
-                    }
-            except (ClientConnectionError, asyncio.TimeoutError):
-                retry_count -= 1
+                except (ClientConnectionError, asyncio.TimeoutError):
+                    retry_count -= 1
 
     async def get_single_attachment(self, attachment_id, retry_count=30):
         headers = {
             'Content-Type': 'application/json; charset=utf-8'
         }
-        while retry_count:
-            try:
-                async with self.session.get(url=self.config.api_url + f'/get_attachment/{attachment_id}',
-                                            headers=headers, timeout=self.timeout) as resp:
-                    if resp.status != 200:
-                        logging.error(resp)
-                        raise ClientConnectionError
-                    return await resp.read()
-            except (ClientConnectionError, asyncio.TimeoutError):
-                retry_count -= 1
+        async with aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password),
+                                         timeout=self.timeout) as session:
+            while retry_count:
+                try:
+                    async with session.get(url=self.config.api_url + f'/get_attachment/{attachment_id}',
+                                           headers=headers, timeout=self.timeout) as resp:
+                        if resp.status != 200:
+                            logging.error(resp)
+                            raise ClientConnectionError
+                        return await resp.read()
+                except (ClientConnectionError, asyncio.TimeoutError):
+                    retry_count -= 1
 
     async def get_attachments_for_plan(self, plan_id: int):
         list_of_attachments = await self._process_request(f'/get_attachments_for_plan/{plan_id}')
@@ -417,19 +453,20 @@ class TestRailClient:
 
         if query_params:
             url = f'{url}&{"&".join([f"{field}={field_value}" for field, field_value in query_params.items()])}'
-
-        while retry_count:
-            try:
-                async with self.session.get(url=url, headers=headers, timeout=self.timeout) as resp:
-                    if resp.status == 400:
-                        return
-                    if resp.status != 200:
-                        try:
-                            logging.error(await resp.json())
-                        except (JSONDecodeError, ContentTypeError):
-                            logging.error(await resp.text())
-                        raise ClientConnectionError
-                    return await resp.read() if file else await resp.json()
-            except (ClientConnectionError, asyncio.TimeoutError) as err:
-                logging.error(err)
-                retry_count -= 1
+        async with aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password),
+                                         timeout=self.timeout) as session:
+            while retry_count:
+                try:
+                    async with session.get(url=url, headers=headers, timeout=self.timeout) as resp:
+                        if resp.status == 400:
+                            return
+                        if resp.status != 200:
+                            try:
+                                logging.error(await resp.json())
+                            except (JSONDecodeError, ContentTypeError):
+                                logging.error(await resp.text())
+                            raise ClientConnectionError
+                        return await resp.read() if file else await resp.json()
+                except (ClientConnectionError, asyncio.TimeoutError) as err:
+                    logging.error(err)
+                    retry_count -= 1

@@ -34,13 +34,12 @@ from django.views.generic import TemplateView
 from rest_framework.routers import SimpleRouter
 
 from .views import (  # Do,
-    ClearView,
     DownloadViewSet,
     TestrailBackupViewSet,
     TestrailSettingsViewSet,
+    TestyDeleteProjectViewSet,
     UploaderView,
-    download_status,
-    TestyDeleteProjectViewSet
+    task_status,
 )
 
 router = SimpleRouter()
@@ -51,7 +50,6 @@ urlpatterns = [
     path('upload/', UploaderView.as_view({'post': 'create'}), name='upload'),
     path('clear/', TestyDeleteProjectViewSet.as_view({'post': 'create'}), name='delete'),
     path('download/', DownloadViewSet.as_view({'post': 'create'}), name='download'),
-    path('clear/', ClearView.as_view(), name='name'),
-    path('download_status/<str:task_id>/', download_status, name='download_status')
+    path('task_status/<str:task_id>/', task_status, name='task_status')
 ]
 urlpatterns += router.urls

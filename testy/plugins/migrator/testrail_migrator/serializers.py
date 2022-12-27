@@ -28,15 +28,15 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from core.models import Project
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
 from rest_framework.serializers import ModelSerializer
-from core.models import Project
-
-from .models import TestrailSettings, TestrailBackup
 from tests_representation.models import Parameter, Test
 from tests_representation.selectors.results import TestResultSelector
+
+from .models import TestrailBackup, TestrailSettings
 
 
 class ParameterSerializer(ModelSerializer):
