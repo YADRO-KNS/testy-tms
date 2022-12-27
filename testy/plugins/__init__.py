@@ -40,7 +40,7 @@ class TestyPluginConfig(AppConfig):
     verbose_name = ''
     description = ''
     version = ''
-    plugin_base_url = ''  # Можно указать базовый урл чтобы все юрлы апи были сгрупированы под ним
+    plugin_base_url = ''
     author = ''
     author_email = ''
     middleware = []
