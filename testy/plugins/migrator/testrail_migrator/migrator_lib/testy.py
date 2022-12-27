@@ -251,17 +251,15 @@ class TestyCreator:
                 continue
             section_data = {
                 'name': section['name'],
-                'project': project_id,
+                'project': Project.objects.get(pk=project_id),
             }
             if description := section.get('description'):
                 section_data['description'] = description
             if section['parent_id']:
-                section_data['parent'] = sections_mappings.get(section['parent_id'])
+                section_data['parent'] = TestSuite.objects.get(pk=sections_mappings.get(section['parent_id']))
             else:
-                section_data['parent'] = suite_mappings.get(section['suite_id'])
-            serializer = TestSuiteSerializer(data=section_data)
-            serializer.is_valid(raise_exception=True)
-            sections_mappings[section['id']] = TestSuiteService().suite_create(serializer.validated_data).id
+                section_data['parent'] = TestSuite.objects.get(pk=suite_mappings.get(section['suite_id']))
+            sections_mappings[section['id']] = TestSuiteService().suite_create(section_data).id
 
         return sections_mappings
 
