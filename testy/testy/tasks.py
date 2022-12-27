@@ -28,6 +28,9 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from .celery import app as celery_app
+from celery import shared_task
 
-__all__ = ('celery_app',)
+
+@shared_task(bind=True)
+def debug_task(self):
+    print(f'Request: {self.request!r}')
