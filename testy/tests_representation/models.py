@@ -89,7 +89,7 @@ class TestResult(BaseModel):
     status = models.IntegerField(choices=TestStatuses.choices, default=TestStatuses.UNTESTED)
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    comment = models.TextField(blank=True, null=True)
+    comment = models.TextField(blank=True)
     is_archive = models.BooleanField(default=False)
     test_case_version = models.IntegerField(
         null=True,

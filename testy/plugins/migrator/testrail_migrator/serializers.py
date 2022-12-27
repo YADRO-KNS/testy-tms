@@ -32,7 +32,9 @@ from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.relations import HyperlinkedIdentityField, PrimaryKeyRelatedField
 from rest_framework.serializers import ModelSerializer
-from testrail_migrator.models import TestrailBackup, TestrailSettings
+from core.models import Project
+
+from .models import TestrailSettings, TestrailBackup
 from tests_representation.models import Parameter, Test
 from tests_representation.selectors.results import TestResultSelector
 
@@ -59,6 +61,10 @@ class TestrailUploadSerializer(serializers.Serializer):
     testrail_backup = PrimaryKeyRelatedField(queryset=TestrailBackup.objects.all())
     testrail_settings = PrimaryKeyRelatedField(queryset=TestrailSettings.objects.all())
     upload_root_runs = serializers.BooleanField(default=False)
+
+
+class TestyDeleteProjectSerializer(serializers.Serializer):
+    testy_project = PrimaryKeyRelatedField(queryset=Project.objects.all())
 
 
 class DownloadSerializer(serializers.Serializer):

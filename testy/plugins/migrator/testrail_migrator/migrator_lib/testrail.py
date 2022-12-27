@@ -108,7 +108,7 @@ class TestrailClientSync:
 class TestRailClient:
     """Implement testrail client."""
 
-    def __init__(self, config: TestrailConfig):
+    def __init__(self, config: TestrailConfig, timeout=5):
         """
         Init method for TestRailClient.
 
@@ -118,8 +118,10 @@ class TestRailClient:
         if not config.login or not config.password:
             raise TestRailClientError('No login or password were provided.')
         self.config = config
+        self.timeout = timeout
         # TODO: add check if auth failed
-        self.session = aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password))
+        self.session = aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password),
+                                             timeout=self.timeout)
 
     async def __aenter__(self):
         return self
@@ -344,7 +346,7 @@ class TestRailClient:
         while retry_count:
             try:
                 async with self.session.get(url=self.config.api_url + f'/get_attachment/{attachment["id"]}',
-                                            headers=headers) as resp:
+                                            headers=headers, timeout=self.timeout) as resp:
                     if resp.status == 400:
                         return
                     if resp.status != 200:
@@ -371,7 +373,7 @@ class TestRailClient:
         while retry_count:
             try:
                 async with self.session.get(url=self.config.api_url + f'/get_attachment/{attachment_id}',
-                                            headers=headers) as resp:
+                                            headers=headers, timeout=self.timeout) as resp:
                     if resp.status != 200:
                         logging.error(resp)
                         raise ClientConnectionError
@@ -418,7 +420,7 @@ class TestRailClient:
 
         while retry_count:
             try:
-                async with self.session.get(url=url, headers=headers) as resp:
+                async with self.session.get(url=url, headers=headers, timeout=self.timeout) as resp:
                     if resp.status == 400:
                         return
                     if resp.status != 200:
@@ -428,5 +430,6 @@ class TestRailClient:
                             logging.error(await resp.text())
                         raise ClientConnectionError
                     return await resp.read() if file else await resp.json()
-            except (ClientConnectionError, asyncio.TimeoutError):
+            except (ClientConnectionError, asyncio.TimeoutError) as err:
+                logging.error(err)
                 retry_count -= 1

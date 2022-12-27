@@ -28,15 +28,30 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from setuptools import find_packages, setup
+# from rest_framework.routers import SimpleRouter
+from django.urls import path
+from django.views.generic import TemplateView
+from rest_framework.routers import SimpleRouter
 
-# TODO: remake requirements so testy is needed
-setup(
-    name='testrail-migrator',
-    version='0.1',
-    description='Plugin to migrate your data from testrail',
-    install_requires=['PyYAML', 'tqdm', 'requests', 'celery', 'aiohttp', 'aiofiles', 'requests'],
-    packages=find_packages(),
-    include_package_data=True,
-    zip_safe=False,
+from .views import (  # Do,
+    ClearView,
+    DownloadViewSet,
+    TestrailBackupViewSet,
+    TestrailSettingsViewSet,
+    UploaderView,
+    download_status,
+    TestyDeleteProjectViewSet
 )
+
+router = SimpleRouter()
+router.register('settings', TestrailSettingsViewSet)
+router.register('backups', TestrailBackupViewSet)
+urlpatterns = [
+    path('', TemplateView.as_view(template_name='index.html'), name='migrator-index'),
+    path('upload/', UploaderView.as_view({'post': 'create'}), name='upload'),
+    path('clear/', TestyDeleteProjectViewSet.as_view({'post': 'create'}), name='delete'),
+    path('download/', DownloadViewSet.as_view({'post': 'create'}), name='download'),
+    path('clear/', ClearView.as_view(), name='name'),
+    path('download_status/<str:task_id>/', download_status, name='download_status')
+]
+urlpatterns += router.urls

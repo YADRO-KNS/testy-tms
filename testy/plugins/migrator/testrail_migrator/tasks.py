@@ -79,7 +79,9 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
                 testy_attachment_url: bool = None):
     progress_recorder = ProgressRecorderContext(self, total=21)
 
+    logging.info('redis about to start')
     redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
+    logging.info('redis started')
     backup = json.loads(redis_client.get(backup_name))
     creator = TestyCreator(service_user_login, testy_attachment_url)
 
@@ -223,6 +225,7 @@ def download_task(self, project_id: int, config_dict: Dict, download_attachments
 async def download(project_id: int, config: TestrailConfig, download_attachments: bool, ignore_completed: bool):
     # TODO: think about processing entries
     async with TestRailClient(config) as testrail_client:
+        print('Entered testrail client')
         resulting_data = {'project': await testrail_client.get_project(project_id)}
         resulting_data.update(await testrail_client.download_descriptions(project_id))
         resulting_data.update(await testrail_client.download_representations(project_id, ignore_completed))

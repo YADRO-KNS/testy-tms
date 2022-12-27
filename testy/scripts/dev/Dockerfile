@@ -12,7 +12,7 @@ RUN mkdir /testy
 WORKDIR /testy
 
 COPY ./requirements/dev-requirements.txt /testy/requirements/
-COPY ./migrator /testy/migrator
+#COPY ./plugins/migrator /testy/migrator
 
 RUN pip install -r requirements/dev-requirements.txt
 

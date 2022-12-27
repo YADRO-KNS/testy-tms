@@ -128,7 +128,7 @@ class TestPLanDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class TestListViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
+class TestListViewSet(mixins.ListModelMixin, GenericViewSet):
     queryset = TestSelector().test_list()
     serializer_class = TestSerializer
     filter_backends = [DjangoFilterBackend]
@@ -139,9 +139,6 @@ class TestListViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, GenericVie
 
     def perform_update(self, serializer: TestSerializer):
         serializer.instance = TestService().test_update(serializer.instance, serializer.validated_data)
-
-    def perform_create(self, serializer: TestSerializer):
-        serializer.instance = TestService().test_create(serializer.validated_data)
 
 
 class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericViewSet):

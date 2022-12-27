@@ -193,7 +193,11 @@ class TestyCreator:
         src_ids = []
         for suite in suites:
             src_ids.append(suite['id'])
-            suite_data_list.append({'name': suite['name'], 'project': project_id})
+            suite_data = {'name': suite['name'], 'project': project_id}
+            if description := suite.get('description'):
+                suite_data['description'] = description
+            suite_data_list.append(suite_data)
+
         serializer = TestSuiteSerializer(data=suite_data_list, many=True)
         serializer.is_valid(raise_exception=True)
         created_suites = self.suites_bulk_create(serializer.validated_data)
@@ -231,6 +235,8 @@ class TestyCreator:
                 'suite': suite_id,
                 'scenario': scenario if scenario else 'Scenario was not provided',
             }
+            if description := case.get('custom_description'):
+                case_data['description'] = description
             if setup:
                 case_data['setup'] = setup
             cases_data_list.append(case_data)
@@ -248,8 +254,10 @@ class TestyCreator:
                 continue
             section_data = {
                 'name': section['name'],
-                'project': project_id
+                'project': project_id,
             }
+            if description := section.get('description'):
+                section_data['description'] = description
             if section['parent_id']:
                 section_data['parent'] = sections_mappings.get(section['parent_id'])
             else:
@@ -289,8 +297,7 @@ class TestyCreator:
 
         return parameters_mappings
 
-    @staticmethod
-    def create_milestones(milestones, project_id):
+    def create_milestones(self, milestones, project_id):
         milestones_mapping = {}
         parent_milestones = []
         for milestone in milestones:
@@ -302,11 +309,13 @@ class TestyCreator:
                 'finished_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(milestone['completed_on'])),
                 'due_date': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(milestone['due_on']))
             }
+            if description := milestone.get('description'):
+                milestone_data['description'] = description
             parent_milestones.append(milestone_data)
 
         serializer = TestPlanInputSerializer(data=parent_milestones, many=True)
         serializer.is_valid(raise_exception=True)
-        test_plans = TestPlanService().testplan_bulk_create(serializer.validated_data)
+        test_plans = self.testplan_bulk_create(serializer.validated_data)
         for tr_milestone, testy_milestone in zip(milestones, test_plans):
             milestones_mapping.update({tr_milestone['id']: testy_milestone.id})
 
@@ -328,15 +337,14 @@ class TestyCreator:
 
             serializer = TestPlanInputSerializer(data=child_milestones_data_list, many=True)
             serializer.is_valid(raise_exception=True)
-            test_plans = TestPlanService().testplan_bulk_create(serializer.validated_data)
+            test_plans = self.testplan_bulk_create(serializer.validated_data)
 
             for tr_milestone, testy_milestone in zip(milestone['milestones'], test_plans):
                 milestones_mapping.update({tr_milestone['id']: testy_milestone.id})
 
         return milestones_mapping
 
-    @staticmethod
-    def create_plans(plans, milestones_mappings, project_id, skip_root_plans: bool = True):
+    def create_plans(self, plans, milestones_mappings, project_id, skip_root_plans: bool = True):
         plan_data_list = []
         plan_mappings = {}
         src_plan_ids = []
@@ -355,6 +363,8 @@ class TestyCreator:
                 'finished_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan['completed_on'])),
                 'due_date': due_date,
             }
+            if description := plan.get('description'):
+                plan_data['description'] = description
             if mapping_id:
                 parent_id = milestones_mappings.get(mapping_id)
                 if not parent_id:
@@ -365,14 +375,37 @@ class TestyCreator:
 
         serializer = TestPlanInputSerializer(data=plan_data_list, many=True)
         serializer.is_valid(raise_exception=True)
-        test_plans = TestPlanService().testplan_bulk_create(serializer.validated_data)
+        test_plans = self.testplan_bulk_create(serializer.validated_data)
         for src_plan_id, testy_milestone in zip(src_plan_ids, test_plans):
             plan_mappings.update({src_plan_id: testy_milestone.id})
 
         return plan_mappings
 
-    @staticmethod
-    def create_runs(runs, mapping, config_mappings, tests, case_mappings, project_id,
+    def testplan_bulk_create_with_tests(self, data_list):
+        testplan_objects = []
+        for data in data_list:
+            parameters = [parameter.id for parameter in data.get('parameters')]
+            testplan_objects.append(
+                TestPlanService()._make_testplan_model(data, parameters=parameters if parameters else None)
+            )
+        test_plans = TestPlan.objects.bulk_create(testplan_objects)
+        TestPlan.objects.rebuild()
+        created_tests = []
+        for test_plan, data in zip(test_plans, data_list):
+            if data.get('test_cases'):
+                created_tests.extend(TestService().bulk_test_create([test_plan], data['test_cases']))
+        return created_tests, test_plans
+
+    def testplan_bulk_create(self, validated_data):
+        testplan_objects = []
+        for data in validated_data:
+            testplan_objects.append(TestPlanService()._make_testplan_model(data))
+        test_plans = TestPlan.objects.bulk_create(testplan_objects)
+        TestPlan.objects.rebuild()
+
+        return test_plans
+
+    def create_runs(self, runs, mapping, config_mappings, tests, case_mappings, project_id,
                     parent_type: ParentType, upload_root_runs: bool, user_mappings):
         run_data_list = []
         src_tests = []
@@ -404,12 +437,14 @@ class TestyCreator:
                 'test_cases': cases,
                 'parameters': parameters
             }
+            if description := run.get('description'):
+                run_data['description'] = description
             if parent:
                 run_data['parent'] = parent
             run_data_list.append(run_data)
         serializer = TestPlanInputSerializer(data=run_data_list, many=True)
         serializer.is_valid(raise_exception=True)
-        created_tests, created_plans = TestPlanService().testplan_bulk_create_with_tests(serializer.validated_data)
+        created_tests, created_plans = self.testplan_bulk_create_with_tests(serializer.validated_data)
 
         # Add assignation for tests
         for src_test, created_test in zip(src_tests, created_tests):
@@ -487,9 +522,10 @@ class TestyCreator:
 
             result_data = {
                 'status': statuses.get(result['status_id'], 5),
-                'comment': result['comment'],
                 'test': tests_mappings[result['test_id']],
             }
+            if comment := result.get('comment'):
+                result_data['comment'] = comment
             user_id = user_mappings.get(result['created_by'])
             user = UserModel.objects.get(pk=user_id) if user_id else self.service_user
             serializer = TestResultSerializer(data=result_data)
@@ -564,11 +600,20 @@ class TestyCreator:
         src_ids = []
         for user in users:
             src_ids.append(user['id'])
+            split_name = user['name'].split(' ')
+            first_name = split_name[0]
+            last_name = None
+            if len(split_name) > 1:
+                last_name = split_name[1]
             user_data = {
                 'username': user['email'].split('@')[0],
                 'email': user['email'],
                 'is_active': user['is_active']
             }
+            if first_name:
+                user_data['first_name'] = first_name
+            if last_name:
+                user_data['last_name'] = last_name
             created_user = self.user_create(user_data)
             dst_ids.append(created_user.id)
         return dict(zip(src_ids, dst_ids))
