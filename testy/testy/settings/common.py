@@ -46,6 +46,8 @@ from pathlib import Path
 
 from django.utils.translation import gettext_lazy as _
 
+from testy.utils import insert_plugins
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -86,6 +88,8 @@ INSTALLED_APPS = [
     'celery_progress',
 ]
 
+TESTY_PLUGINS = []
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -98,6 +102,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
+
+INSTALLED_APPS, MIDDLEWARE = insert_plugins(TESTY_PLUGINS, INSTALLED_APPS, MIDDLEWARE, VERSION)
 
 ROOT_URLCONF = 'testy.urls'
 
