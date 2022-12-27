@@ -28,9 +28,6 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-import asyncio
-
-from asgiref.sync import async_to_sync
 from celery import Celery
 
 # Set the default Django settings module for the 'celery' program.
@@ -46,14 +43,3 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # Load task modules from all registered Django apps.
 app.autodiscover_tasks()
-
-
-@app.task(bind=True)
-def debug_task(self):
-    async_to_sync(return_hello)()
-    # print(f'Request: {self.request!r}')
-
-
-async def return_hello():
-    await asyncio.sleep(1)
-    return 'hello'

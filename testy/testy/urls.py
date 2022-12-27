@@ -86,6 +86,11 @@ urlpatterns = [
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
+    # Plugins
+    # # !!!! REVERSE FOR PLUGINS IS plugins:<your_app_label>:<your view name>
+    path('plugins/', include((plugin_urls, 'plugins'), namespace='plugins')),
+    path('plugins/', include((plugin_api_urls, 'plugins-api'), namespace='plugins-api')),
+
     # Media
     path('attachments/<int:pk>/', AttachmentView.as_view(), name='attachment-path'),
 

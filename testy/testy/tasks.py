@@ -28,60 +28,9 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from celery import shared_task
 
-from testy.settings.common import *  # noqa F401, F403
 
-DEBUG = True
-
-SECRET_KEY = 'django-insecure-97ml+ugrkdl6s!h)_5vanzw4%d_lajo6j(08e84e7314*&)s3)'
-
-INSTALLED_APPS += [  # noqa F405
-    'django_extensions',
-    'debug_toolbar',
-]
-
-INTERNAL_IPS = [
-    "127.0.0.1",
-]
-
-MIDDLEWARE += [  # noqa F405
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-]
-
-log_level = "DEBUG"
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'default': {
-            'format': '%(asctime)s - %(module)s - %(levelname)s: %(message)s',
-        },
-    },
-    'handlers': {
-        'console': {
-            'formatter': 'default',
-            'class': 'logging.StreamHandler',
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["console"],
-            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),  # noqa: F405
-        },
-        "core": {
-            "handlers": ["console"],
-            "level": os.getenv("TESTY_TMS_CORE_LOG_LEVEL", log_level),  # noqa: F405
-        },
-        'celery': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True
-        },
-    },
-    'celery': {
-        'handlers': ['console'],
-        'level': log_level,
-        'propagate': True
-    },
-}
+@shared_task(bind=True)
+def debug_task(self):
+    print(f'Request: {self.request!r}')
