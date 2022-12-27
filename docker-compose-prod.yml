@@ -1,6 +1,8 @@
 version: '3.9'
 services:
   testy:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     build:
       context: testy
       dockerfile: scripts/prod/Dockerfile
@@ -20,6 +22,10 @@ services:
       - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - SECRET_KEY=${SECRET_KEY}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
     depends_on:
       db:
         condition: service_healthy
@@ -38,5 +44,42 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-volumes:
-  react_apps:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    command: redis-server --appendonly yes
+    volumes:
+      - "./redis_data:/data"
+    ports:
+      - "6380:6379"
+  celery:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+    build:
+      context: testy
+      dockerfile: scripts/celery/Dockerfile
+    command: celery -A testy worker -l INFO
+    container_name: celery
+    environment:
+      - DJANGO_SETTINGS_MODULE=testy.settings.development
+      - POSTGRES_NAME=${POSTGRES_NAME}
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_SERVICE_HOST=${POSTGRES_SERVICE_HOST}
+      - POSTGRES_SERVICE_PORT=${POSTGRES_SERVICE_PORT}
+      - COMPANY_DOMAIN=${COMPANY_DOMAIN}
+      - SUPERUSER_USERNAME=${SUPERUSER_USERNAME}
+      - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - SECRET_KEY=${SECRET_KEY}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+    volumes:
+      - './testy:/testy'
+    depends_on:
+      - testy
+      - db
+      - redis

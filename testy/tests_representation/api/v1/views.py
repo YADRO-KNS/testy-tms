@@ -53,7 +53,7 @@ from tests_representation.selectors.testplan import TestPlanSelector
 from tests_representation.selectors.tests import TestSelector
 from tests_representation.services.parameters import ParameterService
 from tests_representation.services.results import TestResultService
-from tests_representation.services.testplans import TestPLanService
+from tests_representation.services.testplans import TestPlanService
 from tests_representation.services.tests import TestService
 from utilities.request import get_boolean
 
@@ -93,7 +93,7 @@ class TestPLanListView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericVi
     def create(self, request, *args, **kwargs):
         serializer = TestPlanInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        test_plans = TestPLanService().testplan_create(serializer.validated_data)
+        test_plans = TestPlanService().testplan_create(serializer.validated_data)
         return Response(TestPlanOutputSerializer(test_plans, many=True, context={'request': request}).data,
                         status=status.HTTP_201_CREATED)
 
@@ -118,13 +118,13 @@ class TestPLanDetailView(APIView):
         serializer = TestPlanUpdateSerializer(data=request.data, instance=test_plan, context={"request": request},
                                               partial=True)
         serializer.is_valid(raise_exception=True)
-        test_plan = TestPLanService().testplan_update(test_plan=test_plan, data=serializer.validated_data)
+        test_plan = TestPlanService().testplan_update(test_plan=test_plan, data=serializer.validated_data)
         return Response(TestPlanOutputSerializer(test_plan, context={'request': request}).data,
                         status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
         test_plan = self.get_object(pk)
-        TestPLanService().testplan_delete(test_plan=test_plan)
+        TestPlanService().testplan_delete(test_plan=test_plan)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

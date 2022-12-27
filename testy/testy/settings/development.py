@@ -74,4 +74,9 @@ LOGGING = {
             "level": os.getenv("TESTY_TMS_CORE_LOG_LEVEL", log_level),  # noqa: F405
         },
     },
+    'celery': {
+        'handlers': ['console'],
+        'level': log_level,
+        'propagate': True
+    },
 }

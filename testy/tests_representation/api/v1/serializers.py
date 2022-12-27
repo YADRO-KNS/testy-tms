@@ -66,7 +66,7 @@ class TestPlanInputSerializer(ModelSerializer):
         model = TestPlan
         fields = (
             'id', 'name', 'parent', 'test_cases', 'parameters', 'started_at', 'due_date', 'finished_at', 'is_archive',
-            'project',
+            'project', 'description'
         )
 
 
@@ -180,7 +180,7 @@ class TestPlanOutputSerializer(ModelSerializer):
         model = TestPlan
         fields = (
             'id', 'name', 'parent', 'parameters', 'started_at', 'due_date', 'finished_at', 'is_archive',
-            'tests', 'project', 'child_test_plans', 'url', 'title'
+            'tests', 'project', 'child_test_plans', 'url', 'title', 'description'
         )
 
     def get_title(self, instance):

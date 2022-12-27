@@ -28,6 +28,21 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from .celery import app as celery_app
+from django.apps import AppConfig
 
-__all__ = ('celery_app',)
+__all__ = (
+    'TestyPluginConfig'
+)
+
+
+class TestyPluginConfig(AppConfig):
+    name = ''
+    verbose_name = ''
+    description = ''
+    version = ''
+    plugin_base_url = ''
+    author = ''
+    author_email = ''
+    middleware = []
+    min_version = None
+    max_version = None

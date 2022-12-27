@@ -28,6 +28,18 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from .celery import app as celery_app
+from celery import Celery
 
-__all__ = ('celery_app',)
+# Set the default Django settings module for the 'celery' program.
+# os.environ.get('DJANGO_SETTINGS_MODULE', 'testy.settings.development')
+
+app = Celery('testy_celery')
+
+# Using a string here means the worker doesn't have to serialize
+# the configuration object to child processes.
+# - namespace='CELERY' means all celery-related configuration keys
+#   should have a `CELERY_` prefix.
+app.config_from_object('django.conf:settings', namespace='CELERY')
+
+# Load task modules from all registered Django apps.
+app.autodiscover_tasks()
