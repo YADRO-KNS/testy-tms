@@ -38,7 +38,9 @@ from tests_representation.utils import combination_parameters
 
 
 class TestPlanService:
-    non_side_effect_fields = ('name', 'parent', 'started_at', 'due_date', 'finished_at', 'is_archive', 'project',)
+    non_side_effect_fields = (
+        'name', 'parent', 'started_at', 'due_date', 'finished_at', 'is_archive', 'project', 'description'
+    )
 
     def _make_testplan_model(self, data, parameters=None):
         testplan = TestPlan.model_create(
@@ -71,28 +73,6 @@ class TestPlanService:
 
         if test_cases := data.get('test_cases', []):
             TestService().bulk_test_create(test_plans, test_cases)
-
-        return test_plans
-
-    def testplan_bulk_create_with_tests(self, data_list):
-        testplan_objects = []
-        for data in data_list:
-            parameters = [parameter.id for parameter in data.get('parameters')]
-            testplan_objects.append(self._make_testplan_model(data, parameters=parameters if parameters else None))
-        test_plans = TestPlan.objects.bulk_create(testplan_objects)
-        TestPlan.objects.rebuild()
-        created_tests = []
-        for test_plan, data in zip(test_plans, data_list):
-            if data.get('test_cases'):
-                created_tests.extend(TestService().bulk_test_create([test_plan], data['test_cases']))
-        return created_tests, test_plans
-
-    def testplan_bulk_create(self, validated_data):
-        testplan_objects = []
-        for data in validated_data:
-            testplan_objects.append(self._make_testplan_model(data))
-        test_plans = TestPlan.objects.bulk_create(testplan_objects)
-        TestPlan.objects.rebuild()
 
         return test_plans
 
