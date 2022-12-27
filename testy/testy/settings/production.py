@@ -33,4 +33,4 @@ from testy.settings.common import *  # noqa F401, F403
 
 DEBUG = False
 
-SECRET_KEY = os.environ.get('SECRET_KEY', '12345')  # noqa F405
+SECRET_KEY = os.environ.get('SECRET_KEY')  # noqa F405

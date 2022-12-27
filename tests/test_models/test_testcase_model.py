@@ -40,7 +40,7 @@ from tests.error_messages import INT_VALUE_ERR_MSG, MODEL_VALUE_ERR_MSG, NOT_NUL
 class TestCaseModel:
     relation_name = TestCase._meta.label_lower.replace('.', '_')
 
-    @pytest.mark.parametrize('parameter_name', ['name', 'project', 'suite', 'setup', 'teardown'])
+    @pytest.mark.parametrize('parameter_name', ['name', 'project', 'suite', 'setup', 'scenario', 'teardown'])
     def test_not_null_constraint(self, parameter_name, test_case_factory):
         foreign_keys = ['project', 'suite']
         with pytest.raises(IntegrityError) as err:

@@ -112,6 +112,7 @@ class TestCaseEndpoints:
         if expected_status == HTTPStatus.OK:
             case_dict['project'] = project.id
             case_dict['suite'] = test_suite.id
+            case_dict['scenario'] = constants.SCENARIO
         response = api_client.send_request(
             self.view_name_detail,
             reverse_kwargs={'pk': test_case.pk},
@@ -126,6 +127,7 @@ class TestCaseEndpoints:
         else:
             assert json.loads(response.content)['project'][0] == REQUIRED_FIELD_MSG
             assert json.loads(response.content)['suite'][0] == REQUIRED_FIELD_MSG
+            assert json.loads(response.content)['scenario'][0] == REQUIRED_FIELD_MSG
 
     def test_delete(self, api_client, authorized_superuser, test_case):
         assert TestCase.objects.count() == 1, 'Test case was not created'

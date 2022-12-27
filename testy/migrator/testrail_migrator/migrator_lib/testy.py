@@ -38,6 +38,8 @@ from enum import Enum
 from operator import itemgetter
 
 from asgiref.sync import async_to_sync, sync_to_async
+from simple_history.utils import bulk_create_with_history
+
 from core.api.v1.serializers import ProjectSerializer
 from core.models import Attachment, Project
 from core.services.projects import ProjectService
@@ -50,11 +52,11 @@ from testrail_migrator.migrator_lib.testrail import InstanceType, TestRailClient
 from testrail_migrator.migrator_lib.utils import split_list_by_chunks
 from testrail_migrator.serializers import ParameterSerializer, TestSerializer
 from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer
-from tests_description.models import TestCase
+from tests_description.models import TestCase, TestSuite
 from tests_description.services.cases import TestCaseService
 from tests_description.services.suites import TestSuiteService
 from tests_representation.api.v1.serializers import TestPlanInputSerializer, TestResultSerializer
-from tests_representation.models import TestPlan, TestResult
+from tests_representation.models import TestPlan, TestResult, Parameter, Test
 from tests_representation.services.parameters import ParameterService
 from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPlanService
@@ -173,7 +175,20 @@ class TestyCreator:
                 await tqdm.gather(*tasks, desc='attachments chunk progress', leave=False)
 
     @staticmethod
-    def create_suites(suites, project_id):
+    def suites_bulk_create(data_list):
+        suites = []
+        non_side_effect_fields = ['parent', 'project', 'name']
+        for data in data_list:
+            test_suite = TestSuite.model_create(non_side_effect_fields, data=data, commit=False)
+            test_suite.lft = 0
+            test_suite.rght = 0
+            test_suite.tree_id = 0
+            test_suite.level = 0
+            suites.append(test_suite)
+        TestSuite.objects.rebuild()
+        return TestSuite.objects.bulk_create(suites)
+
+    def create_suites(self, suites, project_id):
         suite_data_list = []
         src_ids = []
         for suite in suites:
@@ -181,12 +196,20 @@ class TestyCreator:
             suite_data_list.append({'name': suite['name'], 'project': project_id})
         serializer = TestSuiteSerializer(data=suite_data_list, many=True)
         serializer.is_valid(raise_exception=True)
-        created_suites = TestSuiteService().suites_bulk_create(serializer.validated_data)
+        created_suites = self.suites_bulk_create(serializer.validated_data)
 
         return dict(zip(src_ids, [created_suite.id for created_suite in created_suites]))
 
     @staticmethod
-    def create_cases(cases, suite_mappings, section_mappings, project_id):
+    def cases_bulk_create(data_list):
+        non_side_effect_fields = ['name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate']
+        cases = []
+        for data in data_list:
+            cases.append(TestCase.model_create(fields=non_side_effect_fields, data=data, commit=False))
+
+        return bulk_create_with_history(cases, TestCase)
+
+    def create_cases(self, cases, suite_mappings, section_mappings, project_id):
         cases_data_list = []
         src_case_ids = []
         for case in cases:
@@ -206,14 +229,14 @@ class TestyCreator:
                 'name': case['title'],
                 'project': project_id,
                 'suite': suite_id,
-                'scenario': scenario,
+                'scenario': scenario if scenario else 'Scenario was not provided',
             }
             if setup:
                 case_data['setup'] = setup
             cases_data_list.append(case_data)
         serializer = TestCaseSerializer(data=cases_data_list, many=True)
         serializer.is_valid(raise_exception=True)
-        created_cases = TestCaseService().cases_bulk_create(serializer.validated_data)
+        created_cases = self.cases_bulk_create(serializer.validated_data)
         return dict(zip(src_case_ids, [created_case.id for created_case in created_cases]))
 
     def create_sections(self, sections, suite_mappings, project_id, drop_default_section: bool = True):
@@ -238,7 +261,13 @@ class TestyCreator:
         return sections_mappings
 
     @staticmethod
-    def create_configs(config_groups, project_id):
+    def parameter_bulk_create(data_list):
+        non_side_effect_fields = ['project', 'data', 'group_name']
+        parameters = [Parameter.model_create(fields=non_side_effect_fields, data=data, commit=False) for data in
+                      data_list]
+        return Parameter.objects.bulk_create(parameters)
+
+    def create_configs(self, config_groups, project_id):
         parameters_mappings = {}
         parameter_data_list = []
         src_config_ids = []
@@ -254,7 +283,7 @@ class TestyCreator:
 
         serializer = ParameterSerializer(data=parameter_data_list, many=True)
         serializer.is_valid(raise_exception=True)
-        created_parameters = ParameterService().parameter_bulk_create(serializer.validated_data)
+        created_parameters = self.parameter_bulk_create(serializer.validated_data)
         for tr_config_id, testy_parameter in zip(src_config_ids, created_parameters):
             parameters_mappings.update({tr_config_id: testy_parameter.id})
 
@@ -407,7 +436,13 @@ class TestyCreator:
         return ProjectService().project_create(serializer.validated_data)
 
     @staticmethod
-    def create_tests(tests, case_mappings, plans_mappings, project_id):
+    def tests_bulk_create_by_data_list(data_list):
+        non_side_effect_fields = ['case', 'plan', 'user', 'is_archive', 'project']
+        test_objects = [Test.model_create(fields=non_side_effect_fields, data=data, commit=False) for data in
+                        data_list]
+        return Test.objects.bulk_create(test_objects)
+
+    def create_tests(self, tests, case_mappings, plans_mappings, project_id):
         test_data_list = []
         tests_mappings = {}
         src_ids = []
@@ -423,7 +458,7 @@ class TestyCreator:
             test_data_list.append(test_data)
         serializer = TestSerializer(data=test_data_list, many=True)
         serializer.is_valid(raise_exception=True)
-        created_tests = TestService().tests_bulk_create_by_data_list(serializer.validated_data)
+        created_tests = self.tests_bulk_create_by_data_list(serializer.validated_data)
         for src_id, testy_test in zip(src_ids, created_tests):
             tests_mappings.update({src_id: testy_test.id})
 

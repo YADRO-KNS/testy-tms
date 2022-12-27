@@ -32,7 +32,6 @@
 from typing import Any, Dict
 
 from core.services.attachments import AttachmentService
-from simple_history.utils import bulk_create_with_history
 from tests_description.models import TestCase
 
 
@@ -49,13 +48,6 @@ class TestCaseService:
             AttachmentService().attachment_set_content_object(attachment, case)
 
         return case
-
-    def cases_bulk_create(self, data_list):
-        cases = []
-        for data in data_list:
-            cases.append(TestCase.model_create(fields=self.non_side_effect_fields, data=data, commit=False))
-
-        return bulk_create_with_history(cases, TestCase)
 
     def case_update(self, case: TestCase, data: Dict[str, Any]) -> TestCase:
         case, _ = case.model_update(
