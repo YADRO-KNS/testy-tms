@@ -28,60 +28,29 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+import json
+from contextlib import contextmanager
+from datetime import datetime
+from typing import Any
 
-from testy.settings.common import *  # noqa F401, F403
 
-DEBUG = True
+def back_up(dict_to_backup, path, name):
+    with open(f'{path}/{name}{datetime.now()}.json', 'w') as file:
+        file.write(json.dumps(dict_to_backup, indent=2))
 
-SECRET_KEY = 'django-insecure-97ml+ugrkdl6s!h)_5vanzw4%d_lajo6j(08e84e7314*&)s3)'
 
-INSTALLED_APPS += [  # noqa F405
-    'django_extensions',
-    'debug_toolbar',
-]
+@contextmanager
+def timer(function_name: str):
+    start_time = datetime.now()
+    yield
+    print(f'{function_name} took: ', datetime.now() - start_time)
 
-INTERNAL_IPS = [
-    "127.0.0.1",
-]
 
-MIDDLEWARE += [  # noqa F405
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-]
+def split_list_by_chunks(src_list: list, chunk_size: int = 40):
+    return [src_list[x:x + chunk_size] for x in range(0, len(src_list), chunk_size)]
 
-log_level = "DEBUG"
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'default': {
-            'format': '%(asctime)s - %(module)s - %(levelname)s: %(message)s',
-        },
-    },
-    'handlers': {
-        'console': {
-            'formatter': 'default',
-            'class': 'logging.StreamHandler',
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["console"],
-            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),  # noqa: F405
-        },
-        "core": {
-            "handlers": ["console"],
-            "level": os.getenv("TESTY_TMS_CORE_LOG_LEVEL", log_level),  # noqa: F405
-        },
-        'celery': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True
-        },
-    },
-    'celery': {
-        'handlers': ['console'],
-        'level': log_level,
-        'propagate': True
-    },
-}
+def find_idx_by_key_value(key: str, value: Any, src_list: list):
+    for idx, elem in enumerate(src_list):
+        if elem[key] == value:
+            return idx

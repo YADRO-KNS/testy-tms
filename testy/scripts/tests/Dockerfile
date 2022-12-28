@@ -6,11 +6,13 @@ ENV PYTHONDONTWRITEBYTECODE 1
 RUN apk update && \
     apk add --virtual build-deps gcc musl-dev && \
     apk add postgresql-dev && \
-    apk add netcat-openbsd && apk add build-base openldap-dev python3-dev
+    apk add netcat-openbsd
 
 RUN mkdir /testy
 WORKDIR /testy
 
 COPY ./requirements/dev-requirements.txt /testy/requirements/
+COPY . /testy
 
 RUN pip install -r requirements/dev-requirements.txt
+RUN pip install -e plugins/migrator

@@ -1,0 +1,17 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<ul>
+    <li><a href="{% url 'plugins:testrail_migrator:testrailsettings-list' %}">Settings for downloading</a></li>
+    <li><a href="{% url 'plugins:testrail_migrator:testrailbackup-list' %}">Downloaded projects</a></li>
+    <li><a href="{% url 'plugins:testrail_migrator:download' %}">Download testrail projects</a></li>
+    <li><a href="{% url 'plugins:testrail_migrator:upload' %}">Upload testrail projects</a></li>
+    <li><a href="{% url 'plugins:testrail_migrator:delete' %}">Delete testy project</a></li>
+</ul>
+</body>
+</html>
