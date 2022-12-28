@@ -194,7 +194,8 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
                 model_class,
                 update_method,
                 field_list,
-                config_dict
+                config_dict,
+                mappings['attachments']
             )
 
 
