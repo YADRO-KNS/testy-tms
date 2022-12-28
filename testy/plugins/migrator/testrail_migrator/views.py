@@ -29,6 +29,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 from core.models import Project
+from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from rest_framework import mixins, status
@@ -45,6 +46,8 @@ from .serializers import (
     TestyDeleteProjectSerializer,
 )
 from .tasks import download_task, upload_task
+
+UserModel = get_user_model()
 
 
 class TestrailSettingsViewSet(ModelViewSet):
@@ -123,4 +126,6 @@ class TestyDeleteProjectViewSet(mixins.CreateModelMixin, GenericViewSet):
 
     def create(self, request, *args, **kwargs):
         Project.objects.get(pk=request.POST.get('testy_project')).delete()
+        if request.POST.get('wipe_users') == 'true':
+            UserModel.objects.all().exclude(username='admin').delete()
         return redirect(reverse('plugins:testrail_migrator:delete'))

@@ -65,6 +65,7 @@ class TestrailUploadSerializer(serializers.Serializer):
 
 class TestyDeleteProjectSerializer(serializers.Serializer):
     testy_project = PrimaryKeyRelatedField(queryset=Project.objects.all())
+    wipe_users = serializers.BooleanField(default=False)
 
 
 class DownloadSerializer(serializers.Serializer):
