@@ -88,7 +88,9 @@ INSTALLED_APPS = [
     'celery_progress',
 ]
 
-TESTY_PLUGINS = []
+TESTY_PLUGINS = [
+    'testrail_migrator'
+]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

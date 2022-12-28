@@ -28,7 +28,13 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from dotenv import load_dotenv
+from .config import TestrailConfig, parse_yaml_config
+from .testrail import TestRailClient
+from .testy import TestyCreator
 
-load_dotenv()
-from testy.settings.development import *  # noqa F401, F403
+__all__ = (
+    'TestrailConfig',
+    'parse_yaml_config',
+    'TestRailClient',
+    'TestyCreator',
+)

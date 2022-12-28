@@ -28,7 +28,14 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from dotenv import load_dotenv
+from setuptools import find_packages, setup
 
-load_dotenv()
-from testy.settings.development import *  # noqa F401, F403
+setup(
+    name='testrail-migrator',
+    version='0.1',
+    description='Plugin to migrate your data from testrail',
+    install_requires=['PyYAML', 'tqdm', 'requests', 'celery', 'aiohttp', 'aiofiles', 'requests'],
+    packages=find_packages(),
+    include_package_data=True,
+    zip_safe=False,
+)

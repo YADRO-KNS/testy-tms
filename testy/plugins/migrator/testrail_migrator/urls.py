@@ -28,7 +28,27 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from dotenv import load_dotenv
+from django.urls import path
+from django.views.generic import TemplateView
+from rest_framework.routers import SimpleRouter
 
-load_dotenv()
-from testy.settings.development import *  # noqa F401, F403
+from .views import (
+    DownloadViewSet,
+    TestrailBackupViewSet,
+    TestrailSettingsViewSet,
+    TestyDeleteProjectViewSet,
+    UploaderView,
+    task_status,
+)
+
+router = SimpleRouter()
+router.register('settings', TestrailSettingsViewSet)
+router.register('backups', TestrailBackupViewSet)
+urlpatterns = [
+    path('', TemplateView.as_view(template_name='index.html'), name='migrator-index'),
+    path('upload/', UploaderView.as_view({'post': 'create'}), name='upload'),
+    path('clear/', TestyDeleteProjectViewSet.as_view({'post': 'create'}), name='delete'),
+    path('download/', DownloadViewSet.as_view({'post': 'create'}), name='download'),
+    path('task_status/<str:task_id>/', task_status, name='task_status')
+]
+urlpatterns += router.urls

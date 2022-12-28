@@ -28,7 +28,22 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from dotenv import load_dotenv
+from django.db import models
 
-load_dotenv()
-from testy.settings.development import *  # noqa F401, F403
+
+class TestrailSettings(models.Model):
+    login = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
+    api_url = models.CharField(max_length=255)
+    testy_attachments_url = models.CharField(max_length=255)
+
+    def __str__(self) -> str:
+        return self.login
+
+
+class TestrailBackup(models.Model):
+    name = models.CharField(max_length=255)
+    filepath = models.CharField(max_length=255)
+
+    def __str__(self) -> str:
+        return self.name

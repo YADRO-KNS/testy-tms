@@ -28,7 +28,35 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from dotenv import load_dotenv
+from dataclasses import dataclass
 
-load_dotenv()
-from testy.settings.development import *  # noqa F401, F403
+import yaml
+
+
+@dataclass
+class TestrailConfig:
+    """Config for testrail uploader."""
+
+    login: str = None
+    password: str = None
+    api_url: str = None
+
+
+def parse_yaml_config(config_path: str, config_name: str):
+    """
+    Parse yaml config file.
+
+    Args:
+        config_path: path to config
+        config_name: key in yaml dict
+
+    Returns:
+          Testrail config, Allure config, kwargs for force_passed.
+    """
+    with open(config_path, 'r') as config_file:
+        try:
+            config = yaml.safe_load(config_file)
+        except yaml.YAMLError:
+            pass
+            # logger.error(str(err))
+    return config.get(config_name)
