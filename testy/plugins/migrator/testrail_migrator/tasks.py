@@ -43,7 +43,6 @@ from testrail_migrator.migrator_lib.testrail import InstanceType
 from testrail_migrator.migrator_lib.testy import ParentType
 from testrail_migrator.models import TestrailBackup
 from tests_description.models import TestCase
-from tests_description.services.cases import TestCaseService
 from tests_representation.models import TestResult
 from tests_representation.services.results import TestResultService
 
@@ -182,7 +181,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
             )
 
     mappings_keys = [
-        ('cases', TestCase, TestCaseService().case_update, ['scenario', 'setup']),
+        ('cases', TestCase, creator.case_update, ['scenario', 'setup']),
         ('results_parent_mile', TestResult, TestResultService().result_update, ['comment']),
         ('results_parent_plan', TestResult, TestResultService().result_update, ['comment']),
     ]
