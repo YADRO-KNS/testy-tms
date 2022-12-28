@@ -28,36 +28,18 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from celery import Celery
 
-from django.urls import path
-from rest_framework.routers import SimpleRouter
-from tests_representation.api.v1 import views
-from tests_representation.api.v1.views import (
-    TestPLanDetailView,
-    TestPLanListView,
-    TestPLanStatisticsView,
-    TestResultChoicesView,
-)
+# Set the default Django settings module for the 'celery' program.
+# os.environ.get('DJANGO_SETTINGS_MODULE', 'testy.settings.development')
 
-router = SimpleRouter()
-router.register('parameters', views.ParameterViewSet)
-router.register('results', views.TestResultViewSet)
+app = Celery('testy_celery')
 
-test_lists = views.TestListViewSet.as_view({'get': 'list'})
-test_detail = views.TestDetailViewSet.as_view({
-    'get': 'retrieve',
-    'put': 'update',
-    'patch': 'partial_update',
-})
+# Using a string here means the worker doesn't have to serialize
+# the configuration object to child processes.
+# - namespace='CELERY' means all celery-related configuration keys
+#   should have a `CELERY_` prefix.
+app.config_from_object('django.conf:settings', namespace='CELERY')
 
-urlpatterns = [
-    path('tests/', test_lists, name='test-list'),
-    path('tests/<int:pk>/', test_detail, name='test-detail'),
-
-    path('testplans/', TestPLanListView.as_view({'get': 'list', 'post': 'create'}), name='testplan-list'),
-    path('testplans/<int:pk>/', TestPLanDetailView.as_view(), name='testplan-detail'),
-    path('testplans/<int:pk>/statistics/', TestPLanStatisticsView.as_view(), name='testplan-statistics'),
-
-    path('test-results/', TestResultChoicesView.as_view(), name='test-results'),
-]
-urlpatterns += router.urls
+# Load task modules from all registered Django apps.
+app.autodiscover_tasks()

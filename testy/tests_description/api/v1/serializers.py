@@ -37,7 +37,13 @@ from rest_framework.serializers import ModelSerializer
 from tests_description.models import TestCase, TestSuite
 
 
-class TestCaseSerializer(ModelSerializer):
+class TestCaseBaseSerializer(ModelSerializer):
+    class Meta:
+        model = TestCase
+        fields = ('id', 'name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'description')
+
+
+class TestCaseSerializer(TestCaseBaseSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:testcase-detail')
     key = IntegerField(source='id', read_only=True)
     value = IntegerField(source='id', read_only=True)
@@ -45,12 +51,8 @@ class TestCaseSerializer(ModelSerializer):
         many=True, queryset=AttachmentSelector().attachment_list(), required=False
     )
 
-    class Meta:
-        model = TestCase
-        fields = (
-            'id', 'key', 'value', 'name', 'project', 'attachments', 'suite', 'setup', 'scenario', 'teardown',
-            'estimate', 'url', 'description'
-        )
+    class Meta(TestCaseBaseSerializer.Meta):
+        fields = TestCaseBaseSerializer.Meta.fields + ('key', 'value', 'attachments', 'url',)
 
 
 class TestCaseRetrieveSerializer(ModelSerializer):
@@ -69,11 +71,12 @@ class TestSuiteTreeSerializer(ModelSerializer):
     value = serializers.IntegerField(source='id')
     title = serializers.CharField(source='name')
     descendant_count = SerializerMethodField()
+    test_cases = TestCaseBaseSerializer(many=True, read_only=True)
 
     class Meta:
         model = TestSuite
         fields = ('id', 'value', 'name', 'key', 'title', 'level', 'children',
-                  'descendant_count',
+                  'descendant_count', 'test_cases',
                   )
 
     def get_descendant_count(self, instance):

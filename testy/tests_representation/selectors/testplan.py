@@ -32,7 +32,9 @@
 import logging
 from typing import Optional
 
+from django.db import connection
 from django.db.models import QuerySet
+from tests_representation.choices import TestStatuses
 from tests_representation.models import TestPlan
 
 logger = logging.getLogger(__name__)
@@ -50,3 +52,33 @@ class TestPlanSelector:
 
     def testplan_without_parent(self) -> QuerySet[TestPlan]:
         return QuerySet(model=TestPlan).filter(parent=None).order_by('name')
+
+    def testplan_statistics(self, test_plan):
+        test_plan_child_ids = tuple(test_plan.get_descendants(include_self=True).values_list('pk', flat=True))
+        query = """
+                    SELECT   Count(*),
+                             COALESCE(
+                                        (
+                                        SELECT   status
+                                        FROM     tests_representation_testresult tr
+                                        WHERE    tr.test_id = t.id
+                                        ORDER BY id DESC limit 1 ), %s ) status
+                    FROM     tests_representation_test t
+                    WHERE    plan_id IN %s
+                    GROUP BY status
+                """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [TestStatuses.UNTESTED, test_plan_child_ids])
+            rows = cursor.fetchall()
+
+        result = [
+            {
+                "label": status[1].upper(),
+                "value": 0
+            } for status in TestStatuses.choices if status[0] not in [row[1] for row in rows]
+        ]
+
+        for row in rows:
+            result.append({"label": TestStatuses(row[1]).name, "value": row[0]})
+        return sorted(result, key=lambda d: d['value'], reverse=True)

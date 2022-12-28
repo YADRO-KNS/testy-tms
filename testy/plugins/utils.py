@@ -28,36 +28,12 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
-from django.urls import path
-from rest_framework.routers import SimpleRouter
-from tests_representation.api.v1 import views
-from tests_representation.api.v1.views import (
-    TestPLanDetailView,
-    TestPLanListView,
-    TestPLanStatisticsView,
-    TestResultChoicesView,
-)
-
-router = SimpleRouter()
-router.register('parameters', views.ParameterViewSet)
-router.register('results', views.TestResultViewSet)
-
-test_lists = views.TestListViewSet.as_view({'get': 'list'})
-test_detail = views.TestDetailViewSet.as_view({
-    'get': 'retrieve',
-    'put': 'update',
-    'patch': 'partial_update',
-})
-
-urlpatterns = [
-    path('tests/', test_lists, name='test-list'),
-    path('tests/<int:pk>/', test_detail, name='test-detail'),
-
-    path('testplans/', TestPLanListView.as_view({'get': 'list', 'post': 'create'}), name='testplan-list'),
-    path('testplans/<int:pk>/', TestPLanDetailView.as_view(), name='testplan-detail'),
-    path('testplans/<int:pk>/statistics/', TestPLanStatisticsView.as_view(), name='testplan-statistics'),
-
-    path('test-results/', TestResultChoicesView.as_view(), name='test-results'),
-]
-urlpatterns += router.urls
+def parse_plugin_config(plugin_config):
+    return {
+        'name': plugin_config.verbose_name,
+        'package': plugin_config.name,
+        'author': plugin_config.author,
+        'author_email': plugin_config.author_email,
+        'description': plugin_config.description,
+        'version': plugin_config.version
+    }
