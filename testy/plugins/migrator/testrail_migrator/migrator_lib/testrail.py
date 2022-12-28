@@ -32,17 +32,15 @@ import asyncio
 import itertools
 import logging
 from enum import Enum
-from http import HTTPStatus
 from json import JSONDecodeError
 
 import aiohttp
-import requests
 from aiohttp import ClientConnectionError, ContentTypeError
 from asgiref.sync import async_to_sync
 from tqdm.asyncio import tqdm
 
 from .config import TestrailConfig
-from .utils import split_list_by_chunks, timer
+from .utils import split_list_by_chunks
 
 
 class InstanceType(Enum):
@@ -68,44 +66,6 @@ class TestRailClientError(Exception):
         super().__init__(msg)
 
 
-class TestrailClientSync:
-    def __init__(self, config: TestrailConfig):
-        """
-        Init method for TestRailClient.
-
-        Args:
-            config: instance of TestrailConfig
-        """
-        if not config.login or not config.password:
-            raise TestRailClientError('No login or password were provided.')
-        self.config = config
-
-    def get_single_attachment(self, attachment_id):
-        return self._process_request(endpoint=f'/get_attachment/{attachment_id}')
-
-    def _process_request(self, endpoint: str, retry_count=30):
-        """
-        Process request to TestRail REST API.
-
-        Args:
-            endpoint: endpoint url
-            input_data: content
-
-        Returns:
-            data or None for error
-        """
-        headers = {
-            'Content-Type': 'application/json; charset=utf-8'
-        }
-        url = self.config.api_url + endpoint
-        while retry_count:
-            response = requests.get(url, auth=(self.config.login, self.config.password), headers=headers)
-            if response.status_code == HTTPStatus.OK:
-                return response.content
-            logging.error(f'Response not ok - {response}')
-            retry_count -= 1
-
-
 class TestRailClient:
     """Implement testrail client."""
 
@@ -120,27 +80,6 @@ class TestRailClient:
             raise TestRailClientError('No login or password were provided.')
         self.config = config
         self.timeout = timeout
-        # TODO: add check if auth failed
-        # self.session = aiohttp.ClientSession(auth=aiohttp.BasicAuth(self.config.login, self.config.password),
-        #                                      timeout=self.timeout)
-
-    # async def __aenter__(self):
-    #     return self
-
-    # async def __aexit__(self, exc_type, exc_val, exc_tb):
-    #     await self.session.close()
-
-    async def download_descriptions(self, project_id: int):
-        descriptions_dict = {}
-        with timer('Getting suites'):
-            descriptions_dict['suites'] = await self.get_suites(project_id)
-
-        with timer('Getting cases'):
-            descriptions_dict['cases'] = await self.get_cases(project_id, descriptions_dict['suites'])
-
-            descriptions_dict['sections'] = await self.get_sections(project_id, descriptions_dict['suites'])
-
-        return descriptions_dict
 
     @async_to_sync
     async def get_users(self, project_id=''):
@@ -153,49 +92,6 @@ class TestRailClient:
             for entry in plan['entries']:
                 runs_parent_plan.extend(entry['runs'])
         return runs_parent_plan
-
-    async def download_representations(self, project_id: int, ignore_completed: bool):
-        representations_dict = {}
-        query_params = {'is_completed': 0 if ignore_completed else 1}
-        configs = await self.get_configs(project_id)
-        representations_dict['configs'] = configs
-        milestones = await self.get_milestones(project_id, ignore_completed, query_params=query_params)
-        for milestone in milestones:
-            filtered_children = []
-            for child_milestone in milestone['milestones']:
-                if ignore_completed and child_milestone['is_completed']:
-                    continue
-                filtered_children.append(child_milestone)
-            milestone['milestones'] = filtered_children
-
-        representations_dict['milestones'] = milestones
-
-        plans_list = await self.get_plans(project_id, query_params=query_params)
-        representations_dict['plans'] = await self.get_plans_with_runs(plans_list)
-
-        runs_parent_plan = []
-        for plan in representations_dict['plans']:
-            for entry in plan['entries']:
-                runs_parent_plan.extend(entry['runs'])
-
-        representations_dict['runs_parent_plan'] = runs_parent_plan
-
-        representations_dict['runs_parent_mile'] = await self.get_runs(project_id, query_params=query_params)
-
-        representations_dict['tests_parent_plan'] = await self.get_tests_for_runs(runs_parent_plan)
-
-        representations_dict['tests_parent_mile'] = await self.get_tests_for_runs(
-            representations_dict['runs_parent_mile']
-        )
-
-        representations_dict['results_parent_plan'] = await self.get_results_for_tests(
-            representations_dict['tests_parent_plan']
-        )
-
-        representations_dict['results_parent_mile'] = await self.get_results_for_tests(
-            representations_dict['tests_parent_mile']
-        )
-        return representations_dict
 
     @async_to_sync
     async def get_plans_with_runs(self, project_id, query_params):
@@ -337,11 +233,6 @@ class TestRailClient:
                     tasks.append(
                         self.get_attachment_with_parent_id_for_entry(instance['plan_id'], instance['id'])
                     )
-            # elif instance_type == InstanceType.TEST:
-            #     for instance in chunk:
-            #         tasks.append(
-            #             self.get_attachment_with_parent_id(instance['test_id'], instance_type)
-            #         )
             else:
                 for instance in chunk:
                     tasks.append(

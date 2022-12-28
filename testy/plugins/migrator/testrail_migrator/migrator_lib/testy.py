@@ -47,7 +47,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import IntegrityError
 from simple_history.utils import bulk_create_with_history
 from testrail_migrator.migrator_lib import TestrailConfig
-from testrail_migrator.migrator_lib.testrail import InstanceType, TestRailClient, TestrailClientSync
+from testrail_migrator.migrator_lib.testrail import InstanceType, TestRailClient
 from testrail_migrator.migrator_lib.utils import split_list_by_chunks
 from testrail_migrator.serializers import ParameterSerializer, TestSerializer
 from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer
@@ -121,27 +121,8 @@ class TestyCreator:
 
         return True, resulting_text
 
-    def update_testy_attachment_urls(self, mapping, model_class, update_method, field_list, config_dict):
-        testrail_client = TestrailClientSync(TestrailConfig(**config_dict))
-        for instance_id in mapping.values():
-            logging.info(f'Updating attachment for {model_class}, with id {instance_id}')
-            data = {}
-            instance = model_class.objects.get(pk=instance_id)
-            for field in field_list:
-                is_replaced, new_instance = self.replace_testrail_attachment_url(
-                    getattr(instance, field),
-                    mapping,
-                    testrail_client,
-                    instance
-                )
-                if not is_replaced:
-                    continue
-                data[field] = new_instance
-            if not data:
-                continue
-            update_method(instance, data)
-
-    async def temp_func(self, model_class, instance_id, field_list, mapping, testrail_client, update_method):
+    async def update_attachment_for_single_instance(self, model_class, instance_id, field_list, mapping,
+                                                    testrail_client, update_method):
         logging.info(f'Updating attachment for {model_class}, with id {instance_id}')
         data = {}
         instance = await sync_to_async(model_class.objects.get)(pk=instance_id)
@@ -167,7 +148,8 @@ class TestyCreator:
             tasks = []
             for instance_id in chunk:
                 tasks.append(
-                    self.temp_func(model_class, instance_id, field_list, mapping, testrail_client, update_method)
+                    self.update_attachment_for_single_instance(model_class, instance_id, field_list, mapping,
+                                                               testrail_client, update_method)
                 )
             await tqdm.gather(*tasks, desc='attachments chunk progress', leave=False)
 

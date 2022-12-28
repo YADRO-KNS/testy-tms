@@ -185,7 +185,6 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
         ('cases', TestCase, TestCaseService().case_update, ['scenario', 'setup']),
         ('results_parent_mile', TestResult, TestResultService().result_update, ['comment']),
         ('results_parent_plan', TestResult, TestResultService().result_update, ['comment']),
-        # ('milestones', TestPlan, ['description'])
     ]
 
     for mapping_key, model_class, update_method, field_list in mappings_keys:

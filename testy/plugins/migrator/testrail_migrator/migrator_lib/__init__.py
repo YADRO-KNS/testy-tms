@@ -29,7 +29,7 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 from .config import TestrailConfig, parse_yaml_config
-from .testrail import TestRailClient, TestrailClientSync
+from .testrail import TestRailClient
 from .testy import TestyCreator
 
 __all__ = (
@@ -37,5 +37,4 @@ __all__ = (
     'parse_yaml_config',
     'TestRailClient',
     'TestyCreator',
-    'TestrailClientSync'
 )

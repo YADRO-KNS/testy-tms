@@ -35,6 +35,7 @@ from django.urls import reverse
 from rest_framework import mixins, status
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from utilities.request import get_boolean
 
 from .models import TestrailBackup, TestrailSettings
 from .serializers import (
@@ -70,8 +71,8 @@ class DownloadViewSet(mixins.CreateModelMixin, GenericViewSet):
 
     def create(self, request, *args, **kwargs):
         project_id = request.POST.get('project_id')
-        download_attachments = True if request.POST.get('download_attachments') == 'true' else False
-        ignore_completed = True if request.POST.get('ignore_completed') == 'true' else False
+        download_attachments = get_boolean(request, 'download_attachments', 'POST')
+        ignore_completed = get_boolean(request, 'ignore_completed', 'POST')
         backup_filename = request.POST.get('backup_filename')
 
         if not project_id:
@@ -99,7 +100,7 @@ class UploaderView(mixins.CreateModelMixin, GenericViewSet):
 
     def create(self, request, *args, **kwargs):
         backup_instance = TestrailBackup.objects.get(pk=request.POST.get('testrail_backup'))
-        upload_root_runs = True if request.POST.get('upload_root_runs') == 'true' else False
+        upload_root_runs = get_boolean(request, 'upload_root_runs', 'POST')
 
         try:
             testrail_settings = TestrailSettings.objects.get(pk=request.POST.get('testrail_settings'))
@@ -126,6 +127,6 @@ class TestyDeleteProjectViewSet(mixins.CreateModelMixin, GenericViewSet):
 
     def create(self, request, *args, **kwargs):
         Project.objects.get(pk=request.POST.get('testy_project')).delete()
-        if request.POST.get('wipe_users') == 'true':
+        if get_boolean(request, 'wipe_users', 'POST'):
             UserModel.objects.all().exclude(username='admin').delete()
         return redirect(reverse('plugins:testrail_migrator:delete'))

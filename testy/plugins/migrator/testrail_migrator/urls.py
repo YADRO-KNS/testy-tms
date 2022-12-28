@@ -28,12 +28,11 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-# from rest_framework.routers import SimpleRouter
 from django.urls import path
 from django.views.generic import TemplateView
 from rest_framework.routers import SimpleRouter
 
-from .views import (  # Do,
+from .views import (
     DownloadViewSet,
     TestrailBackupViewSet,
     TestrailSettingsViewSet,
