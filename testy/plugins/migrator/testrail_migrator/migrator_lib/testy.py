@@ -193,6 +193,16 @@ class TestyCreator:
 
         return bulk_create_with_history(cases, TestCase)
 
+    @staticmethod
+    def case_update(case: TestCase, data) -> TestCase:
+        non_side_effect_fields = ['name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate',
+                                  'description']
+        case, _ = case.model_update(
+            fields=non_side_effect_fields,
+            data=data,
+        )
+        return case
+
     def create_cases(self, cases, suite_mappings, section_mappings, project_id):
         cases_data_list = []
         src_case_ids = []
