@@ -44,7 +44,9 @@ import json
 import os
 from pathlib import Path
 
+import ldap
 from django.utils.translation import gettext_lazy as _
+from django_auth_ldap.config import GroupOfNamesType, LDAPSearch
 
 from testy.utils import insert_plugins
 
@@ -218,3 +220,40 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Company
 COMPANY_DOMAIN = os.environ.get('COMPANY_DOMAIN')
+
+# Auth ldap
+
+AUTH_LDAP_SERVER_URI = 'ldap://corp.yadro.com:389'
+AUTH_LDAP_BIND_DN = 'LDAPLookUpUser-spb'
+AUTH_LDAP_BIND_PASSWORD = 'Ue!ng#eeveeCh7r'
+
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+    'dc=corp,dc=yadro,dc=com',
+    ldap.SCOPE_SUBTREE,
+    '(objectClass=top)',
+)
+AUTH_LDAP_GROUP_TYPE = GroupOfNamesType()
+
+AUTH_LDAP_CONNECTION_OPTIONS = {ldap.OPT_REFERRALS: 0}
+
+AUTH_LDAP_USER_SEARCH = LDAPSearch(
+    'dc=corp,dc=yadro,dc=com',
+    ldap.SCOPE_SUBTREE,
+    '(sAMAccountName=%(user)s)',  # noqa: WPS323
+)
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    'first_name': 'givenName',
+    'last_name': 'sn',
+    'email': 'mail',
+}
+
+AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = True
+AUTH_LDAP_ALWAYS_UPDATE_USER = True
+AUTH_LDAP_FIND_GROUP_PERMS = True
+AUTH_LDAP_CACHE_GROUPS = False
+
+AUTHENTICATION_BACKENDS = [
+    'django_auth_ldap.backend.LDAPBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
