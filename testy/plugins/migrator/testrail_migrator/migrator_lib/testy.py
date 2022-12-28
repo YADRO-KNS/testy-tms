@@ -246,14 +246,15 @@ class TestyCreator:
 
     def create_sections(self, sections, suite_mappings, project_id, drop_default_section: bool = True):
         sections = sorted(sections, key=itemgetter('depth'))
+        project = Project.objects.get(pk=project_id)
         sections_mappings = {}
-        for section in sections:
+        for section in tqdm(sections, desc='Creating sections'):
             if drop_default_section and section['name'] == self.default_root_section_name:
                 sections_mappings[section['id']] = suite_mappings[section['suite_id']]
                 continue
             section_data = {
                 'name': section['name'],
-                'project': Project.objects.get(pk=project_id),
+                'project': project
             }
             if description := section.get('description'):
                 section_data['description'] = description
