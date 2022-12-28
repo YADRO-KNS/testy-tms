@@ -98,6 +98,21 @@ class TestPLanListView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericVi
                         status=status.HTTP_201_CREATED)
 
 
+class TestPLanStatisticsView(APIView):
+    def get_view_name(self):
+        return "Test Plan Statistics"
+
+    def get_object(self, pk):
+        try:
+            return TestPlanSelector().testplan_get_by_pk(pk)
+        except ObjectDoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        test_plan = self.get_object(pk)
+        return Response(TestPlanSelector().testplan_statistics(test_plan))
+
+
 class TestPLanDetailView(APIView):
     def get_view_name(self):
         return "Test Plan Detail"
