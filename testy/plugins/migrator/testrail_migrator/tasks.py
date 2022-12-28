@@ -201,7 +201,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
 
 @shared_task(bind=True)
 def download_task(self, project_id: int, config_dict: Dict, download_attachments, ignore_completed, backup_filename):
-    progress_recorder = ProgressRecorderContext(self, total=20, description='Download started')
+    progress_recorder = ProgressRecorderContext(self, total=21, description='Download started')
 
     resulting_data = {}
 

@@ -226,11 +226,13 @@ class TestyCreator:
                                    f'{step.get("additional_info", "")}\n{step.get("refs", "")}\n'
                 scenario += temp_string
             setup = case.get('custom_preconds')
+            if not scenario or scenario.isspace():
+                scenario = 'Scenario was not provided'
             case_data = {
                 'name': case['title'],
                 'project': project_id,
                 'suite': suite_id,
-                'scenario': scenario if scenario else 'Scenario was not provided',
+                'scenario': scenario,
             }
             if description := case.get('custom_description'):
                 case_data['description'] = description
