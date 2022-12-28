@@ -121,7 +121,7 @@ class TestyCreator:
 
         return True, resulting_text
 
-    async def update_attachment_for_single_instance(self, model_class, instance_id, field_list, mapping,
+    async def update_attachment_for_single_instance(self, model_class, instance_id, field_list, attachments_mapping,
                                                     testrail_client, update_method):
         logging.info(f'Updating attachment for {model_class}, with id {instance_id}')
         data = {}
@@ -129,7 +129,7 @@ class TestyCreator:
         for field in field_list:
             is_replaced, new_instance = await self.replace_testrail_attachment_url(
                 getattr(instance, field),
-                mapping,
+                attachments_mapping,
                 testrail_client,
                 instance
             )
@@ -141,14 +141,15 @@ class TestyCreator:
         await sync_to_async(update_method)(instance, data)
 
     @async_to_sync
-    async def update_testy_attachment_urls_async(self, mapping, model_class, update_method, field_list, config_dict):
+    async def update_testy_attachment_urls_async(self, mapping, model_class, update_method, field_list, config_dict,
+                                                 attachment_mapping):
         chunks = split_list_by_chunks(list(mapping.values()))
         testrail_client = TestRailClient(TestrailConfig(**config_dict))
         for chunk in tqdm(chunks, desc='Attachments progress'):
             tasks = []
             for instance_id in chunk:
                 tasks.append(
-                    self.update_attachment_for_single_instance(model_class, instance_id, field_list, mapping,
+                    self.update_attachment_for_single_instance(model_class, instance_id, field_list, attachment_mapping,
                                                                testrail_client, update_method)
                 )
             await tqdm.gather(*tasks, desc='attachments chunk progress', leave=False)
