@@ -28,60 +28,27 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from django.urls import path
+from django.views.generic import TemplateView
+from rest_framework.routers import SimpleRouter
 
-from testy.settings.common import *  # noqa F401, F403
+from .views import (
+    DownloadViewSet,
+    TestrailBackupViewSet,
+    TestrailSettingsViewSet,
+    TestyDeleteProjectViewSet,
+    UploaderView,
+    task_status,
+)
 
-DEBUG = True
-
-SECRET_KEY = 'django-insecure-97ml+ugrkdl6s!h)_5vanzw4%d_lajo6j(08e84e7314*&)s3)'
-
-INSTALLED_APPS += [  # noqa F405
-    'django_extensions',
-    'debug_toolbar',
+router = SimpleRouter()
+router.register('settings', TestrailSettingsViewSet)
+router.register('backups', TestrailBackupViewSet)
+urlpatterns = [
+    path('', TemplateView.as_view(template_name='index.html'), name='migrator-index'),
+    path('upload/', UploaderView.as_view({'post': 'create'}), name='upload'),
+    path('clear/', TestyDeleteProjectViewSet.as_view({'post': 'create'}), name='delete'),
+    path('download/', DownloadViewSet.as_view({'post': 'create'}), name='download'),
+    path('task_status/<str:task_id>/', task_status, name='task_status')
 ]
-
-INTERNAL_IPS = [
-    "127.0.0.1",
-]
-
-MIDDLEWARE += [  # noqa F405
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-]
-
-log_level = "DEBUG"
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'default': {
-            'format': '%(asctime)s - %(module)s - %(levelname)s: %(message)s',
-        },
-    },
-    'handlers': {
-        'console': {
-            'formatter': 'default',
-            'class': 'logging.StreamHandler',
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["console"],
-            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),  # noqa: F405
-        },
-        "core": {
-            "handlers": ["console"],
-            "level": os.getenv("TESTY_TMS_CORE_LOG_LEVEL", log_level),  # noqa: F405
-        },
-        'celery': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True
-        },
-    },
-    'celery': {
-        'handlers': ['console'],
-        'level': log_level,
-        'propagate': True
-    },
-}
+urlpatterns += router.urls

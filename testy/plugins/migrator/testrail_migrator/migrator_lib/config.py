@@ -28,60 +28,35 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from dataclasses import dataclass
 
-from testy.settings.common import *  # noqa F401, F403
+import yaml
 
-DEBUG = True
 
-SECRET_KEY = 'django-insecure-97ml+ugrkdl6s!h)_5vanzw4%d_lajo6j(08e84e7314*&)s3)'
+@dataclass
+class TestrailConfig:
+    """Config for testrail uploader."""
 
-INSTALLED_APPS += [  # noqa F405
-    'django_extensions',
-    'debug_toolbar',
-]
+    login: str = None
+    password: str = None
+    api_url: str = None
 
-INTERNAL_IPS = [
-    "127.0.0.1",
-]
 
-MIDDLEWARE += [  # noqa F405
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-]
+def parse_yaml_config(config_path: str, config_name: str):
+    """
+    Parse yaml config file.
 
-log_level = "DEBUG"
+    Args:
+        config_path: path to config
+        config_name: key in yaml dict
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'default': {
-            'format': '%(asctime)s - %(module)s - %(levelname)s: %(message)s',
-        },
-    },
-    'handlers': {
-        'console': {
-            'formatter': 'default',
-            'class': 'logging.StreamHandler',
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["console"],
-            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),  # noqa: F405
-        },
-        "core": {
-            "handlers": ["console"],
-            "level": os.getenv("TESTY_TMS_CORE_LOG_LEVEL", log_level),  # noqa: F405
-        },
-        'celery': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True
-        },
-    },
-    'celery': {
-        'handlers': ['console'],
-        'level': log_level,
-        'propagate': True
-    },
-}
+    Returns:
+          Testrail config, Allure config, kwargs for force_passed.
+    """
+    with open(config_path, 'r') as config_file:
+        try:
+            config = yaml.safe_load(config_file)
+        except yaml.YAMLError:
+            pass
+            # logger.error(str(err))
+    return config.get(config_name)

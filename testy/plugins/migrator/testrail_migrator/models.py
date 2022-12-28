@@ -28,60 +28,22 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from django.db import models
 
-from testy.settings.common import *  # noqa F401, F403
 
-DEBUG = True
+class TestrailSettings(models.Model):
+    login = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
+    api_url = models.CharField(max_length=255)
+    testy_attachments_url = models.CharField(max_length=255)
 
-SECRET_KEY = 'django-insecure-97ml+ugrkdl6s!h)_5vanzw4%d_lajo6j(08e84e7314*&)s3)'
+    def __str__(self) -> str:
+        return self.login
 
-INSTALLED_APPS += [  # noqa F405
-    'django_extensions',
-    'debug_toolbar',
-]
 
-INTERNAL_IPS = [
-    "127.0.0.1",
-]
+class TestrailBackup(models.Model):
+    name = models.CharField(max_length=255)
+    filepath = models.CharField(max_length=255)
 
-MIDDLEWARE += [  # noqa F405
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-]
-
-log_level = "DEBUG"
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'default': {
-            'format': '%(asctime)s - %(module)s - %(levelname)s: %(message)s',
-        },
-    },
-    'handlers': {
-        'console': {
-            'formatter': 'default',
-            'class': 'logging.StreamHandler',
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["console"],
-            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),  # noqa: F405
-        },
-        "core": {
-            "handlers": ["console"],
-            "level": os.getenv("TESTY_TMS_CORE_LOG_LEVEL", log_level),  # noqa: F405
-        },
-        'celery': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True
-        },
-    },
-    'celery': {
-        'handlers': ['console'],
-        'level': log_level,
-        'propagate': True
-    },
-}
+    def __str__(self) -> str:
+        return self.name
