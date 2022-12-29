@@ -42,7 +42,7 @@ class TestSuiteService:
             fields=self.non_side_effect_fields,
             data=data,
         )
-        TestSuite.objects.rebuild()
+        TestSuite.objects.partial_rebuild(suite.tree_id)
         return suite
 
     def suite_update(self, suite: TestSuite, data: Dict[str, Any]) -> TestSuite:
