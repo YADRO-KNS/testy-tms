@@ -71,6 +71,8 @@ class TestCase(BaseModel):
     history = HistoricalRecords()
     description = models.TextField('description', default='', blank=True)
 
+    custom_fields = models.JSONField(null=True, blank=True)
+
     class Meta:
         default_related_name = 'test_cases'
 

@@ -36,7 +36,8 @@ from tests_description.models import TestCase
 
 
 class TestCaseService:
-    non_side_effect_fields = ['name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'description']
+    non_side_effect_fields = ['name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'description',
+                              'custom_fields']
 
     def case_create(self, data: Dict[str, Any]) -> TestCase:
         case: TestCase = TestCase.model_create(

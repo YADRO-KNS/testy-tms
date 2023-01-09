@@ -104,5 +104,7 @@ class TestResult(BaseModel):
 
     attachments = GenericRelation(Attachment)
 
+    custom_fields = models.JSONField(null=True, blank=True)
+
     class Meta:
         default_related_name = 'test_results'

@@ -34,7 +34,7 @@ from http import HTTPStatus
 
 import pytest
 from django.forms import model_to_dict
-from tests_description.api.v1.serializers import TestCaseSerializer
+from tests_description.api.v1.serializers import TestCaseRetrieveSerializer, TestCaseSerializer
 from tests_description.models import TestCase
 
 from tests import constants
@@ -64,11 +64,9 @@ class TestCaseEndpoints:
             assert instance_dict in expected_instances, f'{instance_dict} was not found in expected instances.'
 
     def test_retrieve(self, api_client, authorized_superuser, test_case):
-        expected_dict = model_to_dict(test_case)
-        expected_dict['attachments'] = []
+        expected_dict = model_to_dict_via_serializer([test_case], TestCaseRetrieveSerializer)
         response = api_client.send_request(self.view_name_detail, reverse_kwargs={'pk': test_case.pk})
         actual_dict = json.loads(response.content)
-        actual_dict.pop('url')
         assert actual_dict == expected_dict, 'Actual model dict is different from expected'
 
     def test_creation(self, api_client, authorized_superuser, project, test_suite):
