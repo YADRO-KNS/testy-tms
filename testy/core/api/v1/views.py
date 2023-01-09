@@ -32,12 +32,11 @@ from core.api.v1.serializers import AttachmentSerializer, ProjectSerializer
 from core.selectors.attachments import AttachmentSelector
 from core.selectors.projects import ProjectSelector
 from core.services.attachments import AttachmentService
+from core.services.projects import ProjectService
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
-
-from core.services.projects import ProjectService
 from tests_representation.api.v1.serializers import ParameterSerializer, TestPlanTreeSerializer
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.testplan import TestPlanSelector

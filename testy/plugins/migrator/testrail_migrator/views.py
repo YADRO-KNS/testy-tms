@@ -113,13 +113,7 @@ class UploaderView(mixins.CreateModelMixin, GenericViewSet):
             'api_url': testrail_settings.api_url,
         }
 
-        # task = upload_task.delay(
-        #     backup_name=backup_instance.name,
-        #     config_dict=config_dict,
-        #     testy_attachment_url=testrail_settings.testy_attachments_url,
-        #     upload_root_runs=upload_root_runs
-        # )
-        task = upload_task(
+        task = upload_task.delay(
             backup_name=backup_instance.name,
             config_dict=config_dict,
             testy_attachment_url=testrail_settings.testy_attachments_url,

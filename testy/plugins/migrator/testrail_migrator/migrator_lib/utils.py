@@ -54,3 +54,20 @@ def find_idx_by_key_value(key: str, value: Any, src_list: list):
     for idx, elem in enumerate(src_list):
         if elem[key] == value:
             return idx
+
+@contextmanager
+def suppress_auto_now(model, field_names):
+    fields_state = {}
+    for field_name in field_names:
+        field = model._meta.get_field(field_name)
+        fields_state[field] = {'auto_now': field.auto_now, 'auto_now_add': field.auto_now_add}
+
+    for field in fields_state:
+        field.auto_now = False
+        field.auto_now_add = False
+    try:
+        yield
+    finally:
+        for field, state in fields_state.items():
+            field.auto_now = state['auto_now']
+            field.auto_now_add = state['auto_now_add']
