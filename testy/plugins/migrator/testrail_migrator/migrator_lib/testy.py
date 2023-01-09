@@ -37,6 +37,7 @@ from datetime import datetime
 from enum import Enum
 from operator import itemgetter
 
+import pytz
 from asgiref.sync import async_to_sync, sync_to_async
 from core.api.v1.serializers import ProjectSerializer
 from core.models import Attachment, Project
@@ -46,6 +47,8 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import IntegrityError
 from simple_history.utils import bulk_create_with_history
+
+from plugins.utils import suppress_auto_now
 from testrail_migrator.migrator_lib import TestrailConfig
 from testrail_migrator.migrator_lib.testrail import InstanceType, TestRailClient
 from testrail_migrator.migrator_lib.utils import split_list_by_chunks
@@ -189,9 +192,13 @@ class TestyCreator:
         non_side_effect_fields = ['name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate']
         cases = []
         for data in data_list:
-            cases.append(TestCase.model_create(fields=non_side_effect_fields, data=data, commit=False))
-
-        return bulk_create_with_history(cases, TestCase)
+            case = TestCase.model_create(fields=non_side_effect_fields, data=data, commit=False)
+            case.updated_at = datetime.fromtimestamp(data['updated_at'], tz=pytz.UTC)
+            case.created_at = datetime.fromtimestamp(data['created_at'], tz=pytz.UTC)
+            cases.append(case)
+        with suppress_auto_now(TestCase, ['created_at', 'updated_at']):
+            created_cases = bulk_create_with_history(cases, TestCase)
+        return created_cases
 
     @staticmethod
     def case_update(case: TestCase, data) -> TestCase:
@@ -223,18 +230,20 @@ class TestyCreator:
                 scenario = 'Scenario was not provided'
             case_data = {
                 'name': case['title'],
-                'project': project_id,
-                'suite': suite_id,
+                'project': Project.objects.get(pk=project_id),
+                'suite': TestSuite.objects.get(pk=suite_id),
                 'scenario': scenario,
+                'created_at': case['created_on'],
+                'updated_at': case['updated_on']
             }
             if description := case.get('custom_description'):
                 case_data['description'] = description
             if setup:
                 case_data['setup'] = setup
             cases_data_list.append(case_data)
-        serializer = TestCaseSerializer(data=cases_data_list, many=True)
-        serializer.is_valid(raise_exception=True)
-        created_cases = self.cases_bulk_create(serializer.validated_data)
+        # serializer = TestCaseSerializer(data=cases_data_list, many=True)
+        # serializer.is_valid(raise_exception=True)
+        created_cases = self.cases_bulk_create(cases_data_list)
         return dict(zip(src_case_ids, [created_case.id for created_case in created_cases]))
 
     def create_sections(self, sections, suite_mappings, project_id, drop_default_section: bool = True):
@@ -387,6 +396,32 @@ class TestyCreator:
                 created_tests.extend(TestService().bulk_test_create([test_plan], data['test_cases']))
         return created_tests, test_plans
 
+    non_side_effect_fields = [
+        'status', 'user', 'test', 'comment', 'is_archive', 'test_case_version', 'execution_time',
+    ]
+
+    @transaction.atomic
+    def result_create(self, data, user) -> TestResult:
+        non_side_effect_fields = [
+            'status', 'user', 'test', 'comment', 'is_archive', 'test_case_version', 'execution_time', 'created_at',
+            'updated_at'
+        ]
+        test_result: TestResult = TestResult.model_create(
+            fields=non_side_effect_fields,
+            data=data,
+            commit=False,
+        )
+        test_result.user = user
+        test_result.project = test_result.test.case.project
+        test_result.test_case_version = TestCaseSelector().case_version(test_result.test.case)
+        test_result.full_clean()
+        test_result.save()
+
+        for attachment in data.get('attachments', []):
+            AttachmentService().attachment_set_content_object(attachment, test_result)
+
+        return test_result
+
     def testplan_bulk_create(self, validated_data):
         testplan_objects = []
         for data in validated_data:
@@ -513,15 +548,17 @@ class TestyCreator:
 
             result_data = {
                 'status': statuses.get(result['status_id'], 5),
-                'test': tests_mappings[result['test_id']],
+                'test': Test.objects.get(pk=tests_mappings[result['test_id']]),
+                'created_at': datetime.fromtimestamp(result['created_on'], tz=pytz.UTC)
             }
             if comment := result.get('comment'):
                 result_data['comment'] = comment
             user_id = user_mappings.get(result['created_by'])
             user = UserModel.objects.get(pk=user_id) if user_id else self.service_user
-            serializer = TestResultSerializer(data=result_data)
-            serializer.is_valid(raise_exception=True)
-            created_results.append(TestResultService().result_create(serializer.validated_data, user))
+            # serializer = TestResultSerializer(data=result_data)
+            # serializer.is_valid(raise_exception=True)
+            with suppress_auto_now(TestResult, ['created_at']):
+                created_results.append(self.result_create(result_data, user))
         res_ids = [created_result.id for created_result in created_results]
         return dict(zip(src_ids, res_ids))
 

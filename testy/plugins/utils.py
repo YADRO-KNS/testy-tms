@@ -28,6 +28,9 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from contextlib import contextmanager
+
+
 def parse_plugin_config(plugin_config):
     return {
         'name': plugin_config.verbose_name,
@@ -37,3 +40,20 @@ def parse_plugin_config(plugin_config):
         'description': plugin_config.description,
         'version': plugin_config.version
     }
+
+@contextmanager
+def suppress_auto_now(model, field_names):
+    fields_state = {}
+    for field_name in field_names:
+        field = model._meta.get_field(field_name)
+        fields_state[field] = {'auto_now': field.auto_now, 'auto_now_add': field.auto_now_add}
+
+    for field in fields_state:
+        field.auto_now = False
+        field.auto_now_add = False
+    try:
+        yield
+    finally:
+        for field, state in fields_state.items():
+            field.auto_now = state['auto_now']
+            field.auto_now_add = state['auto_now_add']

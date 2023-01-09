@@ -48,7 +48,7 @@ from tests_representation.services.results import TestResultService
 
 
 class ProgressRecorderContext(ProgressRecorder):
-    def __init__(self, task, total, debug=False, description='Task started'):
+    def __init__(self, task, total, debug=True, description='Task started'):
         self.debug = debug
         self.current = 0
         self.total = total

@@ -36,6 +36,8 @@ from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
+
+from core.services.projects import ProjectService
 from tests_representation.api.v1.serializers import ParameterSerializer, TestPlanTreeSerializer
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.testplan import TestPlanSelector
@@ -56,6 +58,12 @@ class ProjectViewSet(ModelViewSet):
         qs = ParameterSelector().parameter_project_list(project_id=pk)
         serializer = ParameterSerializer(qs, many=True, context={'request': request})
         return Response(serializer.data)
+
+    def perform_create(self, serializer: ProjectSerializer):
+        serializer.instance = ProjectService().project_create(serializer.validated_data)
+
+    def perform_update(self, serializer: ProjectSerializer):
+        serializer.instance = ProjectService().project_update(serializer.instance, serializer.validated_data)
 
 
 class AttachmentViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, mixins.CreateModelMixin,
