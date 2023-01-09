@@ -55,6 +55,7 @@ def find_idx_by_key_value(key: str, value: Any, src_list: list):
         if elem[key] == value:
             return idx
 
+
 @contextmanager
 def suppress_auto_now(model, field_names):
     fields_state = {}
