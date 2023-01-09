@@ -40,7 +40,7 @@ from users.models import User
 
 class TestResultService:
     non_side_effect_fields = [
-        'status', 'user', 'test', 'comment', 'is_archive', 'test_case_version', 'execution_time',
+        'status', 'user', 'test', 'comment', 'is_archive', 'test_case_version', 'execution_time', 'custom_fields'
     ]
 
     @transaction.atomic

@@ -100,7 +100,8 @@ class TestResultSerializer(ModelSerializer):
     class Meta:
         model = TestResult
         fields = ('id', 'project', 'status', 'status_text', 'test', 'user', 'user_full_name', 'comment',
-                  'is_archive', 'test_case_version', 'created_at', 'updated_at', 'url', 'execution_time', 'attachments')
+                  'is_archive', 'test_case_version', 'created_at', 'updated_at', 'url', 'execution_time', 'attachments',
+                  'custom_fields')
 
         read_only_fields = ('test_case_version', 'project', 'user', 'id')
 
