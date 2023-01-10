@@ -40,5 +40,5 @@ class PluginsAPIView(APIView):
     def get(self, request):
         plugin_list = []
         for plugin in settings.TESTY_PLUGINS:
-            plugin_list.append(parse_plugin_config(apps.get_app_config(plugin)))
+            plugin_list.append(parse_plugin_config(apps.get_app_config(plugin), request))
         return Response(plugin_list)

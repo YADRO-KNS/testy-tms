@@ -28,12 +28,20 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-def parse_plugin_config(plugin_config):
-    return {
+from django.urls import reverse
+
+
+def parse_plugin_config(plugin_config, request):
+    plugin_dict = {
         'name': plugin_config.verbose_name,
         'package': plugin_config.name,
         'author': plugin_config.author,
         'author_email': plugin_config.author_email,
         'description': plugin_config.description,
-        'version': plugin_config.version
+        'version': plugin_config.version,
     }
+    if plugin_config.index_reverse_name:
+        plugin_dict['plugin_index_url'] = request.build_absolute_uri(
+            reverse(f'plugins:{plugin_config.name}:{plugin_config.index_reverse_name}')
+        )
+    return plugin_dict

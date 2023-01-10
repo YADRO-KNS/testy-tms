@@ -186,7 +186,8 @@ class TestyCreator:
 
     @staticmethod
     def cases_bulk_create(data_list):
-        non_side_effect_fields = ['name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate']
+        non_side_effect_fields = ['name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate',
+                                  'custom_fields']
         cases = []
         for data in data_list:
             cases.append(TestCase.model_create(fields=non_side_effect_fields, data=data, commit=False))
@@ -210,14 +211,19 @@ class TestyCreator:
             src_case_ids.append(case['id'])
             suite_id = section_mappings.get(case['section_id'], suite_mappings.get(case['suite_id']))
             scenario = ''
-            if case['custom_steps']:
-                scenario = case['custom_steps']
-            if case['custom_steps_separated']:
-                temp_string = ''
-                for idx, step in enumerate(case['custom_steps_separated']):
-                    temp_string += f'{idx}. {step.get("content", "")}\n{step.get("expected", "")}\n' \
-                                   f'{step.get("additional_info", "")}\n{step.get("refs", "")}\n'
-                scenario += temp_string
+            json_fields = {}
+            for case_key, case_value in case.items():
+                if re.match(r'^custom_', case_key):
+                    json_fields[case_key] = case_value
+
+            # if case['custom_steps']:
+            #     scenario = case['custom_steps']
+            # if case['custom_steps_separated']:
+            #     temp_string = ''
+            #     for idx, step in enumerate(case['custom_steps_separated']):
+            #         temp_string += f'{idx}. {step.get("content", "")}\n{step.get("expected", "")}\n' \
+            #                        f'{step.get("additional_info", "")}\n{step.get("refs", "")}\n'
+            #     scenario += temp_string
             setup = case.get('custom_preconds')
             if not scenario or scenario.isspace():
                 scenario = 'Scenario was not provided'
@@ -226,6 +232,7 @@ class TestyCreator:
                 'project': project_id,
                 'suite': suite_id,
                 'scenario': scenario,
+                'custom_fields': json_fields
             }
             if description := case.get('custom_description'):
                 case_data['description'] = description
@@ -511,9 +518,15 @@ class TestyCreator:
                 continue
             src_ids.append(result['id'])
 
+            json_fields = {}
+            for result_key, result_value in result.items():
+                if re.match(r'^custom_', result_key):
+                    json_fields[result_key] = result_value
+
             result_data = {
                 'status': statuses.get(result['status_id'], 5),
                 'test': tests_mappings[result['test_id']],
+                'custom_fields': json_fields
             }
             if comment := result.get('comment'):
                 result_data['comment'] = comment
