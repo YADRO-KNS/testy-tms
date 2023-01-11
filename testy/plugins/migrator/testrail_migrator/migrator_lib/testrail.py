@@ -85,10 +85,6 @@ class TestRailClient:
     async def get_users(self, project_id=''):
         return await self._process_request(f'/get_users/{project_id}')
 
-    @async_to_sync
-    async def get_custom_result_fields(self):
-        return await self._process_request('/get_result_fields')
-
     @staticmethod
     def get_runs_from_plans(plans):
         runs_parent_plan = []
