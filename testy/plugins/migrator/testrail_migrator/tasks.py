@@ -39,6 +39,7 @@ from celery import shared_task
 from celery_progress.backend import ProgressRecorder
 from django.conf import settings
 from testrail_migrator.migrator_lib import TestRailClient, TestrailConfig, TestyCreator
+from testrail_migrator.migrator_lib.migrator_service import MigratorService
 from testrail_migrator.migrator_lib.testrail import InstanceType
 from testrail_migrator.migrator_lib.testy import ParentType
 from testrail_migrator.models import TestrailBackup
@@ -86,7 +87,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     mappings = {}
 
     with progress_recorder.progress_context('Creating projects'):
-        project = creator.create_project(backup['project'])
+        project = MigratorService.create_project(backup['project'])
 
     with progress_recorder.progress_context('Creating users'):
         mappings['users'] = creator.create_users(backup['users'])
@@ -183,7 +184,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
             )
 
     mappings_keys = [
-        ('cases', TestCase, creator.case_update, ['scenario', 'setup']),
+        ('cases', TestCase, MigratorService.case_update, ['scenario', 'setup']),
         ('results_parent_mile', TestResult, TestResultService().result_update, ['comment']),
         ('results_parent_plan', TestResult, TestResultService().result_update, ['comment']),
     ]

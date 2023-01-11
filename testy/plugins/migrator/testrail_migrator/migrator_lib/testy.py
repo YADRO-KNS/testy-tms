@@ -37,26 +37,21 @@ from datetime import datetime
 from enum import Enum
 from operator import itemgetter
 
+import pytz
 from asgiref.sync import async_to_sync, sync_to_async
-from core.api.v1.serializers import ProjectSerializer
 from core.models import Attachment, Project
-from core.services.projects import ProjectService
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.db import IntegrityError
-from simple_history.utils import bulk_create_with_history
 from testrail_migrator.migrator_lib import TestrailConfig
+from testrail_migrator.migrator_lib.migrator_service import MigratorService
 from testrail_migrator.migrator_lib.testrail import InstanceType, TestRailClient
-from testrail_migrator.migrator_lib.utils import split_list_by_chunks
+from testrail_migrator.migrator_lib.utils import split_list_by_chunks, suppress_auto_now
 from testrail_migrator.serializers import ParameterSerializer, TestSerializer
-from tests_description.api.v1.serializers import TestCaseSerializer, TestSuiteSerializer
+from tests_description.api.v1.serializers import TestSuiteSerializer
 from tests_description.models import TestCase, TestSuite
-from tests_description.services.suites import TestSuiteService
-from tests_representation.api.v1.serializers import TestPlanInputSerializer, TestResultSerializer
-from tests_representation.models import Parameter, Test, TestPlan, TestResult
-from tests_representation.services.results import TestResultService
-from tests_representation.services.testplans import TestPlanService
+from tests_representation.api.v1.serializers import TestPlanInputSerializer
+from tests_representation.models import Test, TestPlan, TestResult
 from tests_representation.services.tests import TestService
 from tqdm.asyncio import tqdm
 
@@ -155,20 +150,7 @@ class TestyCreator:
             await tqdm.gather(*tasks, desc='attachments chunk progress', leave=False)
 
     @staticmethod
-    def suites_bulk_create(data_list):
-        suites = []
-        non_side_effect_fields = ['parent', 'project', 'name']
-        for data in data_list:
-            test_suite = TestSuite.model_create(non_side_effect_fields, data=data, commit=False)
-            test_suite.lft = 0
-            test_suite.rght = 0
-            test_suite.tree_id = 0
-            test_suite.level = 0
-            suites.append(test_suite)
-        TestSuite.objects.rebuild()
-        return TestSuite.objects.bulk_create(suites)
-
-    def create_suites(self, suites, project_id):
+    def create_suites(suites, project_id):
         suite_data_list = []
         src_ids = []
         for suite in suites:
@@ -180,30 +162,12 @@ class TestyCreator:
 
         serializer = TestSuiteSerializer(data=suite_data_list, many=True)
         serializer.is_valid(raise_exception=True)
-        created_suites = self.suites_bulk_create(serializer.validated_data)
+        created_suites = MigratorService.suites_bulk_create(serializer.validated_data)
 
         return dict(zip(src_ids, [created_suite.id for created_suite in created_suites]))
 
     @staticmethod
-    def cases_bulk_create(data_list):
-        non_side_effect_fields = ['name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate']
-        cases = []
-        for data in data_list:
-            cases.append(TestCase.model_create(fields=non_side_effect_fields, data=data, commit=False))
-
-        return bulk_create_with_history(cases, TestCase)
-
-    @staticmethod
-    def case_update(case: TestCase, data) -> TestCase:
-        non_side_effect_fields = ['name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate',
-                                  'description']
-        case, _ = case.model_update(
-            fields=non_side_effect_fields,
-            data=data,
-        )
-        return case
-
-    def create_cases(self, cases, suite_mappings, section_mappings, project_id):
+    def create_cases(cases, suite_mappings, section_mappings, project_id):
         cases_data_list = []
         src_case_ids = []
         for case in cases:
@@ -223,18 +187,19 @@ class TestyCreator:
                 scenario = 'Scenario was not provided'
             case_data = {
                 'name': case['title'],
-                'project': project_id,
-                'suite': suite_id,
+                'project': Project.objects.get(pk=project_id),
+                'suite': TestSuite.objects.get(pk=suite_id),
                 'scenario': scenario,
+                'created_at': case['created_on'],
+                'updated_at': case['updated_on']
             }
             if description := case.get('custom_description'):
                 case_data['description'] = description
             if setup:
                 case_data['setup'] = setup
             cases_data_list.append(case_data)
-        serializer = TestCaseSerializer(data=cases_data_list, many=True)
-        serializer.is_valid(raise_exception=True)
-        created_cases = self.cases_bulk_create(serializer.validated_data)
+        with suppress_auto_now(TestCase, ['created_at', 'updated_at']):
+            created_cases = MigratorService.cases_bulk_create(cases_data_list)
         return dict(zip(src_case_ids, [created_case.id for created_case in created_cases]))
 
     def create_sections(self, sections, suite_mappings, project_id, drop_default_section: bool = True):
@@ -255,18 +220,12 @@ class TestyCreator:
                 section_data['parent'] = TestSuite.objects.get(pk=sections_mappings.get(section['parent_id']))
             else:
                 section_data['parent'] = TestSuite.objects.get(pk=suite_mappings.get(section['suite_id']))
-            sections_mappings[section['id']] = TestSuiteService().suite_create(section_data).id
+            sections_mappings[section['id']] = MigratorService.suite_create(section_data).id
 
         return sections_mappings
 
     @staticmethod
-    def parameter_bulk_create(data_list):
-        non_side_effect_fields = ['project', 'data', 'group_name']
-        parameters = [Parameter.model_create(fields=non_side_effect_fields, data=data, commit=False) for data in
-                      data_list]
-        return Parameter.objects.bulk_create(parameters)
-
-    def create_configs(self, config_groups, project_id):
+    def create_configs(config_groups, project_id):
         parameters_mappings = {}
         parameter_data_list = []
         src_config_ids = []
@@ -282,13 +241,14 @@ class TestyCreator:
 
         serializer = ParameterSerializer(data=parameter_data_list, many=True)
         serializer.is_valid(raise_exception=True)
-        created_parameters = self.parameter_bulk_create(serializer.validated_data)
+        created_parameters = MigratorService.parameter_bulk_create(serializer.validated_data)
         for tr_config_id, testy_parameter in zip(src_config_ids, created_parameters):
             parameters_mappings.update({tr_config_id: testy_parameter.id})
 
         return parameters_mappings
 
-    def create_milestones(self, milestones, project_id):
+    @staticmethod
+    def create_milestones(milestones, project_id):
         milestones_mapping = {}
         parent_milestones = []
         for milestone in milestones:
@@ -297,16 +257,17 @@ class TestyCreator:
                 'name': milestone['name'],
                 'is_archive': milestone['is_completed'],
                 'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(milestone['started_on'])),
-                'finished_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(milestone['completed_on'])),
                 'due_date': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(milestone['due_on']))
             }
             if description := milestone.get('description'):
                 milestone_data['description'] = description
+            if completed_on := milestone['completed_on']:
+                milestone_data['finished_at'] = datetime.fromtimestamp(completed_on, tz=pytz.UTC)
             parent_milestones.append(milestone_data)
 
         serializer = TestPlanInputSerializer(data=parent_milestones, many=True)
         serializer.is_valid(raise_exception=True)
-        test_plans = self.testplan_bulk_create(serializer.validated_data)
+        test_plans = MigratorService.testplan_bulk_create(serializer.validated_data)
         for tr_milestone, testy_milestone in zip(milestones, test_plans):
             milestones_mapping.update({tr_milestone['id']: testy_milestone.id})
 
@@ -320,22 +281,24 @@ class TestyCreator:
                     'name': child_milestone['name'],
                     'is_archive': child_milestone['is_completed'],
                     'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(milestone['started_on'])),
-                    'finished_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(child_milestone['completed_on'])),
                     'due_date': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(child_milestone['due_on'])),
                     'parent': milestones_mapping[milestone['id']]
                 }
+                if completed_on := child_milestone['completed_on']:
+                    milestone_data['finished_at'] = datetime.fromtimestamp(completed_on, tz=pytz.UTC)
                 child_milestones_data_list.append(milestone_data)
 
             serializer = TestPlanInputSerializer(data=child_milestones_data_list, many=True)
             serializer.is_valid(raise_exception=True)
-            test_plans = self.testplan_bulk_create(serializer.validated_data)
+            test_plans = MigratorService.testplan_bulk_create(serializer.validated_data)
 
             for tr_milestone, testy_milestone in zip(milestone['milestones'], test_plans):
                 milestones_mapping.update({tr_milestone['id']: testy_milestone.id})
 
         return milestones_mapping
 
-    def create_plans(self, plans, milestones_mappings, project_id, skip_root_plans: bool = True):
+    @staticmethod
+    def create_plans(plans, milestones_mappings, project_id, skip_root_plans: bool = True):
         plan_data_list = []
         plan_mappings = {}
         src_plan_ids = []
@@ -343,60 +306,37 @@ class TestyCreator:
             mapping_id = plan['milestone_id']
             if not mapping_id and skip_root_plans:
                 continue
-            due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan.get('due_on')))
-            if not plan.get('due_on'):
-                due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
+            due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
             plan_data = {
-                'project': project_id,
+                'project': Project.objects.get(pk=project_id),
                 'name': plan['name'],
                 'is_archive': plan['is_completed'],
-                'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan['created_on'])),
-                'finished_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(plan['completed_on'])),
+                'created_at': datetime.fromtimestamp(plan['created_on'], tz=pytz.UTC),
+                'updated_at': datetime.fromtimestamp(plan['created_on'], tz=pytz.UTC),
+                'started_at': datetime.fromtimestamp(plan['created_on'], tz=pytz.UTC),
                 'due_date': due_date,
             }
             if description := plan.get('description'):
                 plan_data['description'] = description
+            if completed_on := plan['completed_on']:
+                plan_data['finished_at'] = datetime.fromtimestamp(completed_on, tz=pytz.UTC)
             if mapping_id:
                 parent_id = milestones_mappings.get(mapping_id)
                 if not parent_id:
                     continue
-                plan_data['parent'] = parent_id
+                plan_data['parent'] = TestPlan.objects.get(pk=parent_id)
             src_plan_ids.append(plan['id'])
             plan_data_list.append(plan_data)
 
-        serializer = TestPlanInputSerializer(data=plan_data_list, many=True)
-        serializer.is_valid(raise_exception=True)
-        test_plans = self.testplan_bulk_create(serializer.validated_data)
+        with suppress_auto_now(TestCase, ['created_at', 'updated_at']):
+            test_plans = MigratorService.testplan_bulk_create(plan_data_list)
         for src_plan_id, testy_milestone in zip(src_plan_ids, test_plans):
             plan_mappings.update({src_plan_id: testy_milestone.id})
 
         return plan_mappings
 
-    def testplan_bulk_create_with_tests(self, data_list):
-        testplan_objects = []
-        for data in data_list:
-            parameters = [parameter.id for parameter in data.get('parameters')]
-            testplan_objects.append(
-                TestPlanService()._make_testplan_model(data, parameters=parameters if parameters else None)
-            )
-        test_plans = TestPlan.objects.bulk_create(testplan_objects)
-        TestPlan.objects.rebuild()
-        created_tests = []
-        for test_plan, data in zip(test_plans, data_list):
-            if data.get('test_cases'):
-                created_tests.extend(TestService().bulk_test_create([test_plan], data['test_cases']))
-        return created_tests, test_plans
-
-    def testplan_bulk_create(self, validated_data):
-        testplan_objects = []
-        for data in validated_data:
-            testplan_objects.append(TestPlanService()._make_testplan_model(data))
-        test_plans = TestPlan.objects.bulk_create(testplan_objects)
-        TestPlan.objects.rebuild()
-
-        return test_plans
-
-    def create_runs(self, runs, mapping, config_mappings, tests, case_mappings, project_id,
+    @staticmethod
+    def create_runs(runs, mapping, config_mappings, tests, case_mappings, project_id,
                     parent_type: ParentType, upload_root_runs: bool, user_mappings):
         run_data_list = []
         src_tests = []
@@ -415,27 +355,29 @@ class TestyCreator:
             src_run_ids.append(run['id'])
             tests_for_run = [test for test in tests if test['run_id'] == run['id']]
             src_tests.extend(tests_for_run)
-            cases = [case_mappings[test['case_id']] for test in tests_for_run]
+            case_ids = [case_mappings[test['case_id']] for test in tests_for_run]
+            cases = TestCase.objects.filter(id__in=case_ids)
             parameters = [config_mappings[config_id] for config_id in run['config_ids']]
-            due_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run.get('due_on')))
-            if not run.get('due_on'):
-                due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
+            due_date = (datetime.now() + relativedelta(years=5, days=5)).strftime('%Y-%m-%d %H:%M:%S')
             run_data = {
-                'project': project_id,
+                'project': Project.objects.get(pk=project_id),
                 'name': run['name'],
-                'started_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(run['created_on'])),
+                'started_at': datetime.fromtimestamp(run['created_on'], tz=pytz.UTC),
                 'due_date': due_date,
                 'test_cases': cases,
-                'parameters': parameters
+                'parameters': parameters,
+                'created_at': run['created_on']
             }
             if description := run.get('description'):
                 run_data['description'] = description
+            if finished_at := run.get('completed_on'):
+                run_data['finished_at'] = datetime.fromtimestamp(finished_at, tz=pytz.UTC)
+            if updated_at := run.get('updated_on'):
+                run_data['updated_at'] = datetime.fromtimestamp(updated_at, tz=pytz.UTC)
             if parent:
-                run_data['parent'] = parent
+                run_data['parent'] = TestPlan.objects.get(pk=parent)
             run_data_list.append(run_data)
-        serializer = TestPlanInputSerializer(data=run_data_list, many=True)
-        serializer.is_valid(raise_exception=True)
-        created_tests, created_plans = self.testplan_bulk_create_with_tests(serializer.validated_data)
+        created_tests, created_plans = MigratorService.testplan_bulk_create_with_tests(run_data_list)
 
         # Add assignation for tests
         for src_test, created_test in zip(src_tests, created_tests):
@@ -452,23 +394,7 @@ class TestyCreator:
         )
 
     @staticmethod
-    def create_project(project) -> Project:
-        data = {
-            'name': project['name'],
-            'description': project['announcement'] if project['announcement'] else ''
-        }
-        serializer = ProjectSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        return ProjectService().project_create(serializer.validated_data)
-
-    @staticmethod
-    def tests_bulk_create_by_data_list(data_list):
-        non_side_effect_fields = ['case', 'plan', 'user', 'is_archive', 'project']
-        test_objects = [Test.model_create(fields=non_side_effect_fields, data=data, commit=False) for data in
-                        data_list]
-        return Test.objects.bulk_create(test_objects)
-
-    def create_tests(self, tests, case_mappings, plans_mappings, project_id):
+    def create_tests(tests, case_mappings, plans_mappings, project_id):
         test_data_list = []
         tests_mappings = {}
         src_ids = []
@@ -484,7 +410,7 @@ class TestyCreator:
             test_data_list.append(test_data)
         serializer = TestSerializer(data=test_data_list, many=True)
         serializer.is_valid(raise_exception=True)
-        created_tests = self.tests_bulk_create_by_data_list(serializer.validated_data)
+        created_tests = MigratorService.tests_bulk_create_by_data_list(serializer.validated_data)
         for src_id, testy_test in zip(src_ids, created_tests):
             tests_mappings.update({src_id: testy_test.id})
 
@@ -518,16 +444,17 @@ class TestyCreator:
 
             result_data = {
                 'status': statuses.get(result['status_id'], 5),
-                'test': tests_mappings[result['test_id']],
+                'test': Test.objects.get(pk=tests_mappings[result['test_id']]),
+                'created_at': datetime.fromtimestamp(result['created_on'], tz=pytz.UTC),
+                'updated_at': datetime.fromtimestamp(result['created_on'], tz=pytz.UTC),
                 'custom_fields': json_fields
             }
             if comment := result.get('comment'):
                 result_data['comment'] = comment
             user_id = user_mappings.get(result['created_by'])
             user = UserModel.objects.get(pk=user_id) if user_id else self.service_user
-            serializer = TestResultSerializer(data=result_data)
-            serializer.is_valid(raise_exception=True)
-            created_results.append(TestResultService().result_create(serializer.validated_data, user))
+            with suppress_auto_now(TestResult, ['created_at', 'updated_at']):
+                created_results.append(MigratorService.result_create(result_data, user))
         res_ids = [created_result.id for created_result in created_results]
         return dict(zip(src_ids, res_ids))
 
@@ -578,21 +505,7 @@ class TestyCreator:
         )
 
     @staticmethod
-    def user_create(data) -> UserModel:
-        non_side_effect_fields = ['username', 'first_name', 'last_name', 'email', 'is_staff', 'is_active']
-        user = UserModel.model_create(
-            fields=non_side_effect_fields,
-            data=data,
-            commit=False,
-        )
-        try:
-            user.save()
-        except IntegrityError:
-            user = UserModel.objects.get(username=data['username'])
-
-        return user
-
-    def create_users(self, users):
+    def create_users(users):
         dst_ids = []
         src_ids = []
         for user in users:
@@ -611,6 +524,6 @@ class TestyCreator:
                 user_data['first_name'] = first_name
             if last_name:
                 user_data['last_name'] = last_name
-            created_user = self.user_create(user_data)
+            created_user = MigratorService.user_create(user_data)
             dst_ids.append(created_user.id)
         return dict(zip(src_ids, dst_ids))
