@@ -31,6 +31,7 @@
 
 from django.contrib import admin
 from mptt.admin import MPTTModelAdmin
+from simple_history.admin import SimpleHistoryAdmin
 from tests_representation.models import Test, TestPlan, TestResult
 
 from testy.admin import BaseAdmin
@@ -49,6 +50,7 @@ class TestAdmin(BaseAdmin):
 
 
 @admin.register(TestResult)
-class TestResultAdmin(BaseAdmin):
-    list_display = ('test', 'status', 'comment', 'user')
-    search_fields = ('name',)
+class TestResultAdmin(SimpleHistoryAdmin):
+    list_display = ('id', 'project', 'test', 'status', 'user', 'test_case_version', 'execution_time', 'is_archive',)
+    search_fields = ('id',)
+    list_filter = ('project', 'status', 'is_archive',)
