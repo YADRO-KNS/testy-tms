@@ -122,6 +122,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     with progress_recorder.progress_context('Creating results with plan as parent'):
         mappings['results_parent_plan'] = creator.create_results(
             backup['results_parent_plan'],
+            backup['custom_result_fields'],
             mappings['tests_parent_plan'],
             mappings['users']
         )
@@ -142,6 +143,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     with progress_recorder.progress_context('Creating runs with mile as parent'):
         mappings['results_parent_mile'] = creator.create_results(
             backup['results_parent_mile'],
+            backup['custom_result_fields'],
             mappings['tests_parent_mile'],
             mappings['users'],
         )
@@ -207,7 +209,8 @@ def download_task(self, project_id: int, config_dict: Dict, download_attachments
     testrail_client = TestRailClient(TestrailConfig(**config_dict))
     with progress_recorder.progress_context('Getting users'):
         resulting_data['users'] = testrail_client.get_users()
-
+    with progress_recorder.progress_context('Getting users'):
+        resulting_data['custom_result_fields'] = testrail_client.get_custom_result_fields()
     with progress_recorder.progress_context('Getting project'):
         resulting_data['project'] = testrail_client.get_project(project_id)
     with progress_recorder.progress_context('Getting suites'):

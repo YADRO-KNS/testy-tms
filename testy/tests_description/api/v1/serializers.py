@@ -40,10 +40,7 @@ from tests_description.models import TestCase, TestSuite
 class TestCaseBaseSerializer(ModelSerializer):
     class Meta:
         model = TestCase
-        fields = (
-            'id', 'name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'description',
-            'custom_fields'
-        )
+        fields = ('id', 'name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate', 'description')
 
 
 class TestCaseSerializer(TestCaseBaseSerializer):
