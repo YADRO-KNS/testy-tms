@@ -32,7 +32,6 @@ from core.api.v1.serializers import AttachmentSerializer, ProjectSerializer
 from core.selectors.attachments import AttachmentSelector
 from core.selectors.projects import ProjectSelector
 from core.services.attachments import AttachmentService
-from core.services.projects import ProjectService
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -57,12 +56,6 @@ class ProjectViewSet(ModelViewSet):
         qs = ParameterSelector().parameter_project_list(project_id=pk)
         serializer = ParameterSerializer(qs, many=True, context={'request': request})
         return Response(serializer.data)
-
-    def perform_create(self, serializer: ProjectSerializer):
-        serializer.instance = ProjectService().project_create(serializer.validated_data)
-
-    def perform_update(self, serializer: ProjectSerializer):
-        serializer.instance = ProjectService().project_update(serializer.instance, serializer.validated_data)
 
 
 class AttachmentViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, mixins.CreateModelMixin,

@@ -28,6 +28,8 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+import logging
+import time
 from datetime import datetime
 
 import pytz
@@ -124,7 +126,7 @@ class MigratorService:
     def result_create(data, user) -> TestResult:
         non_side_effect_fields = [
             'status', 'user', 'test', 'comment', 'is_archive', 'test_case_version', 'execution_time', 'created_at',
-            'updated_at'
+            'updated_at', 'custom_fields'
         ]
         test_result: TestResult = TestResult.model_create(
             fields=non_side_effect_fields,
