@@ -28,6 +28,7 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from copy import deepcopy
 from datetime import datetime
 
 import pytz
@@ -41,9 +42,14 @@ from simple_history.utils import bulk_create_with_history
 from testrail_migrator.migrator_lib.utils import suppress_auto_now
 from tests_description.models import TestCase, TestSuite
 from tests_description.selectors.cases import TestCaseSelector
+from tests_description.services.cases import TestCaseService
+from tests_description.services.suites import TestSuiteService
 from tests_representation.models import Parameter, Test, TestPlan, TestResult
+from tests_representation.services.parameters import ParameterService
+from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPlanService
 from tests_representation.services.tests import TestService
+from users.services.users import UserService
 
 UserModel = get_user_model()
 
@@ -51,7 +57,7 @@ UserModel = get_user_model()
 class MigratorService:
     @staticmethod
     def suite_create(data) -> TestSuite:
-        non_side_effect_fields = ['parent', 'project', 'name', 'description']
+        non_side_effect_fields = TestSuiteService.non_side_effect_fields
         suite = TestSuite.model_create(
             fields=non_side_effect_fields,
             data=data,
@@ -62,7 +68,7 @@ class MigratorService:
     @staticmethod
     def suites_bulk_create(data_list):
         suites = []
-        non_side_effect_fields = ['parent', 'project', 'name']
+        non_side_effect_fields = TestSuiteService.non_side_effect_fields
         for data in data_list:
             test_suite = TestSuite.model_create(non_side_effect_fields, data=data, commit=False)
             test_suite.lft = 0
@@ -75,7 +81,7 @@ class MigratorService:
 
     @staticmethod
     def cases_bulk_create(data_list):
-        non_side_effect_fields = ['name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate']
+        non_side_effect_fields = TestCaseService.non_side_effect_fields
         cases = []
         for data in data_list:
             case = TestCase.model_create(fields=non_side_effect_fields, data=data, commit=False)
@@ -88,8 +94,7 @@ class MigratorService:
 
     @staticmethod
     def case_update(case: TestCase, data) -> TestCase:
-        non_side_effect_fields = ['name', 'project', 'suite', 'setup', 'scenario', 'teardown', 'estimate',
-                                  'description']
+        non_side_effect_fields = TestCaseService.non_side_effect_fields
         case, _ = case.model_update(
             fields=non_side_effect_fields,
             data=data,
@@ -98,7 +103,7 @@ class MigratorService:
 
     @staticmethod
     def parameter_bulk_create(data_list):
-        non_side_effect_fields = ['project', 'data', 'group_name']
+        non_side_effect_fields = ParameterService.non_side_effect_fields
         parameters = [Parameter.model_create(fields=non_side_effect_fields, data=data, commit=False) for data in
                       data_list]
         return Parameter.objects.bulk_create(parameters)
@@ -122,10 +127,8 @@ class MigratorService:
     @staticmethod
     @transaction.atomic
     def result_create(data, user) -> TestResult:
-        non_side_effect_fields = [
-            'status', 'user', 'test', 'comment', 'is_archive', 'test_case_version', 'execution_time', 'created_at',
-            'updated_at', 'custom_fields'
-        ]
+        non_side_effect_fields = deepcopy(TestResultService.non_side_effect_fields)
+        non_side_effect_fields += ['created_at', 'updated_at']
         test_result: TestResult = TestResult.model_create(
             fields=non_side_effect_fields,
             data=data,
@@ -164,14 +167,14 @@ class MigratorService:
 
     @staticmethod
     def tests_bulk_create_by_data_list(data_list):
-        non_side_effect_fields = ['case', 'plan', 'user', 'is_archive', 'project']
+        non_side_effect_fields = TestService.non_side_effect_fields
         test_objects = [Test.model_create(fields=non_side_effect_fields, data=data, commit=False) for data in
                         data_list]
         return Test.objects.bulk_create(test_objects)
 
     @staticmethod
     def user_create(data) -> UserModel:
-        non_side_effect_fields = ['username', 'first_name', 'last_name', 'email', 'is_staff', 'is_active']
+        non_side_effect_fields = UserService.non_side_effect_fields
         user = UserModel.model_create(
             fields=non_side_effect_fields,
             data=data,

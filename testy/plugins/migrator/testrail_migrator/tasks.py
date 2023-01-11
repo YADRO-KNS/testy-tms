@@ -31,6 +31,7 @@
 import json
 import logging
 from contextlib import contextmanager
+from copy import deepcopy
 from datetime import datetime
 from typing import Dict
 
@@ -82,6 +83,9 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
     logging.info('redis started')
     backup = json.loads(redis_client.get(backup_name))
+
+    custom_fields_multi_select = parse_multi_select_from_tr(backup['custom_result_fields'])
+
     creator = TestyCreator(service_user_login, testy_attachment_url)
 
     mappings = {}
@@ -123,7 +127,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     with progress_recorder.progress_context('Creating results with plan as parent'):
         mappings['results_parent_plan'] = creator.create_results(
             backup['results_parent_plan'],
-            backup['custom_result_fields'],
+            custom_fields_multi_select,
             mappings['tests_parent_plan'],
             mappings['users']
         )
@@ -144,7 +148,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     with progress_recorder.progress_context('Creating runs with mile as parent'):
         mappings['results_parent_mile'] = creator.create_results(
             backup['results_parent_mile'],
-            backup['custom_result_fields'],
+            custom_fields_multi_select,
             mappings['tests_parent_mile'],
             mappings['users'],
         )
@@ -279,3 +283,18 @@ def save_results_to_redis(results, backup_filename):
 
     if not redis_client.get(backup_name):
         logging.debug('REDIS CLIENT GOT NOTHING')
+
+
+def parse_multi_select_from_tr(testrail_custom_fields):
+    custom_fields = {}
+    for custom_field in testrail_custom_fields:
+        if custom_field['type_id'] != 12:
+            continue
+        key_to_value = {}
+        for config in custom_field['configs']:
+            field_contents = config['options']['items'].split('\n')
+            for content in field_contents:
+                key, value = content.split(', ')
+                key_to_value[key] = value
+        custom_fields[custom_field['system_name']] = deepcopy(key_to_value)
+    return custom_fields
