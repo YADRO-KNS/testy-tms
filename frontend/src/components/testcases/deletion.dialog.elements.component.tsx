@@ -1,10 +1,14 @@
-import {Button, Dialog, DialogActions, DialogContent, DialogContentText} from "@mui/material";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
 import React from "react";
 import SuiteCaseService from "../../services/suite.case.service";
 import {treeSuite} from "./suites.component";
 import {myCase} from "./suites.component";
 
-function DeletionDialogElements(props: {
+const DeletionDialogElements = (props: {
     openDialogDeletion: boolean, setOpenDialogDeletion: (show: boolean) => void,
     selectedForDeletion: number[], setSelectedForDeletion: (idCases: number[]) => void
     setTreeSuites: (treeSuites: treeSuite[]) => void,
@@ -12,7 +16,7 @@ function DeletionDialogElements(props: {
     setSelectedSuiteForTreeView: (treeSuite: treeSuite) => void,
     setDetailedCaseInfo: (myCase: { show: boolean, myCase: myCase }) => void,
     detailedCaseInfo: { show: boolean, myCase: myCase }
-}) {
+}) => {
     const {
         openDialogDeletion,
         setOpenDialogDeletion,

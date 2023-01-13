@@ -1,12 +1,10 @@
-import {
-    Table,
-    TableCell,
-    Collapse,
-    IconButton,
-    Checkbox,
-    Link,
-    Box
-} from "@mui/material";
+import Table from "@mui/material/Table";
+import TableCell from "@mui/material/TableCell";
+import Collapse from "@mui/material/Collapse";
+import IconButton from "@mui/material/IconButton";
+import Checkbox from "@mui/material/Checkbox";
+import Link from "@mui/material/Link";
+import Box from "@mui/material/Box";
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import React, {useEffect, useMemo, useState} from "react";
 import useStyles from "../../styles/styles";

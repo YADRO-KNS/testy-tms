@@ -1,10 +1,11 @@
 import {treeSuite} from "./suites.component";
-import {Pagination, TextField} from "@mui/material";
+import Pagination from "@mui/material/Pagination";
+import TextField from "@mui/material/TextField";
 import React, {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 import useStylesTestCases from "./styles.testcases"
 
-function PaginationSuitesComponent(props: { treeSuites: treeSuite[], countOfSuitesOnPage: number }) {
+const PaginationSuitesComponent = (props: { treeSuites: treeSuite[], countOfSuitesOnPage: number }) => {
     const {treeSuites, countOfSuitesOnPage} = props;
     const [page, setPage] = useState(1);
     const classes = useStylesTestCases()
@@ -22,7 +23,7 @@ function PaginationSuitesComponent(props: { treeSuites: treeSuite[], countOfSuit
 
 
     return (
-        <div style={{display: "flex", flexDirection: "column", margin: "0 0 0 30px"}}>
+        <div style={{display: "flex", flexDirection: "column", margin: "0 0 10px 30px"}}>
             <TextField
                 onChange={(content) => onChangeName(content)}
                 autoComplete="off"

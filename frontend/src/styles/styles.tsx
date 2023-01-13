@@ -1,5 +1,4 @@
-import {makeStyles} from "@material-ui/core/styles";
-import {alpha} from "@mui/material";
+import {makeStyles} from "@mui/styles";
 
 
 export default makeStyles({
@@ -19,36 +18,6 @@ export default makeStyles({
         justifyContent: "space-between",
         alignItems: "center",
         marginTop: -20
-    },
-    textFieldSelectCreationCaseSuiteNotFilled: {
-        maxWidth: "90%",
-        "& .MuiFormLabel-root": {
-            marginTop: 0,
-            color: '#000000',
-        },
-        "& .MuiFormHelperText-root": {
-            marginLeft: 3,
-            fontSize: 13,
-            color: '#000000',
-            fontWeight: 550
-        },
-        '& label.Mui-focused': {
-            color: '#000000',
-        },
-        '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-                borderColor: '#000000',
-                borderWidth: "2px",
-            },
-            '&.Mui-focused fieldset': {
-                borderColor: '#000000',
-                borderWidth: "3px",
-            },
-            '&:hover fieldset': {
-                borderColor: '#000000',
-                borderWidth: "3px",
-            },
-        },
     },
     textFieldSelectCreationCaseSuite: {
         maxWidth: "90%",
