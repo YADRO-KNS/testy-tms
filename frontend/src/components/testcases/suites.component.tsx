@@ -6,7 +6,12 @@ import TableSuites from "./table.suites.component";
 import SuiteCaseService from "../../services/suite.case.service";
 import FolderSuites from "./folder.suites.component";
 import {styled} from "@mui/material/styles";
-import {InputLabel, MenuItem, Select, Tooltip, tooltipClasses, TooltipProps, Button} from "@mui/material";
+import {TooltipProps} from "@mui/material";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import Tooltip from "@mui/material/Tooltip";
+import Button from "@mui/material/Button";
 import 'react-splitter-layout/lib/index.css';
 import PaginationSuitesComponent from "./pagination.suites.component";
 import {useParams, useNavigate} from "react-router-dom";
@@ -17,7 +22,7 @@ import useStylesGlobal from "../../styles/styles";
 export const CustomWidthTooltip = styled(({className, ...props}: TooltipProps) => (
     <Tooltip  {...props} classes={{popper: className}}/>
 ))(() => ({
-    [`& .${tooltipClasses.tooltip}`]: {
+    [`& .MuiTooltip-tooltip`]: {
         marginLeft: 10,
         minWidth: 200,
         minHeight: 25,
@@ -27,7 +32,7 @@ export const CustomWidthTooltip = styled(({className, ...props}: TooltipProps) =
         fontSize: 15,
         textAlign: "start"
     },
-    [`& .${tooltipClasses.arrow}`]: {
+    [`& .MuiTooltip-arrow`]: {
         "&:before": {
             border: "1px solid #5c6900",
             boxSizing: "border-box",
@@ -66,7 +71,7 @@ export interface suite {
 }
 
 
-const SuitesComponent: React.FC = () => {
+const SuitesComponent = () => {
     const classes = useStyles()
     const [showCreationCase, setShowCreationCase] = useState(false)
     const [showCreationSuite, setShowCreationSuite] = useState(false)
@@ -173,34 +178,34 @@ const SuitesComponent: React.FC = () => {
                                                                         setTreeSuites={setTreeSuites}
                 />}
                 {selectedSuiteForTreeView === undefined &&
-                <PaginationSuitesComponent countOfSuitesOnPage={countOfSuitesOnPage} treeSuites={treeSuites}/>}
+                    <PaginationSuitesComponent countOfSuitesOnPage={countOfSuitesOnPage} treeSuites={treeSuites}/>}
             </div>
             <div className={classes.rightGrid}>
                 <div className={classes.rightGridButtons}>
                     {selectedSuiteForTreeView !== undefined &&
-                    <div>
-                        <Button sx={{
-                            margin: "15px 15px 0 15px",
-                            minWidth: "70%",
-                            height: "45%",
-                            backgroundColor: "#FFFFFF",
-                            color: "#000000",
-                            "&:hover": {
-                                backgroundColor: "#fffafa",
-                            }
-                        }} onClick={handleShowCreationCase}>Создать
-                            тест-кейс</Button>
-                        <CreationCase show={showCreationCase} setShow={setShowCreationCase}
-                                      selectedSuiteCome={selectedSuiteCome} setTreeSuites={setTreeSuites}
-                                      infoCaseForEdit={infoCaseForEdit}
-                                      setInfoCaseForEdit={setInfoCaseForEdit}
-                                      setDetailedCaseInfo={setDetailedCaseInfo}
-                                      detailedCaseInfo={detailedCaseInfo}
-                                      setLastEditCase={setLastEditCase}
-                                      setSelectedSuiteForTreeView={setSelectedSuiteForTreeView}
-                                      selectedSuiteForTreeView={selectedSuiteForTreeView}
-                        />
-                    </div>}
+                        <div>
+                            <Button sx={{
+                                margin: "15px 15px 0 15px",
+                                minWidth: "70%",
+                                height: "45%",
+                                backgroundColor: "#FFFFFF",
+                                color: "#000000",
+                                "&:hover": {
+                                    backgroundColor: "#fffafa",
+                                }
+                            }} onClick={handleShowCreationCase}>Создать
+                                тест-кейс</Button>
+                            <CreationCase show={showCreationCase} setShow={setShowCreationCase}
+                                          selectedSuiteCome={selectedSuiteCome} setTreeSuites={setTreeSuites}
+                                          infoCaseForEdit={infoCaseForEdit}
+                                          setInfoCaseForEdit={setInfoCaseForEdit}
+                                          setDetailedCaseInfo={setDetailedCaseInfo}
+                                          detailedCaseInfo={detailedCaseInfo}
+                                          setLastEditCase={setLastEditCase}
+                                          setSelectedSuiteForTreeView={setSelectedSuiteForTreeView}
+                                          selectedSuiteForTreeView={selectedSuiteForTreeView}
+                            />
+                        </div>}
                     <Button sx={{
                         marginTop: "15px",
                         minWidth: "70%",
@@ -222,26 +227,26 @@ const SuitesComponent: React.FC = () => {
                     />
                 </div>
                 {selectedSuiteForTreeView === undefined &&
-                <div>
-                    <FormControl sx={{minWidth: "90%", margin: "25px 0px 0px 15px"}}
-                                 className={classesGlobal.textFieldSelectCreationCaseSuite}>
-                        <InputLabel>Количество сьют на одной странице</InputLabel>
-                        <Select
-                            value={countOfSuitesOnPage}
-                            label="Количество сьют на одной странице"
-                            onChange={(e) => onChangeSuitesOnPage(e)}
-                            MenuProps={MenuProps}
-                        >
-                            {Array.from({length: (stop - start) / step + 1}, (_, i) => start + i * step).map((num, index) =>
-                                <MenuItem key={index}
-                                          value={num}>{num}</MenuItem>)}
-                        </Select>
-                    </FormControl>
-                </div>}
+                    <div>
+                        <FormControl sx={{minWidth: "90%", margin: "25px 0px 0px 15px"}}
+                                     className={classesGlobal.textFieldSelectCreationCaseSuite}>
+                            <InputLabel>Количество сьют на одной странице</InputLabel>
+                            <Select
+                                value={countOfSuitesOnPage}
+                                label="Количество сьют на одной странице"
+                                onChange={(e) => onChangeSuitesOnPage(e)}
+                                MenuProps={MenuProps}
+                            >
+                                {Array.from({length: (stop - start) / step + 1}, (_, i) => start + i * step).map((num, index) =>
+                                    <MenuItem key={index}
+                                              value={num}>{num}</MenuItem>)}
+                            </Select>
+                        </FormControl>
+                    </div>}
                 {selectedSuiteForTreeView !== undefined &&
-                <div className={classes.mainGridFolderStructure}>
-                    {memoizedValueFolderStructureOfSuites}
-                </div>}
+                    <div className={classes.mainGridFolderStructure}>
+                        {memoizedValueFolderStructureOfSuites}
+                    </div>}
             </div>
         </div>
     )

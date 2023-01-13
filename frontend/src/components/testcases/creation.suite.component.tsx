@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from "react";
 import useStyles from "../../styles/styles";
-import {
-    Button,
-    Dialog,
-    FormControl,
-    Grid,
-    InputLabel, MenuItem, Select,
-    TextField,
-    Typography
-} from "@mui/material";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import FormControl from "@mui/material/FormControl";
+import Grid from "@mui/material/Grid";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import SuiteCaseService from "../../services/suite.case.service";
 import {CustomWidthTooltip, treeSuite} from "./suites.component";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
@@ -149,7 +149,7 @@ const CreationSuite: React.FC<Props> = ({
         PaperProps: {
             style: {
                 maxHeight: "30%",
-                maxWidth: "30%",
+                maxWidth: "10%",
                 overflow: "auto"
             },
         },
@@ -162,11 +162,10 @@ const CreationSuite: React.FC<Props> = ({
             onClose={handleClose}
             classes={{paper: classes.paperCreationSuite}}
         >
-            <form
+            <Grid
                 style={{
                     display: "flex"
                 }}
-                // onSubmit={createSuite}
             >
                 <Grid container style={{
                     position: "absolute",
@@ -240,7 +239,6 @@ const CreationSuite: React.FC<Props> = ({
                                     Отменить
                                 </Button>
                                 <Button
-                                    // type={"submit"}
                                     onClick={createSuite}
                                     style={{
                                         margin: "0px 5px 20px 4px",
@@ -257,7 +255,7 @@ const CreationSuite: React.FC<Props> = ({
                         </Grid>
                     </Grid>
                 </Grid>
-            </form>
+            </Grid>
         </Dialog>
     )
 }

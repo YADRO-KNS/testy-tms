@@ -1,6 +1,9 @@
 import React from "react";
 import {myCase} from "./suites.component";
-import {Divider, Grid, IconButton, Typography} from "@mui/material";
+import Divider from "@mui/material/Divider";
+import Grid from "@mui/material/Grid";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
 import CloseIcon from '@mui/icons-material/Close';
 
 interface Props {
