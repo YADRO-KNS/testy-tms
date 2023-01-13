@@ -94,24 +94,36 @@ const CreationSuite: React.FC<Props> = ({
                     if (selectedSuiteForTreeView === undefined) {
                         SuiteCaseService.getTreeSuites().then((response) => {
                             setTreeSuites(response.data)
+                        }).catch((e) => {
+                            console.log(e)
                         })
                     } else {
                         SuiteCaseService.getTreeBySetSuite(selectedSuiteForTreeView.id).then((response) => {
                             setSelectedSuiteForTreeView(response.data)
+                        }).catch((e) => {
+                            console.log(e)
                         })
                     }
+                }).catch((e) => {
+                    console.log(e)
                 })
             } else {
                 SuiteCaseService.createSuite(suite).then(() => {
                     if (selectedSuiteForTreeView === undefined) {
                         SuiteCaseService.getTreeSuites().then((response) => {
                             setTreeSuites(response.data)
+                        }).catch((e) => {
+                            console.log(e)
                         })
                     } else {
                         SuiteCaseService.getTreeBySetSuite(selectedSuiteForTreeView.id).then((response) => {
                             setSelectedSuiteForTreeView(response.data)
+                        }).catch((e) => {
+                            console.log(e)
                         })
                     }
+                }).catch((e) => {
+                    console.log(e)
                 })
             }
             handleClose()

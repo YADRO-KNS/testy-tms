@@ -6,7 +6,7 @@ export default makeStyles({
         marginTop: 0,
         position: "absolute",
         display: "flex",
-        height: "91.5%",
+        height: "95%",
         width: "100%"
     },
     leftGrid: {
@@ -57,10 +57,6 @@ export default makeStyles({
     },
     gridEditDelete: {
         display: "flex"
-        // textAlign: "end",
-        // display: "flex",
-        // justifyContent: "flex-end",
-        // width: 30
     },
     caseNameCell: {
         wordBreak: "break-word"
@@ -69,10 +65,6 @@ export default makeStyles({
         display: "flex",
         justifyContent: "flex-end",
         padding: 5
-        // display: "flex",
-        // justifyContent: "flex-end",
-        // textAlign: "end",
-        // minWidth: 60
     },
     suiteNameGrid: {
         display: "flex",
@@ -143,12 +135,6 @@ export default makeStyles({
     checkBox: {
         height: 20,
         width: 20,
-        // "&:checked": {
-        //     color: "red",
-        //     border: "1px dashed",
-        //     borderColor: "red"
-        // },
-
     },
     suiteChip: {
         borderRadius: 20,

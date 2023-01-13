@@ -174,7 +174,11 @@ const CreationCase: React.FC<Props> = ({
                 SuiteCaseService.editCase({...myCase, url: infoCaseForEdit.url, id: infoCaseForEdit.id}).then(() => {
                     SuiteCaseService.getTreeBySetSuite(selectedSuiteForTreeView.id).then((response) => {
                         setSelectedSuiteForTreeView(response.data)
+                    }).catch((e) => {
+                        console.log(e)
                     })
+                }).catch((e) => {
+                    console.log(e)
                 })
                 if (infoCaseForEdit.id === detailedCaseInfo.myCase.id && detailedCaseInfo.show) {
                     setLastEditCase(infoCaseForEdit.id)
@@ -184,7 +188,11 @@ const CreationCase: React.FC<Props> = ({
                 SuiteCaseService.createCase(myCase).then(() => {
                     SuiteCaseService.getTreeBySetSuite(selectedSuiteForTreeView.id).then((response) => {
                         setSelectedSuiteForTreeView(response.data)
+                    }).catch((e) => {
+                        console.log(e)
                     })
+                }).catch((e) => {
+                    console.log(e)
                 })
             }
             handleClose()
