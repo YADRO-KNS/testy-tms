@@ -23,7 +23,6 @@ import PieChartComponent from "../../../../../testy-tms/frontend/src/components/
 import {DesktopDatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import moment, {Moment} from "moment";
 import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
-import {useNavigate} from "react-router-dom";
 import {test, testPlan, user} from "../models.interfaces";
 import ProjectService from "../../services/project.service";
 import {statuses} from "../model.statuses";
@@ -32,7 +31,6 @@ import ProjectSettings from "../../../../../testy-tms/frontend/src/components/pr
 
 const Project: React.FC = () => {
     const classes = useStyles();
-    const navigate = useNavigate();
     const labels = [['ID', '#000000'], ['НАЗВАНИЕ ТЕСТ-ПЛАНА', '#000000'], ['ВСЕГО ТЕСТОВ', '#000000']];
 
     /// From that index starts statuses in const `labels`
@@ -173,7 +171,8 @@ const Project: React.FC = () => {
         {(isSwitched ? personalTableData : projectTableData)?.map(
             (testplanData, planIndex) =>
                 // Checking if last date of test plan is between filter dates
-                (!moment(testplanData[testplanData.length - 2], "YYYY-MM-DDThh:mm").isBetween(startDate, endDate, undefined, "[]")) ? null :
+                (!moment(testplanData[testplanData.length - 2], "YYYY-MM-DDThh:mm")
+                    .isBetween(startDate, endDate, undefined, "[]")) ? null :
                     (
                         // Returning table row with data
                         <TableRow key={planIndex} style={{cursor: "pointer"}} hover={true}
