@@ -1,25 +1,4 @@
 import React, {ChangeEvent, useEffect, useState} from 'react';
-import {
-    Button,
-    Checkbox, Chip,
-    FormControlLabel,
-    FormGroup,
-    Grid,
-    Paper,
-    Stack,
-    Switch,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    TextField,
-    Typography,
-    Zoom
-} from "@mui/material";
-import LineChartComponent from "../../../../../testy-tms/frontend/src/components/projects/charts/line.chart.component";
-import PieChartComponent from "../../../../../testy-tms/frontend/src/components/projects/charts/pie.chart.component";
 import {DesktopDatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import moment, {Moment} from "moment";
 import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
@@ -27,7 +6,27 @@ import {test, testPlan, user} from "../models.interfaces";
 import ProjectService from "../../services/project.service";
 import {statuses} from "../model.statuses";
 import useStyles from "../../styles/styles";
-import ProjectSettings from "../../../../../testy-tms/frontend/src/components/projects/project.settings";
+import ProjectSettings from "./testy-tms/frontend/src/components/projects/project.settings";
+import Grid from "@mui/material/Grid";
+import FormGroup from "@mui/material/FormGroup";
+import Zoom from '@mui/material/Zoom';
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import Chip from "@mui/material/Chip";
+import TextField from "@mui/material/TextField";
+import TableBody from "@mui/material/TableBody";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Switch from "@mui/material/Switch";
+import Button from "@mui/material/Button";
+import TableContainer from "@mui/material/TableContainer";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import LineChartComponent from "./charts/line.chart.component";
+import PieChartComponent from "./charts/pie.chart.component";
 
 const Project: React.FC = () => {
     const classes = useStyles();

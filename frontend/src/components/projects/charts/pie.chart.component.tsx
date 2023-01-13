@@ -1,6 +1,6 @@
 import React from 'react';
 import {Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip} from "recharts";
-import {test} from "../../../../../../TMS/tms-ts/src/components/models.interfaces";
+import {test} from "../../models.interfaces";
 
 const PieChartComponent = (props: {
     tests: test[]

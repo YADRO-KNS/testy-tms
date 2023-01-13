@@ -1,16 +1,15 @@
 import React, {useState} from "react";
-import {
-    Box,
-    Button,
-    InputLabel,
-    MenuItem,
-    Select,
-    SelectChangeEvent, Typography
-} from "@mui/material";
 import {ThemeProvider, createTheme} from '@mui/material/styles';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import IconButton from "@mui/material/IconButton";
+import {SelectChangeEvent} from "@mui/material/Select";
+import Typography from "@mui/material/Typography";
+import Select from "@mui/material/Select";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 
 const ColorModeContext = React.createContext({
     toggleColorMode: () => {

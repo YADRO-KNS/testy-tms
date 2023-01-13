@@ -1,8 +1,8 @@
 import React from 'react';
 import {CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
-import {test} from "../../../../../../TMS/tms-ts/src/components/models.interfaces";
 import moment from "moment/moment";
-import {statuses} from "../../../../../../TMS/tms-ts/src/components/model.statuses";
+import {test} from "../../models.interfaces";
+import {statuses} from "../../model.statuses";
 
 const LineChartComponent = (props: {
     tests: test[]

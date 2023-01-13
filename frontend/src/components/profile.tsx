@@ -1,11 +1,18 @@
 import React, {ChangeEvent, SyntheticEvent, useEffect, useState} from "react";
-import {Box, Button, Paper, Tab, TextField, Typography} from "@mui/material";
 import {user} from "./models.interfaces";
 import ProjectService from "../services/project.service";
 import ProfileService from "../services/profile.service";
 import Settings from "./settings";
-import {TabContext, TabList, TabPanel} from "@mui/lab";
 import useStyles from "../styles/styles";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import Box from "@mui/material/Box";
+import Tab from "@mui/material/Tab";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import TabContext from "@mui/lab/TabContext";
+import TabList from "@mui/lab/TabList";
+import TabPanel from "@mui/lab/TabPanel";
 
 const Profile: React.FC = () => {
     const classes = useStyles()
