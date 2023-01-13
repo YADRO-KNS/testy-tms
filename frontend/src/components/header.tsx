@@ -95,22 +95,6 @@ const Header: React.FC = () => {
                     >
                         TestY
                     </Typography>
-                    {/*<Typography*/}
-                    {/*    variant="h6"*/}
-                    {/*    noWrap*/}
-                    {/*    component="a"*/}
-                    {/*    href="/"*/}
-                    {/*    sx={{*/}
-                    {/*        mr: 0,*/}
-                    {/*        display: {xs: 'none', md: 'flex'},*/}
-                    {/*        fontFamily: 'monospace',*/}
-                    {/*        fontWeight: 700,*/}
-                    {/*        color: 'inherit',*/}
-                    {/*        textDecoration: 'none',*/}
-                    {/*    }}*/}
-                    {/*>*/}
-                    {/*    {localStorage.getItem("currentProject")}*/}
-                    {/*</Typography>*/}
                     <Box sx={{flexGrow: 1, display: {xs: 'flex', md: 'none'}}}>
                         {isProjectOpen && <IconButton
                             size="large"
@@ -142,8 +126,6 @@ const Header: React.FC = () => {
                             <MenuItem onClick={() => handleCloseNavMenuAndNavigate("/testcases")}>
                                 <Typography
                                     textAlign="center"
-                                    // component="a"
-                                    // href="/testcases"
                                     sx={{
                                         color: 'inherit',
                                         textDecoration: 'none',
@@ -155,10 +137,6 @@ const Header: React.FC = () => {
                             <MenuItem onClick={() => handleCloseNavMenuAndNavigate("/testplans")}>
                                 <Typography
                                     textAlign="center"
-                                    component="a"
-                                    href="/testplans"
-                                    // component="a"
-                                    // href="/test-plans"
                                     sx={{
                                         color: 'inherit',
                                         textDecoration: 'none',
@@ -228,17 +206,6 @@ const Header: React.FC = () => {
                                     }}
                                 > Профиль </Typography>
                             </MenuItem>
-                            {/*<MenuItem key={"Настройки"} onClick={() =>*/}
-                            {/*    handleCloseUserMenuAndNavigate("/settings")*/}
-                            {/*}>*/}
-                            {/*    <Typography*/}
-                            {/*        textAlign="center"*/}
-                            {/*        sx={{*/}
-                            {/*            color: 'inherit',*/}
-                            {/*            textDecoration: 'none',*/}
-                            {/*        }}*/}
-                            {/*    > Настройки </Typography>*/}
-                            {/*</MenuItem>*/}
                             <MenuItem key={"Выйти"} onClick={handleLogout}>
                                 <Typography
                                     textAlign="center"
