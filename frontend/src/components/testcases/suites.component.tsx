@@ -21,28 +21,19 @@ export const CustomWidthTooltip = styled(({className, ...props}: TooltipProps) =
         marginLeft: 10,
         minWidth: 200,
         minHeight: 25,
-        // backgroundColor: theme.palette.common.white,
         border: "1px solid #5c6900",
         color: "#4A4A4A",
         backgroundColor: '#fff4e5',
         fontSize: 15,
         textAlign: "start"
-        // marginBottom: 10,
-        // paddingBottom: 10
     },
     [`& .${tooltipClasses.arrow}`]: {
         "&:before": {
             border: "1px solid #5c6900",
             boxSizing: "border-box",
             backgroundColor: '#fff4e5'
-            // borderTopWidth: 1,
         },
         fontSize: 25,
-        // color: theme.palette.common.white
-        // minWidth: 200,
-        // minHeight: 25,
-        // color: "red",
-        // size: 100
     },
 }));
 

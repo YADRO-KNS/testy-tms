@@ -204,11 +204,15 @@ function Row(props: {
                                     SuiteCaseService.getSuiteById(response.data.parent).then((response) => {
                                         setSelectedSuiteCome({id: response.data.id, name: response.data.name})
                                         setShowCreationSuite(true)
+                                    }).catch((e) => {
+                                        console.log(e)
                                     })
                                 } else {
                                     setSelectedSuiteCome(null)
                                     setShowCreationSuite(true)
                                 }
+                            }).catch((e) => {
+                                console.log(e)
                             })
                             setInfoSuiteForEdit({id: row.id, name: row.name})
                         }}>
@@ -288,27 +292,27 @@ function Row(props: {
                             </tr>
                             </tbody>
                             {row && row.children &&
-                            <tbody className={classesTableSuitesCases.childTable}>
-                            {row.children.map((suite: any) => (
-                                <Row key={suite.id} row={suite}
-                                     setShowCreationCase={setShowCreationCase}
-                                     setShowCreationSuite={setShowCreationSuite}
-                                     setSelectedSuiteCome={setSelectedSuiteCome}
-                                     treeSuitesOpenMap={treeSuitesOpenMap}
-                                     setTreeSuitesOpenMap={setTreeSuitesOpenMap}
-                                     detailedCaseInfo={detailedCaseInfo}
-                                     setDetailedCaseInfo={setDetailedCaseInfo}
-                                     setInfoCaseForEdit={setInfoCaseForEdit}
-                                     setTreeSuites={setTreeSuites}
-                                     selectedCases={selectedCases}
-                                     setSelectedCases={setSelectedCases}
-                                     setOpenDialogDeletion={setOpenDialogDeletion}
-                                     setComponentForDeletion={setComponentForDeletion}
-                                     classesTableSuitesCases={classesTableSuitesCases}
-                                     setInfoSuiteForEdit={setInfoSuiteForEdit}
-                                />
-                            ))}
-                            </tbody>
+                                <tbody className={classesTableSuitesCases.childTable}>
+                                {row.children.map((suite: any) => (
+                                    <Row key={suite.id} row={suite}
+                                         setShowCreationCase={setShowCreationCase}
+                                         setShowCreationSuite={setShowCreationSuite}
+                                         setSelectedSuiteCome={setSelectedSuiteCome}
+                                         treeSuitesOpenMap={treeSuitesOpenMap}
+                                         setTreeSuitesOpenMap={setTreeSuitesOpenMap}
+                                         detailedCaseInfo={detailedCaseInfo}
+                                         setDetailedCaseInfo={setDetailedCaseInfo}
+                                         setInfoCaseForEdit={setInfoCaseForEdit}
+                                         setTreeSuites={setTreeSuites}
+                                         selectedCases={selectedCases}
+                                         setSelectedCases={setSelectedCases}
+                                         setOpenDialogDeletion={setOpenDialogDeletion}
+                                         setComponentForDeletion={setComponentForDeletion}
+                                         classesTableSuitesCases={classesTableSuitesCases}
+                                         setInfoSuiteForEdit={setInfoSuiteForEdit}
+                                    />
+                                ))}
+                                </tbody>
                             }
                         </Table>
                     </Collapse>
@@ -509,9 +513,9 @@ const TableSuites = (props: {
                 />
             </div>
             {detailedCaseInfo.show &&
-            <div>
-                <DetailedCaseInfo myCase={detailedCaseInfo.myCase} setDetailedCaseInfo={setDetailedCaseInfo}/>
-            </div>
+                <div>
+                    <DetailedCaseInfo myCase={detailedCaseInfo.myCase} setDetailedCaseInfo={setDetailedCaseInfo}/>
+                </div>
             }
         </SplitterLayout>
 

@@ -49,6 +49,8 @@ function DeletionDialogElements(props: {
             }).catch((e) => {
                 console.log(e)
             })
+        }).catch((e) => {
+            console.log(e)
         })
         setOpenDialogDeletion(false)
     }
