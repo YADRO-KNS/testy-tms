@@ -36,6 +36,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
+from simple_history.models import HistoricalRecords
 from tests_description.models import TestCase
 from tests_representation.choices import TestStatuses
 from users.models import User
@@ -101,10 +102,9 @@ class TestResult(BaseModel):
         blank=True,
         validators=[MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)]
     )
-
     attachments = GenericRelation(Attachment)
-
     attributes = models.JSONField(default=dict, blank=True)
+    history = HistoricalRecords()
 
     class Meta:
         default_related_name = 'test_results'

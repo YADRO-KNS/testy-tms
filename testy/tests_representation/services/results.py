@@ -74,4 +74,6 @@ class TestResultService:
         test_result.full_clean()
         test_result.save()
 
+        AttachmentService().attachments_update_content_object(data.get('attachments', []), test_result)
+
         return test_result
