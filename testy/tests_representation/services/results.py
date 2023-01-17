@@ -40,7 +40,7 @@ from users.models import User
 
 class TestResultService:
     non_side_effect_fields = [
-        'status', 'user', 'test', 'comment', 'is_archive', 'test_case_version', 'execution_time',
+        'status', 'user', 'test', 'comment', 'is_archive', 'test_case_version', 'execution_time', 'attributes'
     ]
 
     @transaction.atomic
@@ -73,5 +73,7 @@ class TestResultService:
             test_result.test_case_version = TestCaseSelector().case_version(test_result.test.case)
         test_result.full_clean()
         test_result.save()
+
+        AttachmentService().attachments_update_content_object(data.get('attachments', []), test_result)
 
         return test_result
