@@ -46,3 +46,4 @@ class TestyPluginConfig(AppConfig):
     middleware = []
     min_version = None
     max_version = None
+    index_reverse_name = None

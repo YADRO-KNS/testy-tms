@@ -40,3 +40,4 @@ class TestStatuses(models.IntegerChoices):
     BROKEN = 3, _('Broken')
     BLOCKED = 4, _('Blocked')
     UNTESTED = 5, _('Untested')
+    RETEST = 6, _('Retest')
