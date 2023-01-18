@@ -43,6 +43,7 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = 'Seeding default values in database: default superuser.'
+
     def handle(self, *args, **options) -> None:
         self.create_default_superuser()
 

@@ -26,6 +26,8 @@ services:
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
+      - LOCAL_SESSION=${LOCAL_SESSION}
+      - DSN=${DSN}
     depends_on:
       db:
         condition: service_healthy
@@ -77,6 +79,8 @@ services:
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
+      - LOCAL_SESSION=${LOCAL_SESSION}
+      - DSN=${DSN}
     volumes:
       - './testy:/testy'
     depends_on:
