@@ -54,3 +54,31 @@ def find_idx_by_key_value(key: str, value: Any, src_list: list):
     for idx, elem in enumerate(src_list):
         if elem[key] == value:
             return idx
+
+
+@contextmanager
+def suppress_auto_now(model, field_names):
+    """
+    Suppress auto_now and auto_now_add options in model fields.
+
+    Function is not supposed to be used inside Django app, may cause breaking of auto fields. Not supposed to be used
+    in views/forms/serializers etc.
+
+    Args:
+        model: Model class
+        field_names: name of fields with auto content
+    """
+    fields_state = {}
+    for field_name in field_names:
+        field = model._meta.get_field(field_name)
+        fields_state[field] = {'auto_now': field.auto_now, 'auto_now_add': field.auto_now_add}
+
+    for field in fields_state:
+        field.auto_now = False
+        field.auto_now_add = False
+    try:
+        yield
+    finally:
+        for field, state in fields_state.items():
+            field.auto_now = state['auto_now']
+            field.auto_now_add = state['auto_now_add']
