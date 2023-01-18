@@ -50,7 +50,6 @@ import sentry_sdk
 from django.utils.translation import gettext_lazy as _
 from django_auth_ldap.config import GroupOfNamesType, LDAPSearch
 from sentry_sdk.integrations.django import DjangoIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
 from utilities.request import get_boolean
 
 from testy.utils import insert_plugins
@@ -270,12 +269,7 @@ if not get_boolean(value=os.getenv('LOCAL_SESSION')):
             dsn=dsn,
             integrations=[
                 DjangoIntegration(),
-                LoggingIntegration(
-                    level=logging.INFO,  # Capture info and above as breadcrumbs
-                    event_level=logging.INFO  # Send errors as events
-                )
             ],
-
             # Set traces_sample_rate to 1.0 to capture 100%
             # of transactions for performance monitoring.
             # We recommend adjusting this value in production.

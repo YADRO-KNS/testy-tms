@@ -93,6 +93,11 @@ urlpatterns = [
     re_path(r'^celery-progress/', include('celery_progress.urls')),
 ]
 
+
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
+
 if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()
     urlpatterns += static(
@@ -100,4 +105,5 @@ if settings.DEBUG:
     )
     urlpatterns += [
         path('__debug__/', include('debug_toolbar.urls')),
+        path('sentry-debug/', trigger_error)
     ]

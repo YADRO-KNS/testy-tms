@@ -42,14 +42,14 @@ INSTALLED_APPS += [  # noqa F405
 ]
 
 INTERNAL_IPS = [
-    "127.0.0.1",
+    '127.0.0.1',
 ]
 
 MIDDLEWARE += [  # noqa F405
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
-log_level = os.getenv('LOG_LEVEL', 'INFO')
+log_level = 'INFO'
 
 LOGGING = {
     'version': 1,
@@ -58,33 +58,49 @@ LOGGING = {
         'default': {
             'format': '%(asctime)s - %(module)s - %(levelname)s: %(message)s',
         },
+        'loki': {
+            'class': 'django_loki.LokiFormatter',  # required
+            'format': '[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] [%(funcName)s] %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
     },
     'handlers': {
         'console': {
             'formatter': 'default',
             'class': 'logging.StreamHandler',
         },
-        'sentry': {
-            'level': log_level,
-            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        'loki': {
+            'level': log_level,  # required
+            'class': 'django_loki.LokiHttpHandler',  # required
+            'host': 'loki',  # required, your grafana/Loki server host, e.g:192.168.57.242
+            'formatter': 'loki',  # required, loki formatter,
+            'port': 3100,  # optional, your grafana/Loki server port, default is 3100
+            'timeout': 0.5,  # optional, request Loki-server by http or https time out, default is 0.5
+            'protocol': 'http',  # optional, Loki-server protocol, default is http
+            'source': 'Loki',  # optional, label name for Loki, default is Loki
+            'src_host': 'localhost',  # optional, label name for Loki, default is localhost
+            'tz': 'UTC',  # optional, timezone for formatting timestamp, default is UTC, e.g:Asia/Shanghai
         },
     },
-    "loggers": {
-        "django": {
-            "handlers": ["console", "sentry"],
-            "level": log_level,  # noqa: F405
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'loki'],
+            'level': log_level
         },
-        "core": {
-            "handlers": ["console", "sentry"],
-            "level": log_level,  # noqa: F405
+        'gunicorn': {
+            'handlers': ['loki'],
+            'level': log_level,
+        },
+        'gunicorn.errors': {
+            'level': log_level,
+            'handlers': ['loki'],
+        },
+        'gunicorn.access': {
+            'level': log_level,
+            'handlers': ['loki'],
         },
         'celery': {
-            'handlers': ['console', 'sentry'],
-            'level': 'DEBUG',
-            'propagate': True
-        },
-        '': {
-            'handlers': ['console', 'sentry'],
+            'handlers': ['console', 'loki'],
             'level': log_level,
         },
     },
