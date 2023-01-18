@@ -416,7 +416,7 @@ class TestyCreator:
 
         return tests_mappings
 
-    def create_results(self, results, tests_mappings, user_mappings):
+    def create_results(self, results, custom_fields_multi_select, tests_mappings, user_mappings):
         statuses = {
             1: 1,  # passed
             5: 0,  # failed
@@ -437,11 +437,24 @@ class TestyCreator:
                 continue
             src_ids.append(result['id'])
 
+            json_fields = {}
+            for result_field_name, result_field_value in result.items():
+                if not re.match(r'^custom_', result_field_name) or not result_field_value:
+                    continue
+                if result_field_name in custom_fields_multi_select:
+                    new_value = []
+                    for single_value in result_field_value:
+                        new_value.append(custom_fields_multi_select[result_field_name][str(single_value)])
+                    json_fields[result_field_name] = new_value
+                    continue
+                json_fields[result_field_name] = result_field_value
+
             result_data = {
                 'status': statuses.get(result['status_id'], 5),
                 'test': Test.objects.get(pk=tests_mappings[result['test_id']]),
                 'created_at': datetime.fromtimestamp(result['created_on'], tz=pytz.UTC),
                 'updated_at': datetime.fromtimestamp(result['created_on'], tz=pytz.UTC),
+                'attributes': json_fields
             }
             if comment := result.get('comment'):
                 result_data['comment'] = comment
