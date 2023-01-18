@@ -24,10 +24,14 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - CELERY_WORKER_HIJACK_ROOT_LOGGER=${CELERY_WORKER_HIJACK_ROOT_LOGGER}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - LOCAL_SESSION=${LOCAL_SESSION}
       - DSN=${DSN}
+      - LOKI_HOST=${LOKI_HOST}
+      - LOKI_PORT=${LOKI_PORT}
+      - LOKI_PROTOCOL=${LOKI_PROTOCOL}
     depends_on:
       db:
         condition: service_healthy
@@ -81,6 +85,9 @@ services:
       - REDIS_PORT=${REDIS_PORT}
       - LOCAL_SESSION=${LOCAL_SESSION}
       - DSN=${DSN}
+      - LOKI_HOST=${LOKI_HOST}
+      - LOKI_PORT=${LOKI_PORT}
+      - LOKI_PROTOCOL=${LOKI_PROTOCOL}
     volumes:
       - './testy:/testy'
     depends_on:

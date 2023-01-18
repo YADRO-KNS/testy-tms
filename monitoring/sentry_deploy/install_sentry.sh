@@ -1,4 +1,7 @@
 #!/bin/bash
+working_dir=$( dirname -- "$0"; )
+echo "$working_dir"
+cd "$working_dir" || exit
 if [ -f "22.12.0.tar.gz" ]; then
     echo "Archive already exists."
 else
@@ -12,5 +15,5 @@ printf "\napt-get update && \\
         rm -r /var/lib/apt/lists/*\n
 pip install sentry-ldap-auth" >> sentry/enhance-image.sh
 docker build -t sentry-self-hosted-jq-local --platform=linux/amd64 ./jq
-cp /opt/sentry/sentry.conf.py sentry/sentry.conf.py
+cp "$working_dir"/sentry.conf.py "$working_dir"/self-hosted-22.12.0/sentry/sentry.conf.py
 ./install.sh

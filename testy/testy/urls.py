@@ -56,6 +56,8 @@ from plugins.url import plugin_api_urls, plugin_urls
 from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from testy.tasks import debug_task
+
 schema_view = get_schema_view(
     openapi.Info(
         title="testy API",
@@ -105,5 +107,5 @@ if settings.DEBUG:
     )
     urlpatterns += [
         path('__debug__/', include('debug_toolbar.urls')),
-        path('sentry-debug/', trigger_error)
+        path('sentry-debug/', trigger_error),
     ]

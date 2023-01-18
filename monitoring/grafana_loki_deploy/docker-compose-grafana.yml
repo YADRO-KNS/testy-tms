@@ -7,8 +7,7 @@ services:
     volumes:
       - "./loki-data:/loki"
     container_name: "loki"
-    networks:
-      - "testy_default"
+    user: "0"
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -18,8 +17,4 @@ services:
     volumes:
       - "./grafana-data:/var/lib/grafana"
     container_name: "grafana"
-    networks:
-      - "testy_default"
-networks:
-  testy_default:
-    name: testy_default
+    user: "0"
