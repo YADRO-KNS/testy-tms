@@ -46,7 +46,6 @@ services:
       retries: 5
   redis:
     image: redis:alpine
-    container_name: redis
     command: redis-server --appendonly yes
     volumes:
       - "./redis_data:/data"
@@ -60,9 +59,8 @@ services:
       context: testy
       dockerfile: scripts/celery/Dockerfile
     command: celery -A testy worker -l INFO
-    container_name: celery
     environment:
-      - DJANGO_SETTINGS_MODULE=testy.settings.development
+      - DJANGO_SETTINGS_MODULE=testy.settings.production
       - POSTGRES_NAME=${POSTGRES_NAME}
       - POSTGRES_USER=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
