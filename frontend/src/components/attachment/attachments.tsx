@@ -3,21 +3,13 @@ import Typography from "@mui/material/Typography";
 import DescriptionIcon from '@mui/icons-material/Description';
 import {Grid, Tooltip} from "@mui/material";
 import {attachment} from "../models.interfaces";
+import AttachmentService from "../../services/attachment.servise";
 
 interface Props {
     attachments: attachment[] | undefined
 }
 
 const Attachments: React.FC<Props> = ({attachments}) => {
-    const filenameReduce = (filename: string) => {
-        const maxLengthOfName = 35;
-        if (filename.length > maxLengthOfName) {
-            return filename.slice(0, maxLengthOfName) + "..."
-        } else {
-            return filename
-        }
-    }
-
     return (
         <div style={{display: 'flex', flexDirection: 'column'}}>
             {attachments && attachments.map((attachment, index) => (
@@ -35,7 +27,7 @@ const Attachments: React.FC<Props> = ({attachments}) => {
                         <div style={{display: 'flex', flexDirection: 'row'}}>
                             <DescriptionIcon/>
                             <Typography style={{marginLeft: 5}}>
-                                {filenameReduce(attachment.filename)}
+                                {AttachmentService.filenameReduce(attachment.filename)}
                             </Typography>
                         </div>
                     </Tooltip>
