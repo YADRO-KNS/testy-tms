@@ -7,7 +7,6 @@ import Link from "@mui/material/Link";
 import Box from "@mui/material/Box";
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import React, {useEffect, useMemo, useState} from "react";
-import useStyles from "../../styles/styles";
 import {suite, treeSuite} from "./suites.component";
 import {myCase} from "../models.interfaces";
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
@@ -333,7 +332,6 @@ const TableSuites = (props: {
     selectedSuiteForTreeView: treeSuite,
     setSelectedSuiteForTreeView: (suite: treeSuite) => void,
 }) => {
-    const classes = useStyles()
     const {
         setShowCreationCase,
         setShowCreationSuite,
@@ -432,7 +430,7 @@ const TableSuites = (props: {
 
     return (
 
-        <SplitterLayout customClassName={classes.splitter} primaryIndex={0} primaryMinSize={40} secondaryMinSize={35}
+        <SplitterLayout customClassName={classesTableSuitesCases.splitter} primaryIndex={0} primaryMinSize={40} secondaryMinSize={35}
                         percentage>
             <div>
                 <Box className={classesTableSuitesCases.box}>

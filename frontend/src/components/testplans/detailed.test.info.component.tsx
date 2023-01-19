@@ -313,7 +313,7 @@ const DetailedTestInfo: React.FC<Props> = ({
                                             {moment(testResult.updated_at, 'YYYY-MM-DDTHH:mm').format('DD/MM/YY HH:mm')}
                                         </Grid>
                                         <Grid item sx={{fontWeight: 'bold', wordBreak: "break-word"}}>
-                                            {names.get(testResult.id) ?? "неопознанный котик"}
+                                            {names.get(testResult.id) ?? ""}
                                         </Grid>
 
                                     </div>
