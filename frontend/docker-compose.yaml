@@ -2,6 +2,7 @@ version: '3.9'
 services:
   testy-tms-client:
     build:
+      context: ""
       dockerfile: Dockerfile
     container_name: testy-tms-client
     ports:
