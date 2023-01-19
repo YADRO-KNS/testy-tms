@@ -2,6 +2,15 @@ import axiosTMS from "./axiosTMS";
 import axios from "axios";
 
 export default class AttachmentService {
+    static filenameReduce = (filename: string) => {
+        const maxLengthOfName = 35;
+        if (filename.length > maxLengthOfName) {
+            return filename.slice(0, maxLengthOfName) + "..."
+        } else {
+            return filename
+        }
+    }
+
     private static postAttachment(file: File, objectId: number, contentType: number, token: string | null) {
         const formData = new FormData();
         const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : 1}').id;
@@ -22,7 +31,7 @@ export default class AttachmentService {
     }
 
     static postAttachments(filesSelected: File[] | undefined, objectId: number, contentType: number) {
-        if (!filesSelected) return new Promise<void>(() => {});
+        if (!filesSelected) return new Promise<void>((resolve) => {resolve()});
 
         const token = localStorage.getItem("accessToken");
         return new Promise<void>(async (resolve) => {
