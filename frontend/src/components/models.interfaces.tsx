@@ -1,8 +1,23 @@
+export interface attachment {
+    project: number;
+    comment: string;
+    name: string;
+    filename: string;
+    file_extension: string;
+    size: number;
+    content_type: number;
+    object_id: number;
+    user: number;
+    file: string;
+    url: string;
+}
+
 export interface testResult {
     id: number;
     project: number,
     status: number;
     status_color: {id: number, name: string, color: string};
+    attachments: attachment[];
     test: number;
     user: number;
     user_full_name: string;
@@ -24,6 +39,7 @@ export interface myCase {
     teardown: string;
     setup: string;
     url?: string;
+    attachments: attachment[];
 }
 
 export interface test {

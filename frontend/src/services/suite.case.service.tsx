@@ -25,6 +25,10 @@ export default class SuiteCaseService {
         }
     }
 
+    static getCaseById(id: number) {
+        return axiosTMS.get("api/v1/cases/" + id + "/")
+    }
+
     static getTreeBySetSuite(id: number) {
         const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
         if (projectId) {
@@ -84,7 +88,8 @@ export default class SuiteCaseService {
                 project: -1,
                 setup: "",
                 teardown: "",
-                estimate: -1
+                estimate: -1,
+                attachments: []
             }
         }
     }

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {test, user} from "../models.interfaces";
+import {attachment, test, user} from "../models.interfaces";
 import Chip from "@mui/material/Chip";
 import FormControl from "@mui/material/FormControl";
 import Grid from "@mui/material/Grid";
@@ -16,6 +16,9 @@ import useStyles from "./styles.testplans";
 import TestPlanService from "../../services/testplan.service";
 import {defaultStatus, statuses} from "../model.statuses";
 import ProfileService from "../../services/profile.service";
+import Attachments from "../attachment/attachments";
+import AttachmentButton from "../attachment/attachment_button";
+import AttachmentService from "../../services/attachment.servise";
 
 interface Props {
     detailedTestInfo: { show: boolean, test: test };
@@ -32,6 +35,8 @@ const DetailedTestInfo: React.FC<Props> = ({
                                            }) => {
     const classes = useStyles()
     const [selectedStatus, setSelectedStatus] = useState<{ id: number, name: string } | null>(null)
+    const [attachments, setAttachments] = React.useState<Map<number, attachment[]>>(new Map())
+    const [filesSelected, setFilesSelected] = React.useState<File[]>()
     const [comment, setComment] = useState("")
     const [num, setNum] = useState<number>()
     const [names, setNames] = useState<Map<number, string>>(new Map())
@@ -48,24 +53,28 @@ const DetailedTestInfo: React.FC<Props> = ({
     }
 
     useEffect(() => {
-        new Promise<Map<number, string>>(async (resolve) => {
-            const map: Map<number, string> = new Map()
+        new Promise<[Map<number, string>, Map<number, attachment[]>]>(async (resolve) => {
+            const namesMap: Map<number, string> = new Map()
+            const attachmentsMap: Map<number, attachment[]> = new Map()
             await Promise.all(test.test_results.map(async (result) => {
                 if (!result.user_full_name) {
                     await ProfileService.getUser(result.user).then((response) => {
                         const user: user = response.data
-                        map.set(result.id, user.username)
+                        namesMap.set(result.id, user.username)
                     })
                         .catch((e) => {
                             console.log(e)
                         })
                 } else {
-                    map.set(result.id, result.user_full_name)
+                    namesMap.set(result.id, result.user_full_name)
                 }
+                const response = await TestPlanService.getTestResult(result.id)
+                attachmentsMap.set(result.id, response.data.attachments)
             }))
-            resolve(map)
-        }).then((response: Map<number, string>) => {
-            setNames(response)
+            resolve([namesMap, attachmentsMap])
+        }).then(([namesMap, attachmentsMap]) => {
+            setNames(namesMap)
+            setAttachments(attachmentsMap)
         })
     }, [detailedTestInfo, test.test_results])
 
@@ -89,21 +98,22 @@ const DetailedTestInfo: React.FC<Props> = ({
             execution_time: num ? num : null,
             test: test.id
         }
-        TestPlanService.createTestResult(testResult).then(() => {
-            TestPlanService.getAllTestResults(test.id).then((response) => {
-                test.test_results = response.data
-                let status = statuses.find(i => i.id === statusId)
-                test.last_status_color = status ? status : defaultStatus
-                test.test_results.forEach(y => {
-                    let status = statuses.find(i => i.id === y.status)
-                    y.status_color = status ? status : defaultStatus
+        TestPlanService.createTestResult(testResult).then((response) => {
+            AttachmentService.postAttachments(filesSelected, response.data.id, 14).then(() =>
+                TestPlanService.getAllTestResults(test.id).then((response) => {
+                    test.test_results = response.data
+                    let status = statuses.find(i => i.id === statusId)
+                    test.last_status_color = status ? status : defaultStatus
+                    test.test_results.forEach(y => {
+                        let status = statuses.find(i => i.id === y.status)
+                        y.status_color = status ? status : defaultStatus
+                    })
+                    setDetailedTestInfo({show: true, test: test})
                 })
-                setDetailedTestInfo({show: true, test: test})
-            })
-                .catch((e) => {
-                    console.log(e)
-                })
-
+                    .catch((e) => {
+                        console.log(e)
+                    })
+            )
         })
             .catch((e) => {
                 console.log(e);
@@ -243,6 +253,7 @@ const DetailedTestInfo: React.FC<Props> = ({
                             />
                         </Grid>
                     </Grid>
+                    <AttachmentButton setFilesSelected={setFilesSelected}/>
                 </div>
             )}
             <Grid sx={{
@@ -307,14 +318,15 @@ const DetailedTestInfo: React.FC<Props> = ({
                                     </div>
                                 </TableCell>
 
-                                <TableCell align="left" sx={{verticalAlign: 'top', paddingTop: "9px"}}>
-                                    <div className={classes.divBold}>
-                                        Комментарии:
-                                    </div>
-                                    {testResult?.comment}
-                                </TableCell>
-                            </tr>
-                        )}
+                            <TableCell align="left" sx={{verticalAlign: 'top', paddingTop: "9px"}}>
+                                <div className={classes.divBold}>
+                                    Комментарии:
+                                </div>
+                                {testResult?.comment}
+                                <Attachments attachments={attachments.get(testResult.id)}/>
+                            </TableCell>
+                        </tr>
+                    )}
                     </tbody>
                 </table>
             </div>)}
