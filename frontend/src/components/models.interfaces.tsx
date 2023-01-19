@@ -2,8 +2,10 @@ export interface testResult {
     id: number;
     project: number,
     status: number;
+    status_color: {id: number, name: string, color: string};
     test: number;
     user: number;
+    user_full_name: string;
     comment?: string;
     is_archive: boolean;
     test_case_version: number;
@@ -31,7 +33,9 @@ export interface test {
     project: number;
     test_results: testResult[];
     current_result: string;
-    user: number | null;
+    last_status_color: {id: number, name: string, color: string};
+    user?: number;
+    username?: string;
     is_archive: boolean;
     updated_at?: string;
     created_at: string
