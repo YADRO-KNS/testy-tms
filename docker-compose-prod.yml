@@ -70,7 +70,7 @@ services:
       dockerfile: scripts/celery/Dockerfile
     command: celery -A testy worker -l INFO
     environment:
-      - DJANGO_SETTINGS_MODULE=testy.settings.development
+      - DJANGO_SETTINGS_MODULE=testy.settings.production
       - POSTGRES_NAME=${POSTGRES_NAME}
       - POSTGRES_USER=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
