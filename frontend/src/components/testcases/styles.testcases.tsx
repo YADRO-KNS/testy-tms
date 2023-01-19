@@ -91,7 +91,7 @@ export default makeStyles({
         width: "5%",
         padding: "7px 15px 13px 15px",
         textAlign: "center",
-        marginBottom:2
+        marginBottom: 2
     },
     cellForIdCase: {
         padding: "7px 0px 13px 0px",
@@ -99,6 +99,9 @@ export default makeStyles({
     tableForCases: {
         border: "solid",
         borderWidth: "0px 1px 1px 1px"
+    },
+    splitter: {
+        maxWidth: "80%"
     },
     addingCaseSuite: {
         display: "flex",
@@ -153,7 +156,7 @@ export default makeStyles({
         width: "50%",
         wordBreak: "break-all"
     },
-    cellSuiteChip:{
+    cellSuiteChip: {
         padding: "8px 0px 1px 20px"
     },
     addCaseSuiteCell: {

@@ -6,7 +6,7 @@ import {test, testPlan, user} from "../models.interfaces";
 import ProjectService from "../../services/project.service";
 import {statuses} from "../model.statuses";
 import useStyles from "../../styles/styles";
-import ProjectSettings from "./testy-tms/frontend/src/components/projects/project.settings";
+import ProjectSettings from "./project.settings";
 import Grid from "@mui/material/Grid";
 import FormGroup from "@mui/material/FormGroup";
 import Zoom from '@mui/material/Zoom';
