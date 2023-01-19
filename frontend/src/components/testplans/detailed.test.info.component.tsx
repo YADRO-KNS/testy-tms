@@ -88,6 +88,7 @@ const DetailedTestInfo: React.FC<Props> = ({
         setComment("")
         setSelectedStatus(null)
         setShowEnterResult(false)
+        setFilesSelected([])
     }
 
     const createTestResult = () => {

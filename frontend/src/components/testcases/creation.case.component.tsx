@@ -110,6 +110,7 @@ const CreationCase: React.FC<Props> = ({
         setSetup("")
         setTeardown("")
         setInfoCaseForEdit(null)
+        setFilesSelected([])
     }
 
     const onChangeEstimateContent = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
