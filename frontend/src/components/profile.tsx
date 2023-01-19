@@ -68,7 +68,7 @@ const Profile: React.FC = () => {
                 email: email
             }).then(() => setMessage("Изменения успешно сохранены"))
                 .catch((error) => {
-                    setMessage("Пожалйста проверьте введенные данные")
+                    setMessage("Пожалуйста, проверьте введенные данные")
                     console.log(error)
                 })
         }
@@ -96,7 +96,7 @@ const Profile: React.FC = () => {
                 password: newPassword,
             }).then(() => setMessage("Изменения успешно сохранены"))
                 .catch((error) => {
-                    setMessage("Пожалйста проверьте введенные данные")
+                    setMessage("Пожалуйста, проверьте введенные данные")
                     console.log(error)
                 })
         }

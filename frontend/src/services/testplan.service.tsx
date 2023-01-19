@@ -53,6 +53,10 @@ export default class TestPlanService {
         return axiosTMS.get("api/v1/results/?test=" + id)
     }
 
+    static getTestResult(id: number) {
+        return axiosTMS.get("api/v1/results/" + id + "/")
+    }
+
     static createTestPlan(testPlan: { name: string, project: number, parent: number | null, test_cases: number[], parameters: number[], started_at: string, due_date: string }) {
         return axiosTMS.post("api/v1/testplans/", testPlan)
     }

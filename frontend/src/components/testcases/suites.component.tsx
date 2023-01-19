@@ -193,8 +193,7 @@ const SuitesComponent = () => {
                         "&:hover": {
                             backgroundColor: "#777676",
                         }
-                    }} onClick={handleShowCreationSuite}>Создать
-                        сьюту</Button>
+                    }} onClick={handleShowCreationSuite}>Создать сьюту</Button>
                     <CreationSuite show={showCreationSuite} setShow={setShowCreationSuite}
                                    selectedSuiteCome={selectedSuiteCome} setTreeSuites={setTreeSuites}
                                    setSelectedSuiteForTreeView={setSelectedSuiteForTreeView}
