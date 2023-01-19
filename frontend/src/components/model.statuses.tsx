@@ -1,3 +1,9 @@
+export const defaultStatus = {
+    id: 5,
+    name: 'Untested',
+    color: '#a5a4a4'
+}
+
 export const statuses: { id: number, name: string, color: string }[] = [{
     id: 1,
     name: 'Passed',
