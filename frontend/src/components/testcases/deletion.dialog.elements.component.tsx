@@ -6,7 +6,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import React from "react";
 import SuiteCaseService from "../../services/suite.case.service";
 import {treeSuite} from "./suites.component";
-import {myCase} from "./suites.component";
+import {myCase} from "../models.interfaces";
 
 const DeletionDialogElements = (props: {
     openDialogDeletion: boolean, setOpenDialogDeletion: (show: boolean) => void,
@@ -34,18 +34,7 @@ const DeletionDialogElements = (props: {
     async function agreeToDelete() {
         SuiteCaseService.deleteCases(selectedForDeletion).then(() => {
             if (detailedCaseInfo.show && selectedForDeletion.indexOf(detailedCaseInfo.myCase.id) !== -1) {
-                setDetailedCaseInfo({
-                    show: false, myCase: {
-                        id: -1,
-                        name: "",
-                        suite: -1,
-                        scenario: "",
-                        project: -1,
-                        setup: "",
-                        teardown: "",
-                        estimate: -1
-                    }
-                })
+                setDetailedCaseInfo(SuiteCaseService.getEmptyDetailedCaseInfo())
             }
             SuiteCaseService.getTreeBySetSuite(selectedSuiteForTreeView.id).then((response) => {
                 setSelectedSuiteForTreeView(response.data)

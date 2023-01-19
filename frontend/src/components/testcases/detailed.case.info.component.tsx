@@ -1,10 +1,11 @@
 import React from "react";
-import {myCase} from "./suites.component";
+import {myCase} from "../models.interfaces";
 import Divider from "@mui/material/Divider";
 import Grid from "@mui/material/Grid";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from '@mui/icons-material/Close';
+import SuiteCaseService from "../../services/suite.case.service";
 
 interface Props {
     myCase: myCase;
@@ -15,24 +16,13 @@ const DetailedCaseInfo: React.FC<Props> = ({myCase, setDetailedCaseInfo}) => {
     return (
         <Grid style={{padding: 20, wordBreak: "break-word"}}>
             <Grid>
-                <Grid style={{display: "flex",justifyContent: "space-between"}}>
-                <Typography variant="h6">
-                    Название
-                </Typography>
-                <IconButton size={"small"} onClick={() => setDetailedCaseInfo({
-                    show: false, myCase: {
-                        id: -1,
-                        name: "",
-                        suite: -1,
-                        scenario: "",
-                        project: -1,
-                        setup: "",
-                        teardown: "",
-                        estimate: -1
-                    }
-                })}>
-                    <CloseIcon/>
-                </IconButton>
+                <Grid style={{display: "flex", justifyContent: "space-between"}}>
+                    <Typography variant="h6">
+                        Название
+                    </Typography>
+                    <IconButton size={"small"} onClick={() => setDetailedCaseInfo(SuiteCaseService.getEmptyDetailedCaseInfo())}>
+                        <CloseIcon/>
+                    </IconButton>
                 </Grid>
                 <Grid>
                     {myCase.name}

@@ -10,7 +10,8 @@ import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import SuiteCaseService from "../../services/suite.case.service";
-import {CustomWidthTooltip, myCase, treeSuite} from "./suites.component";
+import {CustomWidthTooltip, treeSuite} from "./suites.component";
+import {myCase} from "../models.interfaces";
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 interface Props {
