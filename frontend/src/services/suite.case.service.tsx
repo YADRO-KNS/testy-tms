@@ -1,5 +1,5 @@
 import axiosTMS from "./axiosTMS";
-import {myCase} from "../components/testcases/suites.component";
+import {myCase} from "../components/models.interfaces";
 
 export default class SuiteCaseService {
 
@@ -71,5 +71,21 @@ export default class SuiteCaseService {
 
     static createSuite(suite: { parent: number | null; name: string; project: number }) {
         return axiosTMS.post("api/v1/suites/", suite)
+    }
+
+    static getEmptyDetailedCaseInfo() {
+        return {
+            show: false,
+            myCase: {
+                id: -1,
+                name: "",
+                suite: -1,
+                scenario: "",
+                project: -1,
+                setup: "",
+                teardown: "",
+                estimate: -1
+            }
+        }
     }
 }

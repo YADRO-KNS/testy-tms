@@ -8,7 +8,8 @@ import Box from "@mui/material/Box";
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import React, {useEffect, useMemo, useState} from "react";
 import useStyles from "../../styles/styles";
-import {myCase, suite, treeSuite} from "./suites.component";
+import {suite, treeSuite} from "./suites.component";
+import {myCase} from "../models.interfaces";
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import DetailedCaseInfo from "./detailed.case.info.component";
 import EditIcon from '@mui/icons-material/Edit';
@@ -290,27 +291,27 @@ function Row(props: {
                             </tr>
                             </tbody>
                             {row && row.children &&
-                                <tbody className={classesTableSuitesCases.childTable}>
-                                {row.children.map((suite: any) => (
-                                    <Row key={suite.id} row={suite}
-                                         setShowCreationCase={setShowCreationCase}
-                                         setShowCreationSuite={setShowCreationSuite}
-                                         setSelectedSuiteCome={setSelectedSuiteCome}
-                                         treeSuitesOpenMap={treeSuitesOpenMap}
-                                         setTreeSuitesOpenMap={setTreeSuitesOpenMap}
-                                         detailedCaseInfo={detailedCaseInfo}
-                                         setDetailedCaseInfo={setDetailedCaseInfo}
-                                         setInfoCaseForEdit={setInfoCaseForEdit}
-                                         setTreeSuites={setTreeSuites}
-                                         selectedCases={selectedCases}
-                                         setSelectedCases={setSelectedCases}
-                                         setOpenDialogDeletion={setOpenDialogDeletion}
-                                         setComponentForDeletion={setComponentForDeletion}
-                                         classesTableSuitesCases={classesTableSuitesCases}
-                                         setInfoSuiteForEdit={setInfoSuiteForEdit}
-                                    />
-                                ))}
-                                </tbody>
+                            <tbody className={classesTableSuitesCases.childTable}>
+                            {row.children.map((suite: any) => (
+                                <Row key={suite.id} row={suite}
+                                     setShowCreationCase={setShowCreationCase}
+                                     setShowCreationSuite={setShowCreationSuite}
+                                     setSelectedSuiteCome={setSelectedSuiteCome}
+                                     treeSuitesOpenMap={treeSuitesOpenMap}
+                                     setTreeSuitesOpenMap={setTreeSuitesOpenMap}
+                                     detailedCaseInfo={detailedCaseInfo}
+                                     setDetailedCaseInfo={setDetailedCaseInfo}
+                                     setInfoCaseForEdit={setInfoCaseForEdit}
+                                     setTreeSuites={setTreeSuites}
+                                     selectedCases={selectedCases}
+                                     setSelectedCases={setSelectedCases}
+                                     setOpenDialogDeletion={setOpenDialogDeletion}
+                                     setComponentForDeletion={setComponentForDeletion}
+                                     classesTableSuitesCases={classesTableSuitesCases}
+                                     setInfoSuiteForEdit={setInfoSuiteForEdit}
+                                />
+                            ))}
+                            </tbody>
                             }
                         </Table>
                     </Collapse>
@@ -411,18 +412,7 @@ const TableSuites = (props: {
         if (detailedCaseInfo.show) {
             if (shownCase.show && detailedCaseInfo.myCase.id === shownCase.myCaseId && lastEditCase !== detailedCaseInfo.myCase.id) {
                 document.getElementById(shownCase.myCaseId + "Arrow")!.style.transform = ""
-                setDetailedCaseInfo({
-                    show: false, myCase: {
-                        id: -1,
-                        name: "",
-                        suite: -1,
-                        scenario: "",
-                        project: -1,
-                        setup: "",
-                        teardown: "",
-                        estimate: -1
-                    }
-                })
+                setDetailedCaseInfo(SuiteCaseService.getEmptyDetailedCaseInfo())
                 setShownCase({show: false, myCaseId: -1})
             } else if (lastEditCase !== detailedCaseInfo.myCase.id) {
                 document.getElementById(detailedCaseInfo.myCase.id + "Arrow")!.style.transform = 'rotate(180deg)'
@@ -435,18 +425,7 @@ const TableSuites = (props: {
             }
         } else if (shownCase.myCaseId >= 0) {
             document.getElementById(shownCase.myCaseId + "Arrow")!.style.transform = ""
-            setDetailedCaseInfo({
-                show: false, myCase: {
-                    id: -1,
-                    name: "",
-                    suite: -1,
-                    scenario: "",
-                    project: -1,
-                    setup: "",
-                    teardown: "",
-                    estimate: -1
-                }
-            })
+            setDetailedCaseInfo(SuiteCaseService.getEmptyDetailedCaseInfo())
             setShownCase({show: false, myCaseId: -1})
         }
     }, [detailedCaseInfo])
@@ -511,9 +490,9 @@ const TableSuites = (props: {
                 />
             </div>
             {detailedCaseInfo.show &&
-                <div>
-                    <DetailedCaseInfo myCase={detailedCaseInfo.myCase} setDetailedCaseInfo={setDetailedCaseInfo}/>
-                </div>
+            <div>
+                <DetailedCaseInfo myCase={detailedCaseInfo.myCase} setDetailedCaseInfo={setDetailedCaseInfo}/>
+            </div>
             }
         </SplitterLayout>
 

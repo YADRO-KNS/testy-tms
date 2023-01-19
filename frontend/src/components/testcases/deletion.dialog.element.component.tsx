@@ -6,7 +6,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import React from "react";
 import SuiteCaseService from "../../services/suite.case.service";
 import {treeSuite} from "./suites.component";
-import {myCase} from "./suites.component";
+import {myCase} from "../models.interfaces";
 
 const DeletionDialogElement = (props: {
     openDialogDeletion: boolean, setOpenDialogDeletion: (show: boolean) => void,
@@ -32,18 +32,7 @@ const DeletionDialogElement = (props: {
         if (componentForDeletion.type === "case") {
             SuiteCaseService.deleteCase(componentForDeletion.id).then(() => {
                 if (detailedCaseInfo.show && detailedCaseInfo.myCase.id === componentForDeletion.id) {
-                    setDetailedCaseInfo({
-                        show: false, myCase: {
-                            id: -1,
-                            name: "",
-                            suite: -1,
-                            scenario: "",
-                            project: -1,
-                            setup: "",
-                            teardown: "",
-                            estimate: -1
-                        }
-                    })
+                    setDetailedCaseInfo(SuiteCaseService.getEmptyDetailedCaseInfo())
                 }
                 SuiteCaseService.getTreeBySetSuite(selectedSuiteForTreeView.id).then((response) => {
                     setSelectedSuiteForTreeView(response.data)
@@ -92,8 +81,8 @@ const DeletionDialogElement = (props: {
             <DialogContent>
                 <DialogContentText style={{fontSize: 20, color: "black", whiteSpace: "pre"}}>
                     {componentForDeletion.type == "case" && "Вы уверены, что хотите удалить тест-кейс?"
-                        || "Вы уверены, что хотите удалить сьюту? \n" +
-                        "Это повлечет за собой удаление всех дочерних элементов."}
+                    || "Вы уверены, что хотите удалить сьюту? \n" +
+                    "Это повлечет за собой удаление всех дочерних элементов."}
                     <br/>
                 </DialogContentText>
                 <DialogActions style={{padding: 0}}>
