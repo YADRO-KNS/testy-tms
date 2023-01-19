@@ -1,4 +1,9 @@
 version: '3.9'
+x-logging: &logging
+  logging:
+    driver: loki
+    options:
+      loki-url: ${LOKI_URL}
 services:
   testy:
     extra_hosts:
@@ -24,17 +29,14 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
-      - CELERY_WORKER_HIJACK_ROOT_LOGGER=${CELERY_WORKER_HIJACK_ROOT_LOGGER}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - LOCAL_SESSION=${LOCAL_SESSION}
       - DSN=${DSN}
-      - LOKI_HOST=${LOKI_HOST}
-      - LOKI_PORT=${LOKI_PORT}
-      - LOKI_PROTOCOL=${LOKI_PROTOCOL}
     depends_on:
       db:
         condition: service_healthy
+    <<: *logging
   db:
     image: postgres:14.5-alpine
     volumes:
@@ -50,14 +52,15 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    <<: *logging
   redis:
     image: redis:alpine
-    container_name: redis
     command: redis-server --appendonly yes
     volumes:
       - "./redis_data:/data"
     ports:
       - "6380:6379"
+    <<: *logging
   celery:
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -66,7 +69,6 @@ services:
       context: testy
       dockerfile: scripts/celery/Dockerfile
     command: celery -A testy worker -l INFO
-    container_name: celery
     environment:
       - DJANGO_SETTINGS_MODULE=testy.settings.development
       - POSTGRES_NAME=${POSTGRES_NAME}
@@ -85,12 +87,10 @@ services:
       - REDIS_PORT=${REDIS_PORT}
       - LOCAL_SESSION=${LOCAL_SESSION}
       - DSN=${DSN}
-      - LOKI_HOST=${LOKI_HOST}
-      - LOKI_PORT=${LOKI_PORT}
-      - LOKI_PROTOCOL=${LOKI_PROTOCOL}
     volumes:
       - './testy:/testy'
     depends_on:
       - testy
       - db
       - redis
+    <<: *logging

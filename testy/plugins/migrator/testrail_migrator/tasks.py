@@ -85,6 +85,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     creator = TestyCreator(service_user_login, testy_attachment_url)
 
     mappings = {}
+
     with progress_recorder.progress_context('Creating projects'):
         project = MigratorService.create_project(backup['project'])
 

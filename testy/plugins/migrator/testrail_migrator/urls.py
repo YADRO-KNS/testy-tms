@@ -49,6 +49,6 @@ urlpatterns = [
     path('upload/', UploaderView.as_view({'post': 'create'}), name='upload'),
     path('clear/', TestyDeleteProjectViewSet.as_view({'post': 'create'}), name='delete'),
     path('download/', DownloadViewSet.as_view({'post': 'create'}), name='download'),
-    path('task_status/<str:task_id>/', task_status, name='task_status'),
+    path('task_status/<str:task_id>/', task_status, name='task_status')
 ]
 urlpatterns += router.urls

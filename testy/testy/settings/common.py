@@ -264,9 +264,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 local_session = get_boolean(value=os.getenv('LOCAL_SESSION'))
-logger_name = 'console'
 if not local_session:
-    logger_name = 'loki'
     dsn = os.getenv('DSN')
     if dsn:
         sentry_sdk.init(
@@ -287,7 +285,6 @@ if not local_session:
         logging.warning('Sentry was enabled but DSN was not provided for this session')
 else:
     logging.warning('Sentry disabled for this session')
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -295,53 +292,41 @@ LOGGING = {
         'default': {
             'format': '%(asctime)s - %(module)s - %(levelname)s: %(message)s',
         },
-        'loki': {
-            'class': 'django_loki.LokiFormatter',  # required
-            'format': '[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] [%(funcName)s] %(message)s',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
-        },
     },
     'handlers': {
         'console': {
             'formatter': 'default',
             'class': 'logging.StreamHandler',
         },
-        'loki': {
-            'level': os.getenv('LOKI_LOG_LEVEL', 'INFO'),  # required
-            'class': 'django_loki.LokiHttpHandler',  # required
-            'host': os.getenv('LOKI_HOST', 'loki'),  # required, your grafana/Loki server host, e.g:192.168.57.242
-            'formatter': 'loki',  # required, loki formatter,
-            'port': os.getenv('LOKI_PORT'),  # optional, your grafana/Loki server port, default is 3100
-            'timeout': 0.5,  # optional, request Loki-server by http or https time out, default is 0.5
-            'protocol': os.getenv('LOKI_PROTOCOL'),  # optional, Loki-server protocol, default is http
-            'source': 'Loki',  # optional, label name for Loki, default is Loki
-            'src_host': os.getenv('LOKI_LABEL', 'localhost'),  # optional, label name for Loki, default is localhost
-            'tz': 'UTC',  # optional, timezone for formatting timestamp, default is UTC, e.g:Asia/Shanghai
-        },
     },
     'loggers': {
         'django': {
-            'handlers': ['console', logger_name],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO')
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False
         },
         'gunicorn': {
-            'handlers': [logger_name],
+            'handlers': ['console'],
             'level': os.getenv('GUNICORN_LOG_LEVEL', 'INFO'),
         },
         'gunicorn.errors': {
-            'handlers': [logger_name],
+            'handlers': ['console'],
             'level': os.getenv('GUNICORN_ERROR_LOG_LEVEL', 'INFO'),
         },
         'gunicorn.access': {
-            'handlers': [logger_name],
+            'handlers': ['console'],
             'level': os.getenv('GUNICORN_ACCESS_LOG_LEVEL', 'INFO'),
         },
         'celery': {
-            'handlers': ['console', 'loki'],
+            'handlers': ['console'],
             'level': os.getenv('CELERY_LOG_LEVEL', 'INFO'),
         },
+        'core': {
+            'handlers': ['console'],
+            'level': os.getenv('CORE_LOG_LEVEL', 'INFO'),
+        },
         '': {
-            'handlers': ['console', 'loki'],
+            'handlers': ['console'],
             'level': os.getenv('ROOT_LOG_LEVEL', 'INFO'),
         },
     },
