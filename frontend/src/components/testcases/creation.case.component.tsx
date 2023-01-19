@@ -13,6 +13,8 @@ import SuiteCaseService from "../../services/suite.case.service";
 import {CustomWidthTooltip, treeSuite} from "./suites.component";
 import {myCase} from "../models.interfaces";
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import AttachmentButton from "../attachment/attachment_button";
+import AttachmentService from "../../services/attachment.servise";
 
 interface Props {
     show: boolean;
@@ -63,6 +65,7 @@ const CreationCase: React.FC<Props> = ({
 
     const [suitesForSelect, setSuitesForSelect] = useState<{ id: number, name: string }[] | treeSuite[]>([])
 
+    const [filesSelected, setFilesSelected] = React.useState<File[]>()
 
     useEffect(() => {
         const suitesForSelect: { id: number, name: string }[] = []
@@ -171,10 +174,18 @@ const CreationCase: React.FC<Props> = ({
                 scenario: scenario,
                 estimate: estimateNumber,
                 teardown: teardown,
-                setup: setup
+                setup: setup,
+                attachments: []
             }
             if (infoCaseForEdit) {
                 SuiteCaseService.editCase({...myCase, url: infoCaseForEdit.url, id: infoCaseForEdit.id}).then(() => {
+                    AttachmentService.postAttachments(filesSelected, infoCaseForEdit.id, 11)
+                        .then(() => {
+                        })
+                        .catch((e) => {
+                            console.log(e)
+                        });
+
                     SuiteCaseService.getTreeBySetSuite(selectedSuiteForTreeView.id).then((response) => {
                         setSelectedSuiteForTreeView(response.data)
                     }).catch((e) => {
@@ -188,7 +199,14 @@ const CreationCase: React.FC<Props> = ({
                     setDetailedCaseInfo({show: true, myCase: {...myCase, id: infoCaseForEdit.id}})
                 }
             } else {
-                SuiteCaseService.createCase(myCase).then(() => {
+                SuiteCaseService.createCase(myCase).then((response) => {
+                    AttachmentService.postAttachments(filesSelected, response.data.id, 11)
+                        .then(() => {
+                        })
+                        .catch((e) => {
+                            console.log(e)
+                        });
+
                     SuiteCaseService.getTreeBySetSuite(selectedSuiteForTreeView.id).then((response) => {
                         setSelectedSuiteForTreeView(response.data)
                     }).catch((e) => {
@@ -375,6 +393,9 @@ const CreationCase: React.FC<Props> = ({
                                 fullWidth
                                 label="Введите время"
                             />
+                        </Grid>
+                        <Grid>
+                            <AttachmentButton setFilesSelected={setFilesSelected}/>
                         </Grid>
                     </Grid>
                     <Grid style={{textAlign: "center"}}>
