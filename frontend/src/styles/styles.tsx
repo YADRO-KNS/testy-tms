@@ -25,14 +25,6 @@ export default makeStyles({
             marginTop: 0
         }
     },
-    textFieldTestplansAndTests: {
-        "& .MuiFormLabel-root": {
-            margin: 0,
-
-        },
-        maxWidth: "90%",
-
-    },
     gridContent: {
         marginTop: 17,
     },
@@ -61,15 +53,6 @@ export default makeStyles({
             margin: 0
         }
     },
-    checkboxTests: {
-        margin: 0,
-        "& .MuiFormControlLabel-root": {
-            margin: 0
-        },
-        "& .MuiFormLabel-root": {
-            margin: 0
-        }
-    },
     divLogin: {
         margin: 20,
         display: 'flex',
@@ -78,7 +61,6 @@ export default makeStyles({
     },
     paperLogin: {
         marginTop: 40,
-        // width: 500,
         minWidth: 300,
         minHeight: 300
     },
@@ -90,7 +72,6 @@ export default makeStyles({
         backgroundColor: '#3f51b5',
     },
     divProjectSelectionPage: {
-        // width: '60%',
         marginTop: 100,
         alignItems: 'center',
         flexDirection: 'column',
@@ -116,12 +97,6 @@ export default makeStyles({
         overflowY: "hidden",
         maxHeight: 43,
     },
-    icons: {
-        // fontSize: 'small',
-        width: '1em',
-        textAlign: 'center',
-        color: 'primary',
-    },
     tree: {
         fontSize: 'small'
     },
@@ -131,18 +106,9 @@ export default makeStyles({
         }
     },
     alertNotFilled: {
-        // height: "50%",
-        // marginBottom: 100,
         width: "max-content",
         maxHeight: "50%",
-        // "& .MuiCollapse-wrapperInner":{
-        //     textAlign: "center"
-        // },
-        // "& .MuiPaper-root":{
-        //     height: "50%",
         alignItems: "center",
-        // borderRadius: "20px 10px 10px 20px",
-        // },
         "& .MuiAlert-message": {
             fontSize: 12,
             overflowY: "hidden",
@@ -150,22 +116,6 @@ export default makeStyles({
         "& .MuiAlert-icon": {
             fontSize: 17
         },
-        // '&::after': {
-        //     content: '',
-        //     position: "absolute",
-        //     left: 0,
-        //     right: 0,
-        //     margin: "0 auto",
-        //     borderBottom: "10px solid #6A0136",
-        //     width: 0,
-        //     height: 0,
-        //     borderTop: "25px solid #6A0136",
-        //     borderLeft: "50px solid transparent",
-        //     borderRight: "50px solid transparent",
-        //     // border-top: "25px solid #6A0136",
-        //     // border-left: "50px solid transparent",
-        //     // border-right: "50px solid transparent",
-        // },
     },
     triangle: {
         width: 0,
@@ -193,7 +143,6 @@ export default makeStyles({
     arrow: {
         fontSize: 16,
         width: 17,
-        // marginBottom: 10,
         "&::before": {
             marginBottom: 10,
             border: "1px solid #000",
@@ -201,80 +150,10 @@ export default makeStyles({
             boxSizing: "border-box"
         }
     },
-    splitter: {
-        maxWidth: "80%"
-    },
-    tableCellTests: {
-        "& .MuiTableCell-root": {
-            paddingBottom: 0,
-            paddingTop: 0
-        },
-
-    },
     centeredField: {
         "& .MuiFormLabel-root": {
             marginTop: 0
         }
     },
-    /*clickableLabels: {
-        display: 'flex',
-
-        /!*> *
-            {
-                width: 50 %,
-            }*!/
-    },
-
-
-    expandAllContainer: {
-    maxWidth
-:
-    400
-    px;
-}
-
-.
-rct - node - icon.far
-{
-    width: 1
-    em;
-    text - align
-:
-    center;
-}
-
-.
-filter - container >
-.
-filter - text
-{
-    display: block;
-    margin - bottom
-:
-    .75
-    rem;
-    border: 1
-    px
-    solid
-    $input - border - color;
-    border - radius
-:
-    .25
-    rem;
-    background - clip
-:
-    padding - box;
-    padding: .375
-    rem
-    .75
-    rem;
-    line - height
-:
-    1.5;
-    font - size
-:
-    1
-    rem;
-}*/
 })
 ;
