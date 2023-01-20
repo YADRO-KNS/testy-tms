@@ -9,13 +9,22 @@ clients:
   - url: https://testy-dev.set.yadro.com:3101/loki/api/v1/push
 
 scrape_configs:
-  - job_name: nginx_dev
+  - job_name: testy_docker
+    docker_sd_configs:
+      - host: unix://var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name: name
+            values: [testy, testy_db, testy_celery, testy_redis]
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        target_label: containers_dev
     static_configs:
       - labels:
-          job: nginx_access_dev  # A `job` label is fairly standard in prometheus and useful for linking metrics and logs.
+          nginx_dev: access_log  # A `job` label is fairly standard in prometheus and useful for linking metrics and logs.
           host: testy-dev.set.yadro.com # A `host` label will help identify logs from this machine vs others
           __path__: /var/log/nginx/access.*  # The path matching uses a third party library: https://github.com/bmatcuk/doublestar
       - labels:
-          job: nginx_error_dev  # A `job` label is fairly standard in prometheus and useful for linking metrics and logs.
+          nginx_dev: error_log  # A `job` label is fairly standard in prometheus and useful for linking metrics and logs.
           host: testy-dev.set.yadro.com # A `host` label will help identify logs from this machine vs others
-          __path__: /var/log/nginx/error.*  # The path matching uses a third party library: https://github.com/bmatcuk/doublestar
+          __path__: /var/log/nginx/error.*  # T

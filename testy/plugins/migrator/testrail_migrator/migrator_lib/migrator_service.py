@@ -28,25 +28,17 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-from copy import deepcopy
-from datetime import datetime
-
-import pytz
 from core.api.v1.serializers import ProjectSerializer
 from core.models import Project
-from core.services.attachments import AttachmentService
 from core.services.projects import ProjectService
 from django.contrib.auth import get_user_model
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from simple_history.utils import bulk_create_with_history
-from testrail_migrator.migrator_lib.utils import suppress_auto_now
 from tests_description.models import TestCase, TestSuite
-from tests_description.selectors.cases import TestCaseSelector
 from tests_description.services.cases import TestCaseService
 from tests_description.services.suites import TestSuiteService
-from tests_representation.models import Parameter, Test, TestPlan, TestResult
+from tests_representation.models import Parameter, Test, TestPlan
 from tests_representation.services.parameters import ParameterService
-from tests_representation.services.results import TestResultService
 from tests_representation.services.testplans import TestPlanService
 from tests_representation.services.tests import TestService
 from users.services.users import UserService
@@ -84,13 +76,9 @@ class MigratorService:
         non_side_effect_fields = TestCaseService.non_side_effect_fields
         cases = []
         for data in data_list:
-            case = TestCase.model_create(fields=non_side_effect_fields, data=data, commit=False)
-            case.updated_at = datetime.fromtimestamp(data['updated_at'], tz=pytz.UTC)
-            case.created_at = datetime.fromtimestamp(data['created_at'], tz=pytz.UTC)
-            cases.append(case)
-        with suppress_auto_now(TestCase, ['created_at', 'updated_at']):
-            created_cases = bulk_create_with_history(cases, TestCase)
-        return created_cases
+            cases.append(TestCase.model_create(fields=non_side_effect_fields, data=data, commit=False))
+
+        return bulk_create_with_history(cases, TestCase)
 
     @staticmethod
     def case_update(case: TestCase, data) -> TestCase:
@@ -123,27 +111,6 @@ class MigratorService:
             if data.get('test_cases'):
                 created_tests.extend(TestService().bulk_test_create([test_plan], data['test_cases']))
         return created_tests, test_plans
-
-    @staticmethod
-    @transaction.atomic
-    def result_create(data, user) -> TestResult:
-        non_side_effect_fields = deepcopy(TestResultService.non_side_effect_fields)
-        non_side_effect_fields += ['created_at', 'updated_at']
-        test_result: TestResult = TestResult.model_create(
-            fields=non_side_effect_fields,
-            data=data,
-            commit=False,
-        )
-        test_result.user = user
-        test_result.project = test_result.test.case.project
-        test_result.test_case_version = TestCaseSelector().case_version(test_result.test.case)
-        test_result.full_clean()
-        test_result.save()
-
-        for attachment in data.get('attachments', []):
-            AttachmentService().attachment_set_content_object(attachment, test_result)
-
-        return test_result
 
     @staticmethod
     def testplan_bulk_create(validated_data):
@@ -180,7 +147,6 @@ class MigratorService:
             data=data,
             commit=False,
         )
-
         try:
             user.save()
         except IntegrityError:

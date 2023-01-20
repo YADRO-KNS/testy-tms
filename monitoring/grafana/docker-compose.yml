@@ -18,3 +18,10 @@ services:
       - "./grafana-data:/var/lib/grafana"
     container_name: "grafana"
     user: "0"
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - ${CONFIG_DIR}:${CONFIG_DIR}
+      - /var/log/nginx:/var/log/nginx
+      - ${DOCKER_SOCK_PATH}:${DOCKER_SOCK_PATH}
+    command: -config.file=${CONFIG_DIR}/promtail-config-${TARGET}.yml

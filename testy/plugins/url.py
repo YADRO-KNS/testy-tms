@@ -58,8 +58,8 @@ for plugin_path in settings.TESTY_PLUGINS:
             plugin_base_url = f'{base_url}/' if base_url else ''
             plugin_urls.append(path(plugin_base_url, include((urlpatterns, app.label))))
     except ModuleNotFoundError as err:
-        logging.debug(f'{plugin_name} ui urls were not found.')
-        logging.debug(f'SRC error is {err}')
+        logging.warning(f'{plugin_name} ui urls were not found.')
+        logging.warning(f'SRC error is {err}')
 
     # API endpoints
     try:
@@ -68,5 +68,5 @@ for plugin_path in settings.TESTY_PLUGINS:
             plugin_base_url = f'{base_url}/' if base_url else ''
             plugin_api_urls.append(path(f'{plugin_base_url}api/', include((urlpatterns, f"{app.label}-api"))))
     except ModuleNotFoundError as err:
-        logging.debug(f'{plugin_name} api urls were not found.')
-        logging.debug(f'SRC error is {err}')
+        logging.warning(f'{plugin_name} api urls were not found.')
+        logging.warning(f'SRC error is {err}')

@@ -50,9 +50,9 @@ import sentry_sdk
 from django.utils.translation import gettext_lazy as _
 from django_auth_ldap.config import GroupOfNamesType, LDAPSearch
 from sentry_sdk.integrations.django import DjangoIntegration
-from utilities.request import get_boolean
 
 from testy.utils import insert_plugins
+from utils import parse_bool_from_str
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -68,7 +68,6 @@ ALLOWED_HOSTS = json.loads(loaded_hosts) if loaded_hosts else loaded_hosts
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
-CELERY_HIJACK_ROOT_LOGGER = False
 
 REDIS_PORT = os.environ.get('REDIS_PORT')
 REDIS_HOST = os.environ.get('REDIS_HOST')
@@ -263,7 +262,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-local_session = get_boolean(value=os.getenv('LOCAL_SESSION'))
+local_session = parse_bool_from_str(os.getenv('LOCAL_SESSION'))
 if not local_session:
     dsn = os.getenv('DSN')
     if dsn:
@@ -285,6 +284,7 @@ if not local_session:
         logging.warning('Sentry was enabled but DSN was not provided for this session')
 else:
     logging.warning('Sentry disabled for this session')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
