@@ -11,9 +11,9 @@ RUN apk update && \
 RUN mkdir /testy
 WORKDIR /testy
 
-COPY ./requirements/dev-requirements.txt /testy/requirements/
+COPY ./requirements/requirements.txt /testy/requirements/
 COPY . /testy
 
-RUN pip install -r requirements/dev-requirements.txt
+RUN pip install -r requirements/requirements.txt
 RUN pip install -e plugins/migrator
 
