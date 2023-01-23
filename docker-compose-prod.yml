@@ -63,7 +63,7 @@ services:
     restart: always
     build:
       context: testy
-      dockerfile: scripts/celery/Dockerfile
+      dockerfile: scripts/prod/celery/Dockerfile
     command: celery -A testy worker -l INFO
     environment:
       - DJANGO_SETTINGS_MODULE=testy.settings.production
