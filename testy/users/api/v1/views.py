@@ -63,8 +63,14 @@ class UserViewSet(ModelViewSet):
     def perform_update(self, serializer: UserSerializer):
         serializer.instance = UserService().user_update(serializer.instance, serializer.validated_data)
 
-    @action(methods=['get'], url_path='me', url_name='me', detail=False)
+    @action(methods=['get', 'patch'], url_path='me', url_name='me', detail=False)
     def me(self, request):
         serializer_class = self.get_serializer_class()
-        serializer = serializer_class(request.user, context={"request": request})
+        if request.method == 'GET':
+            serializer = serializer_class(request.user, context={"request": request})
+        else:
+            serializer = serializer_class(request.user, data=request.data, context={"request": request},
+                                          partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
         return Response(serializer.data)
