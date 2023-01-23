@@ -42,7 +42,7 @@ from tests_representation.api.v1.serializers import (
     TestPlanOutputSerializer,
     TestPlanTreeSerializer,
     TestPlanUpdateSerializer,
-    TestResultRetrieveSerializer,
+    TestResultInputSerializer,
     TestResultSerializer,
     TestSerializer,
 )
@@ -53,7 +53,7 @@ from tests_representation.selectors.testplan import TestPlanSelector
 from tests_representation.selectors.tests import TestSelector
 from tests_representation.services.parameters import ParameterService
 from tests_representation.services.results import TestResultService
-from tests_representation.services.testplans import TestPLanService
+from tests_representation.services.testplans import TestPlanService
 from tests_representation.services.tests import TestService
 from utilities.request import get_boolean
 
@@ -71,29 +71,46 @@ class ParameterViewSet(ModelViewSet):
         serializer.instance = ParameterService().parameter_update(serializer.instance, serializer.validated_data)
 
 
-class TestPLanListView(APIView):
+class TestPLanListView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
+    serializer_class = TestPlanOutputSerializer
+    queryset = TestPlanSelector().testplan_list()
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['project']
 
     def get_view_name(self):
         return "Test Plan List"
 
-    def get(self, request):
+    def get_queryset(self):
         if get_boolean(self.request, 'treeview'):
-            qs = TestPlanSelector().testplan_without_parent()
-            serializer_class = TestPlanTreeSerializer
-        else:
-            qs = TestPlanSelector().testplan_list()
-            serializer_class = TestPlanOutputSerializer
-        serializer = serializer_class(qs, many=True, context={'request': request})
-        return Response(serializer.data)
+            return TestPlanSelector().testplan_without_parent()
+        return super().get_queryset()
 
-    def post(self, request):
+    def get_serializer_class(self):
+        if get_boolean(self.request, 'treeview'):
+            return TestPlanTreeSerializer
+        return super().get_serializer_class()
+
+    def create(self, request, *args, **kwargs):
         serializer = TestPlanInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        test_plans = TestPLanService().testplan_create(serializer.validated_data)
+        test_plans = TestPlanService().testplan_create(serializer.validated_data)
         return Response(TestPlanOutputSerializer(test_plans, many=True, context={'request': request}).data,
                         status=status.HTTP_201_CREATED)
+
+
+class TestPLanStatisticsView(APIView):
+    def get_view_name(self):
+        return "Test Plan Statistics"
+
+    def get_object(self, pk):
+        try:
+            return TestPlanSelector().testplan_get_by_pk(pk)
+        except ObjectDoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        test_plan = self.get_object(pk)
+        return Response(TestPlanSelector().testplan_statistics(test_plan))
 
 
 class TestPLanDetailView(APIView):
@@ -116,13 +133,13 @@ class TestPLanDetailView(APIView):
         serializer = TestPlanUpdateSerializer(data=request.data, instance=test_plan, context={"request": request},
                                               partial=True)
         serializer.is_valid(raise_exception=True)
-        test_plan = TestPLanService().testplan_update(test_plan=test_plan, data=serializer.validated_data)
+        test_plan = TestPlanService().testplan_update(test_plan=test_plan, data=serializer.validated_data)
         return Response(TestPlanOutputSerializer(test_plan, context={'request': request}).data,
                         status=status.HTTP_200_OK)
 
     def delete(self, request, pk):
         test_plan = self.get_object(pk)
-        TestPLanService().testplan_delete(test_plan=test_plan)
+        TestPlanService().testplan_delete(test_plan=test_plan)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -161,8 +178,8 @@ class TestResultViewSet(ModelViewSet):
         serializer.instance = TestResultService().result_create(serializer.validated_data, request.user)
 
     def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return TestResultRetrieveSerializer
+        if self.action in ['create', 'partial_update']:
+            return TestResultInputSerializer
         return TestResultSerializer
 
 

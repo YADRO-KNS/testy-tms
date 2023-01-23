@@ -46,6 +46,8 @@ from pathlib import Path
 
 from django.utils.translation import gettext_lazy as _
 
+from testy.utils import insert_plugins
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -57,6 +59,12 @@ VERSION = '0.1.0'
 loaded_hosts = os.environ.get('ALLOWED_HOSTS', [])
 
 ALLOWED_HOSTS = json.loads(loaded_hosts) if loaded_hosts else loaded_hosts
+
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
+
+REDIS_PORT = os.environ.get('REDIS_PORT')
+REDIS_HOST = os.environ.get('REDIS_HOST')
 
 # Application definition
 INSTALLED_APPS = [
@@ -76,6 +84,12 @@ INSTALLED_APPS = [
     'users',
     'tests_description',
     'tests_representation',
+    'celery',
+    'celery_progress',
+]
+
+TESTY_PLUGINS = [
+    'testrail_migrator'
 ]
 
 MIDDLEWARE = [
@@ -90,6 +104,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
+
+INSTALLED_APPS, MIDDLEWARE = insert_plugins(TESTY_PLUGINS, INSTALLED_APPS, MIDDLEWARE, VERSION)
 
 ROOT_URLCONF = 'testy.urls'
 
@@ -164,19 +180,11 @@ USE_L10N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
-
-STATIC_URL = '/static/'
-
-STATICFILES_DIRS = [
-    BASE_DIR / 'testy_static/dist/assets',
-]
+STATIC_URL = '/testy-static/'
+STATIC_ROOT = 'testy-static'
 
 # extensions should be specified with dot (.txt). If no extensions specified all extensions are allowed.
 ALLOWED_FILE_EXTENSIONS = []
-
-STATIC_ROOT = 'static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = 'media'  # noqa: F405

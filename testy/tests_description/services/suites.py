@@ -35,13 +35,15 @@ from tests_description.models import TestSuite
 
 
 class TestSuiteService:
-    non_side_effect_fields = ['parent', 'project', 'name']
+    non_side_effect_fields = ['parent', 'project', 'name', 'description']
 
     def suite_create(self, data: Dict[str, Any]) -> TestSuite:
-        return TestSuite.model_create(
+        suite = TestSuite.model_create(
             fields=self.non_side_effect_fields,
             data=data,
         )
+        TestSuite.objects.partial_rebuild(suite.tree_id)
+        return suite
 
     def suite_update(self, suite: TestSuite, data: Dict[str, Any]) -> TestSuite:
         suite, _ = suite.model_update(

@@ -1,0 +1,7 @@
+PyYAML
+tqdm
+requests
+celery
+aiohttp
+aiofiles
+requests

@@ -10,7 +10,7 @@ asgiref==3.5.2
     # via django
 attrs==22.1.0
     # via pytest
-django==3.2
+django==3.2.4
     # via
     #   -r ci-requirements.in
     #   django-extensions

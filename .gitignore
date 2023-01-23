@@ -1,9 +1,11 @@
 *.pyc
 __pycache__/
 /venv/
-/static/
-/media/
+static/
+testy-static/
+media/
 /pg-data/
+/redis_data/
 .env
 .env.local
 db.sqlite3
