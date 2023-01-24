@@ -85,6 +85,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     backup = json.loads(redis_client.get(backup_name))
 
     custom_fields_multi_select = parse_multi_select_from_tr(backup['custom_result_fields'])
+    custom_fields_labels = parse_labels_from_tr_fields(backup['custom_result_fields'])
 
     creator = TestyCreator(service_user_login, testy_attachment_url)
 
@@ -128,6 +129,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
         mappings['results_parent_plan'] = creator.create_results(
             backup['results_parent_plan'],
             custom_fields_multi_select,
+            custom_fields_labels,
             mappings['tests_parent_plan'],
             mappings['users']
         )
@@ -149,6 +151,7 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
         mappings['results_parent_mile'] = creator.create_results(
             backup['results_parent_mile'],
             custom_fields_multi_select,
+            custom_fields_labels,
             mappings['tests_parent_mile'],
             mappings['users'],
         )
@@ -299,3 +302,10 @@ def parse_multi_select_from_tr(testrail_custom_fields):
                 key_to_value[key] = value
         custom_fields[custom_field['system_name']] = deepcopy(key_to_value)
     return custom_fields
+
+
+def parse_labels_from_tr_fields(testrail_custom_fields):
+    system_name_to_label = {}
+    for custom_field in testrail_custom_fields:
+        system_name_to_label[custom_field['system_name']] = custom_field['label']
+    return system_name_to_label

@@ -416,7 +416,7 @@ class TestyCreator:
 
         return tests_mappings
 
-    def create_results(self, results, custom_fields_multi_select, tests_mappings, user_mappings):
+    def create_results(self, results, custom_fields_multi_select, custom_fields_labels, tests_mappings, user_mappings):
         statuses = {
             1: 1,  # passed
             5: 0,  # failed
@@ -445,9 +445,9 @@ class TestyCreator:
                     new_value = []
                     for single_value in result_field_value:
                         new_value.append(custom_fields_multi_select[result_field_name][str(single_value)])
-                    json_fields[result_field_name] = new_value
+                    json_fields[custom_fields_labels[result_field_name]] = new_value
                     continue
-                json_fields[result_field_name] = result_field_value
+                json_fields[custom_fields_labels[result_field_name]] = result_field_value
 
             result_data = {
                 'status': statuses.get(result['status_id'], 5),
