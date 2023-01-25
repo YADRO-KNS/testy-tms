@@ -28,14 +28,15 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
-from core.models import Project
+from core.models import Attachment, Project
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
+from simple_history.models import HistoricalRecords
 from tests_description.models import TestCase
 from tests_representation.choices import TestStatuses
 from users.models import User
@@ -67,6 +68,7 @@ class TestPlan(MPTTModel, BaseModel):
     due_date = models.DateTimeField()
     finished_at = models.DateTimeField(null=True, blank=True)
     is_archive = models.BooleanField(default=False)
+    description = models.TextField('description', default='', blank=True)
 
     class Meta:
         default_related_name = 'test_plans'
@@ -100,6 +102,9 @@ class TestResult(BaseModel):
         blank=True,
         validators=[MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)]
     )
+    attachments = GenericRelation(Attachment)
+    attributes = models.JSONField(default=dict, blank=True)
+    history = HistoricalRecords()
 
     class Meta:
         default_related_name = 'test_results'

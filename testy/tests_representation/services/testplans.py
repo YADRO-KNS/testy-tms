@@ -37,8 +37,10 @@ from tests_representation.services.tests import TestService
 from tests_representation.utils import combination_parameters
 
 
-class TestPLanService:
-    non_side_effect_fields = ('name', 'parent', 'started_at', 'due_date', 'finished_at', 'is_archive', 'project',)
+class TestPlanService:
+    non_side_effect_fields = (
+        'name', 'parent', 'started_at', 'due_date', 'finished_at', 'is_archive', 'project', 'description'
+    )
 
     def _make_testplan_model(self, data, parameters=None):
         testplan = TestPlan.model_create(

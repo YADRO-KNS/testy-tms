@@ -66,7 +66,7 @@ class TestPlanInputSerializer(ModelSerializer):
         model = TestPlan
         fields = (
             'id', 'name', 'parent', 'test_cases', 'parameters', 'started_at', 'due_date', 'finished_at', 'is_archive',
-            'project',
+            'project', 'description'
         )
 
 
@@ -95,39 +95,25 @@ class TestResultSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:testresult-detail')
     status_text = CharField(source='get_status_display', read_only=True)
     user_full_name = SerializerMethodField(read_only=True)
+    attachments = AttachmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = TestResult
-        fields = (
-            'id', 'project', 'status', 'status_text', 'test', 'user', 'user_full_name', 'comment', 'is_archive',
-            'test_case_version', 'created_at',
-            'updated_at', 'url', 'execution_time'
-        )
-        read_only_fields = ('test_case_version', 'project', 'user',)
+        fields = ('id', 'project', 'status', 'status_text', 'test', 'user', 'user_full_name', 'comment',
+                  'is_archive', 'test_case_version', 'created_at', 'updated_at', 'url', 'execution_time', 'attachments',
+                  'attributes')
+
+        read_only_fields = ('test_case_version', 'project', 'user', 'id')
 
     def get_user_full_name(self, instance):
         if instance.user:
             return instance.user.get_full_name()
 
 
-class TestResultRetrieveSerializer(ModelSerializer):
-    url = HyperlinkedIdentityField(view_name='api:v1:testresult-detail')
-    attachments = SerializerMethodField()
-
-    class Meta:
-        model = TestResult
-        fields = (
-            'id', 'project', 'status', 'test', 'attachments', 'user', 'comment', 'is_archive', 'test_case_version',
-            'created_at', 'updated_at', 'url', 'execution_time'
-        )
-
-        read_only_fields = ('test_case_version', 'project', 'test')
-
-    def get_attachments(self, obj):
-        serializer_context = {'request': self.context.get('request')}
-        attachments = AttachmentSelector().attachment_list_by_parent_object(TestResult, obj.id)
-        serializer = AttachmentSerializer(attachments, many=True, context=serializer_context)
-        return serializer.data
+class TestResultInputSerializer(TestResultSerializer):
+    attachments = PrimaryKeyRelatedField(
+        many=True, queryset=AttachmentSelector().attachment_list(), required=False
+    )
 
 
 class TestPlanTreeSerializer(ModelSerializer):
@@ -195,7 +181,7 @@ class TestPlanOutputSerializer(ModelSerializer):
         model = TestPlan
         fields = (
             'id', 'name', 'parent', 'parameters', 'started_at', 'due_date', 'finished_at', 'is_archive',
-            'tests', 'project', 'child_test_plans', 'url', 'title'
+            'tests', 'project', 'child_test_plans', 'url', 'title', 'description'
         )
 
     def get_title(self, instance):

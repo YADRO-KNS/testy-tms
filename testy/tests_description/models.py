@@ -28,9 +28,9 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
-from core.models import Project
+from core.models import Attachment, Project
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericRelation
 from django.core.validators import MinValueValidator
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
@@ -43,6 +43,7 @@ class TestSuite(MPTTModel, BaseModel):
     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_test_suites')
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     name = models.CharField(max_length=settings.CHAR_FIELD_MAX_LEN)
+    description = models.TextField('description', default='', blank=True)
 
     class Meta:
         default_related_name = 'test_suites'
@@ -66,7 +67,9 @@ class TestCase(BaseModel):
         blank=True,
         validators=[MinValueValidator(settings.MIN_VALUE_POSITIVE_INTEGER)]
     )
+    attachments = GenericRelation(Attachment)
     history = HistoricalRecords()
+    description = models.TextField('description', default='', blank=True)
 
     class Meta:
         default_related_name = 'test_cases'
