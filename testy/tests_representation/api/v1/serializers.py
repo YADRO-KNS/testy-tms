@@ -124,7 +124,7 @@ class TestPlanTreeSerializer(ModelSerializer):
 
     class Meta:
         model = TestPlan
-        fields = ('id', 'key', 'value', 'title', 'name', 'level', 'children',)
+        fields = ('id', 'key', 'value', 'title', 'name', 'is_archive', 'level', 'children',)
 
     def get_title(self, instance):
         if instance.parameters is None:
