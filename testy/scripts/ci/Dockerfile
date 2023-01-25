@@ -1,4 +1,4 @@
-FROM registry.spb.yadro.com/tools/python:3.9.13-alpine
+FROM python:3.9.13-alpine
 
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
