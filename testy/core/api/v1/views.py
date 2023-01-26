@@ -28,7 +28,6 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-import permissions
 from core.api.v1.serializers import AttachmentSerializer, ProjectSerializer
 from core.selectors.attachments import AttachmentSelector
 from core.selectors.projects import ProjectSelector

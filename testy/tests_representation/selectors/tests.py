@@ -36,6 +36,3 @@ from tests_representation.models import Test
 class TestSelector:
     def test_list(self) -> QuerySet[Test]:
         return Test.objects.all()
-
-    def test_list_not_archived(self) -> QuerySet[Test]:
-        return Test.objects.filter(is_archive=False)
