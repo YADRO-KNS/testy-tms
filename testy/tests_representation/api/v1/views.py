@@ -97,6 +97,13 @@ class TestPLanListView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericVi
         return Response(TestPlanOutputSerializer(test_plans, many=True, context={'request': request}).data,
                         status=status.HTTP_201_CREATED)
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        if not get_boolean(self.request, 'archived'):
+            queryset = queryset.filter(is_archive=False)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 class TestPLanStatisticsView(APIView):
     def get_view_name(self):
@@ -155,6 +162,13 @@ class TestListViewSet(mixins.ListModelMixin, GenericViewSet):
     def perform_update(self, serializer: TestSerializer):
         serializer.instance = TestService().test_update(serializer.instance, serializer.validated_data)
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        if not get_boolean(self.request, 'archived'):
+            queryset = queryset.filter(is_archive=False)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericViewSet):
     queryset = TestSelector().test_list()
@@ -181,6 +195,13 @@ class TestResultViewSet(ModelViewSet):
         if self.action in ['create', 'partial_update']:
             return TestResultInputSerializer
         return TestResultSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        if not get_boolean(self.request, 'archived'):
+            queryset = queryset.filter(is_archive=False)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class TestResultChoicesView(APIView):

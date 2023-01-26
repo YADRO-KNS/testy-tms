@@ -28,6 +28,7 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+import permissions
 from core.api.v1.serializers import AttachmentSerializer, ProjectSerializer
 from core.selectors.attachments import AttachmentSelector
 from core.selectors.projects import ProjectSelector
@@ -40,6 +41,7 @@ from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from tests_representation.api.v1.serializers import ParameterSerializer, TestPlanTreeSerializer
 from tests_representation.selectors.parameters import ParameterSelector
 from tests_representation.selectors.testplan import TestPlanSelector
+from utilities.request import get_boolean
 
 
 class ProjectViewSet(ModelViewSet):
@@ -63,6 +65,13 @@ class ProjectViewSet(ModelViewSet):
 
     def perform_update(self, serializer: ProjectSerializer):
         serializer.instance = ProjectService().project_update(serializer.instance, serializer.validated_data)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        if not get_boolean(self.request, 'archived'):
+            queryset = queryset.filter(is_archive=False)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class AttachmentViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, mixins.CreateModelMixin,

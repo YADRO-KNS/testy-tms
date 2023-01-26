@@ -40,5 +40,9 @@ class ProjectSelector:
         return QuerySet(model=Project).order_by('name')
 
     @staticmethod
+    def project_list_not_archived() -> QuerySet[Project]:
+        return QuerySet(model=Project).filter(is_archive=False).order_by('name')
+
+    @staticmethod
     def project_by_id(project_id: int) -> Project:
         return QuerySet(model=Project).get(pk=project_id)

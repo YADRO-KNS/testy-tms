@@ -44,6 +44,9 @@ class TestPlanSelector:
     def testplan_list(self) -> QuerySet[TestPlan]:
         return TestPlan.objects.all()
 
+    def testplan_list_filter_by_archive(self, qs: QuerySet[TestPlan]):
+        return qs.filter(is_archive=False)
+
     def testplan_project_root_list(self, project_id: int) -> QuerySet[TestPlan]:
         return QuerySet(model=TestPlan).filter(project=project_id, parent=None).order_by('name')
 
