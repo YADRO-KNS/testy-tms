@@ -41,7 +41,7 @@ from tests_representation.models import Parameter, TestResult
 
 from tests import constants
 from tests.commons import RequestType
-from tests.error_messages import REQUIRED_FIELD_MSG
+from tests.error_messages import PERMISSION_ERR_MSG, REQUIRED_FIELD_MSG
 
 
 @pytest.mark.django_db
@@ -148,3 +148,17 @@ class TestProjectEndpoints:
         assert result_project == expected_project, f'Test result was not created with correct project, ' \
                                                    f'expected project: {expected_project}' \
                                                    f'actual project: {result_project}'
+
+    @pytest.mark.parametrize('request_type', [RequestType.PATCH, RequestType.PUT])
+    def test_archived_editable_for_admin_only(self, api_client, authorized_superuser, project_factory, user,
+                                              request_type):
+        api_client.force_login(user)
+        project = project_factory(is_archive=True)
+        response = api_client.send_request(
+            self.view_name_detail,
+            reverse_kwargs={'pk': project.pk},
+            request_type=request_type,
+            expected_status=HTTPStatus.FORBIDDEN,
+            data={}
+        )
+        assert json.loads(response.content)['detail'] == PERMISSION_ERR_MSG

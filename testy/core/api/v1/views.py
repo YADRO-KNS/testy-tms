@@ -28,6 +28,7 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+import permissions
 from core.api.v1.serializers import AttachmentSerializer, ProjectSerializer
 from core.selectors.attachments import AttachmentSelector
 from core.selectors.projects import ProjectSelector
@@ -45,6 +46,7 @@ from tests_representation.selectors.testplan import TestPlanSelector
 class ProjectViewSet(ModelViewSet):
     queryset = ProjectSelector.project_list()
     serializer_class = ProjectSerializer
+    permission_classes = [permissions.IsAdminOrForbidArchiveUpdate]
 
     @action(detail=False)
     def testplans_by_project(self, request, pk):
