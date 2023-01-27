@@ -25,23 +25,26 @@ const PaginationSuitesComponent = (props: { treeSuites: treeSuite[], countOfSuit
     return (
         <div style={{display: "flex", flexDirection: "column", margin: "0 0 10px 30px"}}>
             <TextField
+                id="searchSuites"
                 onChange={(content) => onChangeName(content)}
                 autoComplete="off"
                 style={{width: "50%", margin: 10}}
                 placeholder="Поиск..."
                 variant={"outlined"}
             />
-            {foundSuites.slice(page * countOfSuitesOnPage - countOfSuitesOnPage,
-                page * countOfSuitesOnPage)
-                .map((suite) => (
-                    <div key={suite.id} className={classes.suitePaper}>
-                        <Link className={classes.linkSuite} to={`${suite.id}`}>
-                            {suite.name}
-                        </Link>
-                        <div className={classes.numOfSuitesCases}>Количество сьют: 10</div>
-                        <div className={classes.numOfSuitesCases}>Количество тест-кейсов: 10</div>
-                    </div>
-                ))}
+            <div data-cy="list-of-suites">
+                {foundSuites.slice(page * countOfSuitesOnPage - countOfSuitesOnPage,
+                    page * countOfSuitesOnPage)
+                    .map((suite) => (
+                        <div key={suite.id} className={classes.suitePaper}>
+                            <Link className={classes.linkSuite} to={`${suite.id}`}>
+                                {suite.name}
+                            </Link>
+                            <div className={classes.numOfSuitesCases}>Количество дочерних
+                                сьют: {suite.descendant_count}</div>
+                        </div>
+                    ))}
+            </div>
             <Pagination
                 count={Math.ceil(foundSuites.length / countOfSuitesOnPage)}
                 page={page}

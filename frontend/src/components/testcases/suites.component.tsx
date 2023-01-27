@@ -49,6 +49,7 @@ export interface treeSuite {
     name: string;
     children: treeSuite[];
     test_cases: myCase [];
+    descendant_count: number;
 }
 
 export interface suite {
@@ -184,7 +185,7 @@ const SuitesComponent = () => {
                                       selectedSuiteForTreeView={selectedSuiteForTreeView}
                         />
                     </div>}
-                    <Button sx={{
+                    <Button data-cy="create-suite" sx={{
                         marginTop: "15px",
                         minWidth: "70%",
                         height: "45%",
