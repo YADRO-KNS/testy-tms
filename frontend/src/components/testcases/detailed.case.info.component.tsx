@@ -31,11 +31,11 @@ const DetailedCaseInfo: React.FC<Props> = ({myCase, setDetailedCaseInfo}) => {
                     <Typography variant="h6">
                         Название
                     </Typography>
-                    <IconButton size={"small"} onClick={() => setDetailedCaseInfo(SuiteCaseService.getEmptyDetailedCaseInfo())}>
+                    <IconButton data-cy="close-info-case" size={"small"} onClick={() => setDetailedCaseInfo(SuiteCaseService.getEmptyDetailedCaseInfo())}>
                         <CloseIcon/>
                     </IconButton>
                 </Grid>
-                <Grid>
+                <Grid data-cy="detailed-info-case-name">
                     {myCase.name}
                 </Grid>
                 <Divider style={{margin: "10px 0px 10px 0px"}}/>
@@ -44,7 +44,7 @@ const DetailedCaseInfo: React.FC<Props> = ({myCase, setDetailedCaseInfo}) => {
                 <Typography variant="h6">
                     Описание
                 </Typography>
-                <Grid>
+                <Grid data-cy="detailed-info-case-scenario">
                     {myCase.scenario}
                 </Grid>
                 <Divider style={{margin: "10px 0px 10px 0px"}}/>
@@ -53,7 +53,7 @@ const DetailedCaseInfo: React.FC<Props> = ({myCase, setDetailedCaseInfo}) => {
                 <Typography variant="h6">
                     Подготовка теста
                 </Typography>
-                <Grid>
+                <Grid data-cy="detailed-info-case-setup">
                     {myCase.setup}
                 </Grid>
                 <Divider style={{margin: "10px 0px 10px 0px"}}/>
@@ -62,7 +62,7 @@ const DetailedCaseInfo: React.FC<Props> = ({myCase, setDetailedCaseInfo}) => {
                 <Typography variant="h6">
                     Очистка после теста
                 </Typography>
-                <Grid>
+                <Grid data-cy="detailed-info-case-teardown">
                     {myCase.teardown}
                 </Grid>
                 <Divider style={{margin: "10px 0px 10px 0px"}}/>
@@ -71,7 +71,7 @@ const DetailedCaseInfo: React.FC<Props> = ({myCase, setDetailedCaseInfo}) => {
                 <Typography variant="h6">
                     Время выполнения
                 </Typography>
-                <Grid>
+                <Grid data-cy="detailed-info-case-estimate">
                     {myCase.estimate}
                 </Grid>
                 <Divider style={{margin: "10px 0px 10px 0px"}}/>

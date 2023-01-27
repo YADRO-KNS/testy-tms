@@ -210,6 +210,7 @@ const CreationSuite: React.FC<Props> = ({
                             <FormControl style={{minWidth: "90%"}} className={classes.textFieldSelectCreationCaseSuite}>
                                 <InputLabel id="select-suite">Выберите сьюту</InputLabel>
                                 <Select
+                                    data-cy="select-parent-suite"
                                     labelId="select-suite"
                                     value={selectedSuite ? selectedSuite.name : "Не выбрано"}
                                     label="Выберите сьюту"
@@ -227,7 +228,9 @@ const CreationSuite: React.FC<Props> = ({
                         </Grid>
                         <Grid style={{textAlign: "center"}}>
                             <Grid>
-                                <Button onClick={handleClose} style={{
+                                <Button
+                                    data-cy="disagree-to-save-suite"
+                                    onClick={handleClose} style={{
                                     margin: "0px 4px 20px 5px",
                                     width: "45%",
                                     minWidth: 100,
@@ -239,6 +242,7 @@ const CreationSuite: React.FC<Props> = ({
                                     Отменить
                                 </Button>
                                 <Button
+                                    data-cy="agree-to-save-suite"
                                     onClick={createSuite}
                                     style={{
                                         margin: "0px 5px 20px 4px",

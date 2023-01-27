@@ -74,6 +74,7 @@ const DeletionDialogElements = (props: {
                         Нет
                     </Button>
                     <Button
+                        data-cy="agree-to-delete-using-checkbox"
                         style={{
                             margin: "20px 5px 0px 4px",
                             width: "30%",

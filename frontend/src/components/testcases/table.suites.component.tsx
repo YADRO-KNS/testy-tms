@@ -271,14 +271,17 @@ function Row(props: {
                             <tr>
                                 <td colSpan={4}>
                                     <div className={classesTableSuitesCases.addingCaseSuite}>
-                                        <Link component="button" onClick={() => {
-                                            setShowCreationCase(true)
-                                            setSelectedSuiteCome({id: row.id, name: row.name})
-                                        }}>
+                                        <Link component="button"
+                                              data-cy="add-case-in-suite"
+                                              onClick={() => {
+                                                  setShowCreationCase(true)
+                                                  setSelectedSuiteCome({id: row.id, name: row.name})
+                                              }}>
                                             Добавить тест-кейс
                                         </Link>
                                         <Link underline="none">&nbsp;&nbsp;|&nbsp;&nbsp;</Link>
                                         <Link component="button"
+                                              data-cy="add-suite-in-parent"
                                               onClick={() => {
                                                   setShowCreationSuite(true)
                                                   setSelectedSuiteCome({id: row.id, name: row.name})
@@ -290,27 +293,27 @@ function Row(props: {
                             </tr>
                             </tbody>
                             {row && row.children &&
-                            <tbody className={classesTableSuitesCases.childTable}>
-                            {row.children.map((suite: any) => (
-                                <Row key={suite.id} row={suite}
-                                     setShowCreationCase={setShowCreationCase}
-                                     setShowCreationSuite={setShowCreationSuite}
-                                     setSelectedSuiteCome={setSelectedSuiteCome}
-                                     treeSuitesOpenMap={treeSuitesOpenMap}
-                                     setTreeSuitesOpenMap={setTreeSuitesOpenMap}
-                                     detailedCaseInfo={detailedCaseInfo}
-                                     setDetailedCaseInfo={setDetailedCaseInfo}
-                                     setInfoCaseForEdit={setInfoCaseForEdit}
-                                     setTreeSuites={setTreeSuites}
-                                     selectedCases={selectedCases}
-                                     setSelectedCases={setSelectedCases}
-                                     setOpenDialogDeletion={setOpenDialogDeletion}
-                                     setComponentForDeletion={setComponentForDeletion}
-                                     classesTableSuitesCases={classesTableSuitesCases}
-                                     setInfoSuiteForEdit={setInfoSuiteForEdit}
-                                />
-                            ))}
-                            </tbody>
+                                <tbody className={classesTableSuitesCases.childTable}>
+                                {row.children.map((suite: any) => (
+                                    <Row key={suite.id} row={suite}
+                                         setShowCreationCase={setShowCreationCase}
+                                         setShowCreationSuite={setShowCreationSuite}
+                                         setSelectedSuiteCome={setSelectedSuiteCome}
+                                         treeSuitesOpenMap={treeSuitesOpenMap}
+                                         setTreeSuitesOpenMap={setTreeSuitesOpenMap}
+                                         detailedCaseInfo={detailedCaseInfo}
+                                         setDetailedCaseInfo={setDetailedCaseInfo}
+                                         setInfoCaseForEdit={setInfoCaseForEdit}
+                                         setTreeSuites={setTreeSuites}
+                                         selectedCases={selectedCases}
+                                         setSelectedCases={setSelectedCases}
+                                         setOpenDialogDeletion={setOpenDialogDeletion}
+                                         setComponentForDeletion={setComponentForDeletion}
+                                         classesTableSuitesCases={classesTableSuitesCases}
+                                         setInfoSuiteForEdit={setInfoSuiteForEdit}
+                                    />
+                                ))}
+                                </tbody>
                             }
                         </Table>
                     </Collapse>
@@ -430,7 +433,8 @@ const TableSuites = (props: {
 
     return (
 
-        <SplitterLayout customClassName={classesTableSuitesCases.splitter} primaryIndex={0} primaryMinSize={40} secondaryMinSize={35}
+        <SplitterLayout customClassName={classesTableSuitesCases.splitter} primaryIndex={0} primaryMinSize={40}
+                        secondaryMinSize={35}
                         percentage>
             <div>
                 <Box className={classesTableSuitesCases.box}>
@@ -453,7 +457,9 @@ const TableSuites = (props: {
                             }}>
                             Закрыть все
                         </Link>
-                        <IconButton size={"small"} disabled={!(selectedCases.length > 0)} onClick={() => {
+                        <IconButton
+                            data-cy="delete-cases-using-checkbox"
+                            size={"small"} disabled={!(selectedCases.length > 0)} onClick={() => {
                             setOpenDialogDeletionElements(true)
                         }}
                                     sx={{marginLeft: 1}}
@@ -488,9 +494,9 @@ const TableSuites = (props: {
                 />
             </div>
             {detailedCaseInfo.show &&
-            <div>
-                <DetailedCaseInfo myCase={detailedCaseInfo.myCase} setDetailedCaseInfo={setDetailedCaseInfo}/>
-            </div>
+                <div>
+                    <DetailedCaseInfo myCase={detailedCaseInfo.myCase} setDetailedCaseInfo={setDetailedCaseInfo}/>
+                </div>
             }
         </SplitterLayout>
 

@@ -70,7 +70,7 @@ const CreationCase: React.FC<Props> = ({
     useEffect(() => {
         const suitesForSelect: { id: number, name: string }[] = []
         const fillSuitesForSelect = (childrenSuitesArr: treeSuite[]) => {
-            childrenSuitesArr.map((suite) => {
+            childrenSuitesArr.forEach((suite) => {
                 suitesForSelect.push({id: suite.id, name: suite.name})
                 if (suite.children.length > 0) {
                     fillSuitesForSelect(suite.children)
@@ -95,7 +95,7 @@ const CreationCase: React.FC<Props> = ({
                 setEstimateNumber(infoCaseForEdit.estimate)
             }
         }
-    }, [selectedSuiteCome])
+    }, [selectedSuiteCome, selectedSuiteForTreeView, infoCaseForEdit])
 
     const handleClose = () => {
         setShow(false)
@@ -118,7 +118,7 @@ const CreationCase: React.FC<Props> = ({
         if (strInput.length > 0) {
             setEstimate(strInput)
             setEstimateNumber(parseInt(strInput, 10))
-        } else if (strInput.length == 0) {
+        } else if (strInput.length === 0) {
             setEstimate("")
             setEstimateNumber(null)
         }
@@ -314,7 +314,7 @@ const CreationCase: React.FC<Props> = ({
                         </Typography>
 
                         <TextField
-                            id="scenarioCaseTextField"
+                            id="case-setup"
                             className={classes.textFieldSelectCreationCaseSuite}
                             onChange={(content) => onChangeSetup(content)}
                             variant="outlined"
@@ -333,7 +333,7 @@ const CreationCase: React.FC<Props> = ({
                             Очистка после теста
                         </Typography>
                         <TextField
-                            id="scenarioCaseTextField"
+                            id="case-teardown"
                             className={classes.textFieldSelectCreationCaseSuite}
                             onChange={(content) => onChangeTeardown(content)}
                             variant="outlined"
@@ -380,6 +380,7 @@ const CreationCase: React.FC<Props> = ({
                                 Время выполнения
                             </Typography>
                             <TextField
+                                id="case-time-run"
                                 value={estimate}
                                 style={{marginTop: 10}}
                                 className={classes.textFieldSelectCreationCaseSuite}
@@ -401,7 +402,9 @@ const CreationCase: React.FC<Props> = ({
                     </Grid>
                     <Grid style={{textAlign: "center"}}>
                         <Grid>
-                            <Button onClick={handleClose} style={{
+                            <Button
+                                data-cy="disagree-to-save-case"
+                                onClick={handleClose} style={{
                                 margin: "0px 4px 20px 5px",
                                 width: "45%",
                                 minWidth: 100,
@@ -414,6 +417,7 @@ const CreationCase: React.FC<Props> = ({
                             </Button>
                             <Button
                                 onClick={createCase}
+                                data-cy="agree-to-save-case"
                                 style={{
                                     margin: "0px 5px 20px 4px",
                                     width: "45%",
