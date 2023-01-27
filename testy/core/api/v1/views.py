@@ -34,6 +34,7 @@ from core.selectors.attachments import AttachmentSelector
 from core.selectors.projects import ProjectSelector
 from core.services.attachments import AttachmentService
 from core.services.projects import ProjectService
+from filters import ArchiveFilter, TestyFilterBackend
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -46,6 +47,8 @@ from tests_representation.selectors.testplan import TestPlanSelector
 class ProjectViewSet(ModelViewSet):
     queryset = ProjectSelector.project_list()
     serializer_class = ProjectSerializer
+    filter_backends = [TestyFilterBackend]
+    filterset_class = ArchiveFilter
     permission_classes = [permissions.IsAdminOrForbidArchiveUpdate]
 
     @action(detail=False)
