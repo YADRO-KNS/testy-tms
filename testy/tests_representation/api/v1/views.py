@@ -32,6 +32,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
+from filters import TestFilter, TestPlanFilter, TestResultFilter, TestyFilterBackend
 from rest_framework import mixins, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -74,8 +75,8 @@ class ParameterViewSet(ModelViewSet):
 class TestPLanListView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
     serializer_class = TestPlanOutputSerializer
     queryset = TestPlanSelector().testplan_list()
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['project']
+    filter_backends = [TestyFilterBackend]
+    filterset_class = TestPlanFilter
 
     def get_view_name(self):
         return "Test Plan List"
@@ -146,8 +147,8 @@ class TestPLanDetailView(APIView):
 class TestListViewSet(mixins.ListModelMixin, GenericViewSet):
     queryset = TestSelector().test_list()
     serializer_class = TestSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['plan']
+    filter_backends = [TestyFilterBackend]
+    filterset_class = TestFilter
 
     def get_view_name(self):
         return "Test List"
@@ -167,8 +168,8 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
 class TestResultViewSet(ModelViewSet):
     queryset = TestResultSelector().result_list()
     serializer_class = TestResultSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['test']
+    filter_backends = [TestyFilterBackend]
+    filterset_class = TestResultFilter
 
     def perform_update(self, serializer: TestResultSerializer):
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
