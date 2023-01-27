@@ -39,6 +39,7 @@ from tests_representation.models import TestResult
 
 from tests import constants
 from tests.commons import RequestType, model_to_dict_via_serializer, model_with_base_to_dict
+from tests.error_messages import PERMISSION_ERR_MSG
 
 
 @pytest.mark.django_db(reset_sequences=True)
@@ -153,3 +154,17 @@ class TestResultEndpoints:
         for result_test1, result_test2 in zip(actual_results1, actual_results2):
             assert result_test1 in dicts_test1, 'Response is different from expected one'
             assert result_test2 in dicts_test2, 'Response is different from expected one'
+
+    @pytest.mark.parametrize('request_type', [RequestType.PATCH, RequestType.PUT])
+    def test_archived_editable_for_admin_only(self, api_client, authorized_superuser, test_result_factory, user,
+                                              request_type):
+        api_client.force_login(user)
+        test = test_result_factory(is_archive=True)
+        response = api_client.send_request(
+            self.view_name_detail,
+            reverse_kwargs={'pk': test.pk},
+            request_type=request_type,
+            expected_status=HTTPStatus.FORBIDDEN,
+            data={}
+        )
+        assert json.loads(response.content)['detail'] == PERMISSION_ERR_MSG
