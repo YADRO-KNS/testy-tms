@@ -7,7 +7,7 @@ import Link from "@mui/material/Link";
 import Box from "@mui/material/Box";
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import React, {useEffect, useMemo, useState} from "react";
-import {suite, treeSuite} from "./suites.component";
+import {treeSuite} from "./suites.component";
 import {myCase} from "../models.interfaces";
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import DetailedCaseInfo from "./detailed.case.info.component";
@@ -29,7 +29,7 @@ function TableRowCase(props: {
     selected: number [], setSelected: (ids: number[]) => void,
     setTreeSuites: (treeSuites: treeSuite[]) => void,
     setOpenDialogDeletion: (show: boolean) => void,
-    setComponentForDeletion: (component: { type: string, id: number }) => void,
+    setComponentForDeletion: (component: myCase | treeSuite) => void,
     classesTableSuitesCases: any
 }) {
     const {
@@ -87,7 +87,7 @@ function TableRowCase(props: {
             <td className={classesTableSuitesCases.deleteEditShowCaseCell}>
                 <div id="gridEditDelete" className={classesTableSuitesCases.gridEditDelete}>
                     <IconButton size={"small"} onClick={() => {
-                        setComponentForDeletion({type: "case", id: onecase.id})
+                        setComponentForDeletion(onecase)
                         setOpenDialogDeletion(true)
                     }}>
                         <DeleteIcon fontSize={"small"}/>
@@ -121,7 +121,7 @@ function Row(props: {
     detailedCaseInfo: { show: boolean, myCase: myCase }, setInfoCaseForEdit: (myCase: myCase) => void,
     setTreeSuites: (treeSuites: treeSuite[]) => void, selectedCases: number[], setSelectedCases: (cases: number[]) => void,
     setOpenDialogDeletion: (show: boolean) => void,
-    setComponentForDeletion: (component: { type: string, id: number }) => void,
+    setComponentForDeletion: (component: myCase | treeSuite) => void,
     classesTableSuitesCases: any, setInfoSuiteForEdit: (suite: { id: number, name: string }) => void,
 }) {
     const {
@@ -217,7 +217,7 @@ function Row(props: {
                             <EditIcon fontSize={"small"}/>
                         </IconButton>
                         <IconButton size={"small"} onClick={() => {
-                            setComponentForDeletion({type: "suite", id: row.id})
+                            setComponentForDeletion(row)
                             setOpenDialogDeletion(true)
                         }}>
                             <DeleteIcon fontSize={"small"}/>
@@ -354,7 +354,7 @@ const TableSuites = (props: {
     const [selectedCases, setSelectedCases] = React.useState<number []>([]);
     const [openDialogDeletion, setOpenDialogDeletion] = useState(false);
     const [openDialogDeletionElements, setOpenDialogDeletionElements] = useState(false);
-    const [componentForDeletion, setComponentForDeletion] = useState<{ type: string, id: number }>({type: "", id: -1})
+    const [componentForDeletion, setComponentForDeletion] = useState<myCase | treeSuite>()
 
     const openAll = () => {
         let newMap = new Map()
@@ -442,6 +442,7 @@ const TableSuites = (props: {
                         style={{marginLeft: 10, marginTop: 5}}
                     >
                         <Link
+                            data-cy="open-all-suites"
                             sx={{maxHeight: "50%"}}
                             component="button" onClick={() => {
                             openAll()
@@ -450,6 +451,7 @@ const TableSuites = (props: {
                         </Link>
                         <Link underline="none">&nbsp;&nbsp;|&nbsp;&nbsp;</Link>
                         <Link
+                            data-cy="close-all-suites"
                             sx={{maxHeight: "50%"}}
                             component="button"
                             onClick={() => {
@@ -462,7 +464,7 @@ const TableSuites = (props: {
                             size={"small"} disabled={!(selectedCases.length > 0)} onClick={() => {
                             setOpenDialogDeletionElements(true)
                         }}
-                                    sx={{marginLeft: 1}}
+                            sx={{marginLeft: 1}}
                         >
                             <DeleteIcon fontSize={"small"}/>
                         </IconButton>

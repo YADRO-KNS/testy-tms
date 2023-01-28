@@ -31,7 +31,8 @@ const DetailedCaseInfo: React.FC<Props> = ({myCase, setDetailedCaseInfo}) => {
                     <Typography variant="h6">
                         Название
                     </Typography>
-                    <IconButton data-cy="close-info-case" size={"small"} onClick={() => setDetailedCaseInfo(SuiteCaseService.getEmptyDetailedCaseInfo())}>
+                    <IconButton data-cy="close-info-case" size={"small"}
+                                onClick={() => setDetailedCaseInfo(SuiteCaseService.getEmptyDetailedCaseInfo())}>
                         <CloseIcon/>
                     </IconButton>
                 </Grid>

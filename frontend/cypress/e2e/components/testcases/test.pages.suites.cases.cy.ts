@@ -115,6 +115,23 @@ describe('Testing functionality on the pages of suites and cases', () => {
         cy.contains("Дочерняя сьюта для тестирования в cy 1").should('be.visible')
     });
 
+    it('close all - open all suites', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.get('[data-cy="close-all-suites"]').click()
+        cy.contains("Сьюта для тестирования в cy").should('be.visible')
+        cy.contains("Дочерняя сьюта для тестирования в cypress").should('not.be.visible')
+        cy.contains("Дочерняя сьюта для тестирования в cy 0").should('not.be.visible')
+        cy.contains("Дочерняя сьюта для тестирования в cy 1").should('not.be.visible')
+
+        cy.get('[data-cy="open-all-suites"]').click()
+        cy.contains("Сьюта для тестирования в cy").should('be.visible')
+        cy.contains("Дочерняя сьюта для тестирования в cypress").should('be.visible')
+        cy.contains("Дочерняя сьюта для тестирования в cy 0").should('be.visible')
+        cy.contains("Дочерняя сьюта для тестирования в cy 1").should('be.visible')
+    });
+
     it('create cases in suite by button in tree', () => {
         let countOfCases = 0;
         cy.visit('/testcases');
@@ -300,6 +317,7 @@ describe('Testing functionality on the pages of suites and cases', () => {
             .should('have.text', `Отредактированная очистка после теста для кейса для тестирования в cy 0`)
         cy.get('[data-cy="detailed-info-case-estimate"]')
             .should('have.text', `321`)
+        cy.contains('td', `Отредактированный кейс для тестирования в cy 0`)
     })
 
     it('deleting case with open detailed information', () => {
