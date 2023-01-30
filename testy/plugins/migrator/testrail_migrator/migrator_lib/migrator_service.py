@@ -187,6 +187,7 @@ class MigratorService:
             user = UserModel.objects.get(username=data['username'])
 
         return user
+
     @staticmethod
     def make_testplan_model(data, parameters=None):
         testplan = TestPlan.model_create(
