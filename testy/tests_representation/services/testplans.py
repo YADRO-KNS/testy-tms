@@ -89,7 +89,7 @@ class TestPlanService:
             if create_test_case_ids := new_test_case_ids - old_test_case_ids:
                 cases = [tc for tc in data['test_cases'] if tc.id in create_test_case_ids]
                 TestService().bulk_test_create((test_plan,), cases)
-
+        TestPlan.objects.partial_rebuild(test_plan.tree_id)
         return test_plan
 
     def testplan_delete(self, *, test_plan) -> None:

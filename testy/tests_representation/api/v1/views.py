@@ -95,11 +95,15 @@ class TestPLanListView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericVi
     def create(self, request, *args, **kwargs):
         serializer = TestPlanInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        test_plans = []
         if serializer.validated_data.get('parameters'):
-            TestPlanService().testplan_bulk_create(serializer.validated_data)
-            return Response(status=status.HTTP_201_CREATED)
-        TestPlanService().testplan_create(serializer.validated_data)
-        return Response(status=status.HTTP_201_CREATED)
+            test_plans = TestPlanService().testplan_bulk_create(serializer.validated_data)
+        else:
+            test_plans.append(TestPlanService().testplan_create(serializer.validated_data))
+        return Response(
+            TestPlanOutputSerializer(test_plans, many=True, context={'request': request}).data,
+            status=status.HTTP_201_CREATED
+        )
 
 
 class TestPLanStatisticsView(APIView):
