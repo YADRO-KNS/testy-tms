@@ -108,13 +108,13 @@ class MigratorService:
                       data_list]
         return Parameter.objects.bulk_create(parameters)
 
-    @staticmethod
-    def testplan_bulk_create_with_tests(data_list):
+    # @staticmethod
+    def testplan_bulk_create_with_tests(self, data_list):
         testplan_objects = []
         for data in data_list:
             parameters = data.get('parameters')
             testplan_objects.append(
-                TestPlanService()._make_testplan_model(data, parameters=parameters if parameters else None)
+                self.make_testplan_model(data, parameters=parameters if parameters else None)
             )
         test_plans = TestPlan.objects.bulk_create(testplan_objects)
         TestPlan.objects.rebuild()
@@ -187,3 +187,20 @@ class MigratorService:
             user = UserModel.objects.get(username=data['username'])
 
         return user
+
+    @staticmethod
+    def make_testplan_model(data, parameters=None):
+        testplan = TestPlan.model_create(
+            fields=TestPlanService.non_side_effect_fields,
+            data=data,
+            commit=False
+        )
+        testplan.lft = 0
+        testplan.rght = 0
+        testplan.tree_id = 0
+        testplan.level = 0
+
+        if parameters is not None:
+            testplan.parameters = parameters
+
+        return testplan
