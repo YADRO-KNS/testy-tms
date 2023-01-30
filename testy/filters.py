@@ -28,22 +28,43 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from django_filters import rest_framework as filters
+from tests_representation.models import Test, TestPlan, TestResult
 
-from testy.settings.common import *  # noqa F401, F403
+from utils import parse_bool_from_str
 
-DEBUG = True
 
-SECRET_KEY = 'django-insecure-97ml+ugrkdl6s!h)_5vanzw4%d_lajo6j(08e84e7314*&)s3)'
+class TestyFilterBackend(filters.DjangoFilterBackend):
+    def get_filterset_kwargs(self, request, queryset, view):
+        kwargs = super().get_filterset_kwargs(request, queryset, view)
+        kwargs.update({'action': view.action})
+        return kwargs
 
-INSTALLED_APPS += [  # noqa F405
-    'django_extensions',
-    'debug_toolbar',
-]
 
-INTERNAL_IPS = [
-    '127.0.0.1',
-]
+class ArchiveFilter(filters.FilterSet):
+    def __init__(self, *args, action=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.action = action
 
-MIDDLEWARE += [  # noqa F405
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
-]
+    def filter_queryset(self, queryset):
+        if not parse_bool_from_str(self.data.get('is_archive')) and self.action == 'list':
+            queryset = queryset.filter(is_archive=False)
+        return super().filter_queryset(queryset)
+
+
+class TestPlanFilter(ArchiveFilter):
+    class Meta:
+        model = TestPlan
+        fields = ('project',)
+
+
+class TestFilter(ArchiveFilter):
+    class Meta:
+        model = Test
+        fields = ('plan',)
+
+
+class TestResultFilter(ArchiveFilter):
+    class Meta:
+        model = TestResult
+        fields = ('test',)

@@ -41,12 +41,18 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import json
+import logging
 import os
 from pathlib import Path
 
+import ldap
+import sentry_sdk
 from django.utils.translation import gettext_lazy as _
+from django_auth_ldap.config import GroupOfNamesType, LDAPSearch
+from sentry_sdk.integrations.django import DjangoIntegration
 
 from testy.utils import insert_plugins
+from utils import parse_bool_from_str
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -218,3 +224,110 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Company
 COMPANY_DOMAIN = os.environ.get('COMPANY_DOMAIN')
+
+# Auth ldap
+
+AUTH_LDAP_SERVER_URI = 'ldap://corp.yadro.com:389'
+AUTH_LDAP_BIND_DN = 'LDAPLookUpUser-spb'
+AUTH_LDAP_BIND_PASSWORD = 'Ue!ng#eeveeCh7r'
+
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+    'dc=corp,dc=yadro,dc=com',
+    ldap.SCOPE_SUBTREE,
+    '(objectClass=top)',
+)
+AUTH_LDAP_GROUP_TYPE = GroupOfNamesType()
+
+AUTH_LDAP_CONNECTION_OPTIONS = {ldap.OPT_REFERRALS: 0}
+
+AUTH_LDAP_USER_SEARCH = LDAPSearch(
+    'dc=corp,dc=yadro,dc=com',
+    ldap.SCOPE_SUBTREE,
+    '(sAMAccountName=%(user)s)',  # noqa: WPS323
+)
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    'first_name': 'givenName',
+    'last_name': 'sn',
+    'email': 'mail',
+}
+
+AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = True
+AUTH_LDAP_ALWAYS_UPDATE_USER = True
+AUTH_LDAP_FIND_GROUP_PERMS = True
+AUTH_LDAP_CACHE_GROUPS = False
+
+AUTHENTICATION_BACKENDS = [
+    'django_auth_ldap.backend.LDAPBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+local_session = parse_bool_from_str(os.getenv('LOCAL_SESSION'))
+if not local_session:
+    dsn = os.getenv('DSN')
+    if dsn:
+        sentry_sdk.init(
+            dsn=dsn,
+            integrations=[
+                DjangoIntegration(),
+            ],
+            # Set traces_sample_rate to 1.0 to capture 100%
+            # of transactions for performance monitoring.
+            # We recommend adjusting this value in production.
+            traces_sample_rate=1.0,
+
+            # If you wish to associate users to errors (assuming you are using
+            # django.contrib.auth) you may enable sending PII data.
+            send_default_pii=True
+        )
+    else:
+        logging.warning('Sentry was enabled but DSN was not provided for this session')
+else:
+    logging.warning('Sentry disabled for this session')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'default': {
+            'format': '%(asctime)s - %(module)s - %(levelname)s: %(message)s',
+        },
+    },
+    'handlers': {
+        'console': {
+            'formatter': 'default',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False
+        },
+        'gunicorn': {
+            'handlers': ['console'],
+            'level': os.getenv('GUNICORN_LOG_LEVEL', 'INFO'),
+        },
+        'gunicorn.errors': {
+            'handlers': ['console'],
+            'level': os.getenv('GUNICORN_ERROR_LOG_LEVEL', 'INFO'),
+        },
+        'gunicorn.access': {
+            'handlers': ['console'],
+            'level': os.getenv('GUNICORN_ACCESS_LOG_LEVEL', 'INFO'),
+        },
+        'celery': {
+            'handlers': ['console'],
+            'level': os.getenv('CELERY_LOG_LEVEL', 'INFO'),
+        },
+        'core': {
+            'handlers': ['console'],
+            'level': os.getenv('CORE_LOG_LEVEL', 'INFO'),
+        },
+        '': {
+            'handlers': ['console'],
+            'level': os.getenv('ROOT_LOG_LEVEL', 'INFO'),
+        },
+    },
+}

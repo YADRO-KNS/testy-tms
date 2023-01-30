@@ -40,3 +40,4 @@ MODEL_VALUE_ERR_MSG = 'Cannot assign "\'{value}\'": "{model_name}.{column_name}"
 INT_VALUE_ERR_MSG = "Field '{column}' expected a number but got '{value}'."
 ARRAY_VALUE_ERR_MSG = 'Array value must start with "{" or dimension information.'
 TYPE_ERR_MSG = 'expected string or bytes-like object'
+PERMISSION_ERR_MSG = 'You do not have permission to perform this action.'

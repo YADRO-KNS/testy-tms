@@ -28,22 +28,11 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from rest_framework import permissions
 
-from testy.settings.common import *  # noqa F401, F403
 
-DEBUG = True
-
-SECRET_KEY = 'django-insecure-97ml+ugrkdl6s!h)_5vanzw4%d_lajo6j(08e84e7314*&)s3)'
-
-INSTALLED_APPS += [  # noqa F405
-    'django_extensions',
-    'debug_toolbar',
-]
-
-INTERNAL_IPS = [
-    '127.0.0.1',
-]
-
-MIDDLEWARE += [  # noqa F405
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
-]
+class IsAdminOrForbidArchiveUpdate(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in ['PUT', 'PATCH'] and obj.is_archive and not request.user.is_staff:
+            return False
+        return True

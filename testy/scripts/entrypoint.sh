@@ -8,4 +8,4 @@ pip install -e plugins/migrator
 python manage.py migrate --no-input
 python manage.py seed_db
 python manage.py collectstatic --no-input
-gunicorn testy.wsgi:application -w 4 --bind 0.0.0.0:8000 --timeout 0
+gunicorn testy.wsgi:application -w 4 --bind 0.0.0.0:8000 --timeout 0 --capture-output --access-logfile - --enable-stdio-inheritance

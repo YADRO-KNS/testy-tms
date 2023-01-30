@@ -38,6 +38,7 @@ from tests_representation.models import Test, TestPlan, TestResult
 
 from tests import constants
 from tests.commons import RequestType
+from tests.error_messages import PERMISSION_ERR_MSG
 
 
 @pytest.mark.django_db
@@ -114,7 +115,7 @@ class TestPlanEndpoints:
         assert Test.objects.count() == number_of_tests - 1, 'More then one test was deleted by updating'
         test_ids = []
         for plan in test_plans:
-            test_ids.extend(test.get('id')for test in plan.get('tests'))
+            test_ids.extend(test.get('id') for test in plan.get('tests'))
         assert len(set(test_ids)) == len(test_ids), 'Test ids from testplans were not unique.'
 
     @pytest.mark.parametrize(
@@ -192,3 +193,15 @@ class TestPlanEndpoints:
             reverse_kwargs={'pk': test_plan.pk}
         )
         assert not TestPlan.objects.count(), f'Test plan with id "{test_plan.id}" was not deleted.'
+
+    def test_archived_editable_for_admin_only(self, api_client, authorized_superuser, test_plan_factory, user):
+        api_client.force_login(user)
+        plan = test_plan_factory(is_archive=True)
+        response = api_client.send_request(
+            self.view_name_detail,
+            reverse_kwargs={'pk': plan.pk},
+            request_type=RequestType.PATCH,
+            expected_status=HTTPStatus.FORBIDDEN,
+            data={}
+        )
+        assert json.loads(response.content)['detail'] == PERMISSION_ERR_MSG

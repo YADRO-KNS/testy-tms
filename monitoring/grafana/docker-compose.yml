@@ -1,0 +1,27 @@
+version: '3.9'
+services:
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - "./loki-data:/loki"
+    container_name: "loki"
+    user: "0"
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3200:3200"
+    environment:
+      - GF_SERVER_HTTP_PORT=3200
+    volumes:
+      - "./grafana-data:/var/lib/grafana"
+    container_name: "grafana"
+    user: "0"
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - ${CONFIG_DIR}:${CONFIG_DIR}
+      - /var/log/nginx:/var/log/nginx
+      - ${DOCKER_SOCK_PATH}:${DOCKER_SOCK_PATH}
+    command: -config.file=${CONFIG_DIR}/promtail-config-${TARGET}.yml
