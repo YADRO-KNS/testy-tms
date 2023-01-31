@@ -174,14 +174,13 @@ class TestPlanTestSerializer(ModelSerializer):
 
 class TestPlanOutputSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(view_name='api:v1:testplan-detail')
-    tests = TestPlanTestSerializer(many=True, read_only=True)
     title = SerializerMethodField()
 
     class Meta:
         model = TestPlan
         fields = (
             'id', 'name', 'parent', 'parameters', 'started_at', 'due_date', 'finished_at', 'is_archive',
-            'tests', 'project', 'child_test_plans', 'url', 'title', 'description'
+            'project', 'child_test_plans', 'url', 'title', 'description'
         )
 
     def get_title(self, instance):
