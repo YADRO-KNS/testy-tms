@@ -145,11 +145,10 @@ class MigratorService:
 
         return test_result
 
-    @staticmethod
-    def testplan_bulk_create(validated_data):
+    def testplan_bulk_create(self, validated_data):
         testplan_objects = []
         for data in validated_data:
-            testplan_objects.append(TestPlanService()._make_testplan_model(data))
+            testplan_objects.append(self.make_testplan_model(data))
         test_plans = TestPlan.objects.bulk_create(testplan_objects)
         TestPlan.objects.rebuild()
 
