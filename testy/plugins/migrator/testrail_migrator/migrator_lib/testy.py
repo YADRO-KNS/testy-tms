@@ -267,7 +267,7 @@ class TestyCreator:
 
         serializer = TestPlanInputSerializer(data=parent_milestones, many=True)
         serializer.is_valid(raise_exception=True)
-        test_plans = MigratorService.testplan_bulk_create(serializer.validated_data)
+        test_plans = MigratorService().testplan_bulk_create(serializer.validated_data)
         for tr_milestone, testy_milestone in zip(milestones, test_plans):
             milestones_mapping.update({tr_milestone['id']: testy_milestone.id})
 
@@ -290,7 +290,7 @@ class TestyCreator:
 
             serializer = TestPlanInputSerializer(data=child_milestones_data_list, many=True)
             serializer.is_valid(raise_exception=True)
-            test_plans = MigratorService.testplan_bulk_create(serializer.validated_data)
+            test_plans = MigratorService().testplan_bulk_create(serializer.validated_data)
 
             for tr_milestone, testy_milestone in zip(milestone['milestones'], test_plans):
                 milestones_mapping.update({tr_milestone['id']: testy_milestone.id})
@@ -329,7 +329,7 @@ class TestyCreator:
             plan_data_list.append(plan_data)
 
         with suppress_auto_now(TestCase, ['created_at', 'updated_at']):
-            test_plans = MigratorService.testplan_bulk_create(plan_data_list)
+            test_plans = MigratorService().testplan_bulk_create(plan_data_list)
         for src_plan_id, testy_milestone in zip(src_plan_ids, test_plans):
             plan_mappings.update({src_plan_id: testy_milestone.id})
 
@@ -349,11 +349,15 @@ class TestyCreator:
             raise TypeError('Parent type for test run was not specified')
 
         for idx, run in enumerate(runs, start=1):
+            logging.info(f'{idx} of {len(runs)}')
             parent = mapping.get(run[parent_id_key])
             if not parent and not upload_root_runs:
                 continue
             src_run_ids.append(run['id'])
-            tests_for_run = [test for test in tests if test['run_id'] == run['id']]
+            tests_for_run = []
+            for test in tests:
+                if test['run_id'] == run['id'] and case_mappings.get(test['case_id']):
+                    tests_for_run.append(test)
             src_tests.extend(tests_for_run)
             case_ids = [case_mappings[test['case_id']] for test in tests_for_run]
             cases = TestCase.objects.filter(id__in=case_ids)
@@ -377,7 +381,7 @@ class TestyCreator:
             if parent:
                 run_data['parent'] = TestPlan.objects.get(pk=parent)
             run_data_list.append(run_data)
-        created_tests, created_plans = MigratorService.testplan_bulk_create_with_tests(run_data_list)
+        created_tests, created_plans = MigratorService().testplan_bulk_create_with_tests(run_data_list)
 
         # Add assignation for tests
         for src_test, created_test in zip(src_tests, created_tests):
@@ -429,7 +433,7 @@ class TestyCreator:
         src_ids = []
         results = sorted(results, key=itemgetter('created_on'))
         for idx, result in enumerate(results):
-            print(f'Processing result {idx} of {len(results)}')
+            logging.info(f'Processing result {idx} of {len(results)}')
             if not tests_mappings.get(result['test_id']):
                 continue
             # Drop all results that serve as assignation message
@@ -444,7 +448,7 @@ class TestyCreator:
                 if result_field_name in custom_fields_multi_select:
                     new_value = []
                     for single_value in result_field_value:
-                        new_value.append(custom_fields_multi_select[result_field_name][str(single_value)])
+                        new_value.append(custom_fields_multi_select[result_field_name].get(str(single_value), ''))
                     json_fields[custom_fields_labels[result_field_name]] = new_value
                     continue
                 json_fields[custom_fields_labels[result_field_name]] = result_field_value

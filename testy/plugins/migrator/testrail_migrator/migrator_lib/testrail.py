@@ -263,7 +263,9 @@ class TestRailClient:
                 tasks.append(self.get_attachment(attachment, parent_key))
             attachments.extend(await tqdm.gather(*tasks, leave=False))
         for attachment in attachments:
-            result.update(attachment)
+            if attachment:
+                logging.debug(f'skipped attachments parent_key:{parent_key}')
+                result.update(attachment)
         return result
 
     async def get_attachment(self, attachment, parent_key, retry_count=30):
