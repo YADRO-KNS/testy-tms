@@ -41,15 +41,12 @@ coreschema==0.0.4
 django==3.2.4
     # via
     #   -r requirements.in
-    #   django-auth-ldap
     #   django-cors-headers
     #   django-filter
     #   django-js-asset
     #   djangorestframework
     #   djangorestframework-simplejwt
     #   drf-yasg
-django-auth-ldap==4.1.0
-    # via -r requirements.in
 django-cors-headers==3.13.0
     # via -r requirements.in
 django-filter==22.1
@@ -99,12 +96,6 @@ prompt-toolkit==3.0.36
     # via click-repl
 psycopg2==2.9.3
     # via -r requirements.in
-pyasn1==0.4.8
-    # via
-    #   pyasn1-modules
-    #   python-ldap
-pyasn1-modules==0.2.8
-    # via python-ldap
 pycodestyle==2.9.1
     # via flake8
 pyflakes==2.5.0
@@ -115,8 +106,6 @@ pyparsing==3.0.9
     # via packaging
 python-dotenv==0.21.0
     # via -r requirements.in
-python-ldap==3.4.3
-    # via django-auth-ldap
 pytz==2022.2.1
     # via
     #   celery
