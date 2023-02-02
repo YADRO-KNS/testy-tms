@@ -9,7 +9,7 @@ clients:
   - url: https://testy-dev.set.yadro.com:3101/loki/api/v1/push
 
 scrape_configs:
-  - job_name: testy_containers
+  - job_name: testy_docker
     docker_sd_configs:
       - host: unix://var/run/docker.sock
         refresh_interval: 5s
@@ -19,7 +19,6 @@ scrape_configs:
     relabel_configs:
       - source_labels: ['__meta_docker_container_name']
         target_label: containers_dev
-  - job_name: testy_nginx
     static_configs:
       - labels:
           nginx_dev: access_log  # A `job` label is fairly standard in prometheus and useful for linking metrics and logs.
