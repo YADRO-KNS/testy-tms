@@ -1,7 +1,6 @@
 version: '3.9'
 services:
   testy:
-    container_name: testy
     extra_hosts:
       - "host.docker.internal:host-gateway"
     build:
@@ -30,8 +29,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    <<: *logging
   db:
-    container_name: testy_db
     image: postgres:14.5-alpine
     volumes:
       - ./pg-data:/var/lib/postgresql/data
@@ -46,16 +45,16 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    <<: *logging
   redis:
-    container_name: testy_redis
     image: redis:alpine
     command: redis-server --appendonly yes
     volumes:
       - "./redis_data:/data"
     ports:
       - "6380:6379"
+    <<: *logging
   celery:
-    container_name: testy_celery
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: always
@@ -85,3 +84,4 @@ services:
       - testy
       - db
       - redis
+    <<: *logging

@@ -33,10 +33,14 @@ __all__ = (
 )
 
 
-def get_boolean(request, key, method='GET'):
+def get_boolean(request=None, key=None, method='GET', value=None):
     """
     Gets the value from request and returns it's boolean state
     """
+    if not request:
+        if str(value).lower() in ['1', 'yes', 'true']:
+            return True
+        return False
     value = getattr(request, method).get(key, False)
     if str(value).lower() in ['1', 'yes', 'true']:
         return True
