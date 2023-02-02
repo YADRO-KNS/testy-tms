@@ -1,8 +1,0 @@
-version: '3.9'
-services:
-  promtail:
-    image: grafana/promtail:latest
-    volumes:
-      - /opt/promtail:/opt/promtail
-      - /var/log/nginx:/var/log/nginx
-    command: -config.file=/opt/promtail/promtail-config.yml

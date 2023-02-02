@@ -32,16 +32,12 @@ __all__ = (
     'get_boolean',
 )
 
+from utils import parse_bool_from_str
 
-def get_boolean(request=None, key=None, method='GET', value=None):
+
+def get_boolean(request, key, method='GET'):
     """
     Gets the value from request and returns it's boolean state
     """
-    if not request:
-        if str(value).lower() in ['1', 'yes', 'true']:
-            return True
-        return False
     value = getattr(request, method).get(key, False)
-    if str(value).lower() in ['1', 'yes', 'true']:
-        return True
-    return False
+    return parse_bool_from_str(value)
