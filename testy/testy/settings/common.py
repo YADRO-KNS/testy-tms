@@ -50,9 +50,10 @@ import sentry_sdk
 from django.utils.translation import gettext_lazy as _
 from django_auth_ldap.config import GroupOfNamesType, LDAPSearch
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+from utilities.request import get_boolean
 
 from testy.utils import insert_plugins
-from utils import parse_bool_from_str
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -262,15 +263,19 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-local_session = parse_bool_from_str(os.getenv('LOCAL_SESSION'))
-if not local_session:
+if not get_boolean(value=os.getenv('LOCAL_SESSION')):
     dsn = os.getenv('DSN')
     if dsn:
         sentry_sdk.init(
             dsn=dsn,
             integrations=[
                 DjangoIntegration(),
+                LoggingIntegration(
+                    level=logging.INFO,  # Capture info and above as breadcrumbs
+                    event_level=logging.INFO  # Send errors as events
+                )
             ],
+
             # Set traces_sample_rate to 1.0 to capture 100%
             # of transactions for performance monitoring.
             # We recommend adjusting this value in production.
@@ -284,50 +289,3 @@ if not local_session:
         logging.warning('Sentry was enabled but DSN was not provided for this session')
 else:
     logging.warning('Sentry disabled for this session')
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'default': {
-            'format': '%(asctime)s - %(module)s - %(levelname)s: %(message)s',
-        },
-    },
-    'handlers': {
-        'console': {
-            'formatter': 'default',
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-            'propagate': False
-        },
-        'gunicorn': {
-            'handlers': ['console'],
-            'level': os.getenv('GUNICORN_LOG_LEVEL', 'INFO'),
-        },
-        'gunicorn.errors': {
-            'handlers': ['console'],
-            'level': os.getenv('GUNICORN_ERROR_LOG_LEVEL', 'INFO'),
-        },
-        'gunicorn.access': {
-            'handlers': ['console'],
-            'level': os.getenv('GUNICORN_ACCESS_LOG_LEVEL', 'INFO'),
-        },
-        'celery': {
-            'handlers': ['console'],
-            'level': os.getenv('CELERY_LOG_LEVEL', 'INFO'),
-        },
-        'core': {
-            'handlers': ['console'],
-            'level': os.getenv('CORE_LOG_LEVEL', 'INFO'),
-        },
-        '': {
-            'handlers': ['console'],
-            'level': os.getenv('ROOT_LOG_LEVEL', 'INFO'),
-        },
-    },
-}
