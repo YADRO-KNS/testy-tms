@@ -28,7 +28,6 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-import os
 
 from testy.settings.common import *  # noqa F401, F403
 
@@ -49,7 +48,7 @@ MIDDLEWARE += [  # noqa F405
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
-log_level = os.getenv('LOG_LEVEL', 'INFO')
+log_level = "DEBUG"
 
 LOGGING = {
     'version': 1,
@@ -64,28 +63,25 @@ LOGGING = {
             'formatter': 'default',
             'class': 'logging.StreamHandler',
         },
-        'sentry': {
-            'level': log_level,
-            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-        },
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "sentry"],
-            "level": log_level,  # noqa: F405
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),  # noqa: F405
         },
         "core": {
-            "handlers": ["console", "sentry"],
-            "level": log_level,  # noqa: F405
+            "handlers": ["console"],
+            "level": os.getenv("TESTY_TMS_CORE_LOG_LEVEL", log_level),  # noqa: F405
         },
         'celery': {
-            'handlers': ['console', 'sentry'],
+            'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True
         },
-        '': {
-            'handlers': ['console', 'sentry'],
-            'level': log_level,
-        },
+    },
+    'celery': {
+        'handlers': ['console'],
+        'level': log_level,
+        'propagate': True
     },
 }
