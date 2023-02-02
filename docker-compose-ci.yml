@@ -26,8 +26,6 @@ services:
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
-      - LOCAL_SESSION=${LOCAL_SESSION}
-      - DSN=${DSN}
     depends_on:
       db:
         condition: service_healthy
@@ -59,7 +57,7 @@ services:
     restart: always
     build:
       context: testy
-      dockerfile: scripts/celery/Dockerfile
+      dockerfile: scripts/dev/celery/Dockerfile
     command: celery -A testy worker -l INFO
     environment:
       - DJANGO_SETTINGS_MODULE=testy.settings.development
@@ -77,8 +75,6 @@ services:
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
-      - LOCAL_SESSION=${LOCAL_SESSION}
-      - DSN=${DSN}
     volumes:
       - './testy:/testy'
     depends_on:
