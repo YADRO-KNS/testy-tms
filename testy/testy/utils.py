@@ -59,13 +59,13 @@ def insert_plugins(testy_plugins, installed_plugins, middleware, testy_version):
         if plugin_config.min_version:
             if current_version < version.parse(plugin_config.min_version):
                 raise ImproperlyConfigured(
-                    f'Plugin {plugin_config.__module__} requires NetBox minimum version {plugin_config.min_version}.'
+                    f'Plugin {plugin_config.__module__} requires min version {plugin_config.min_version} of TestY.'
                 )
 
         if plugin_config.max_version:
             if current_version > version.parse(plugin_config.max_version):
                 raise ImproperlyConfigured(
-                    f'Plugin {plugin_config.__module__} requires NetBox maximum version {plugin_config.max_version}.'
+                    f'Plugin {plugin_config.__module__} requires max version {plugin_config.max_version} of TestY.'
                 )
 
         plugin_middleware = plugin_config.middleware
