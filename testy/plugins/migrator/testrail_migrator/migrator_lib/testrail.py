@@ -85,6 +85,10 @@ class TestRailClient:
     async def get_users(self, project_id=''):
         return await self._process_request(f'/get_users/{project_id}')
 
+    @async_to_sync
+    async def get_custom_result_fields(self):
+        return await self._process_request('/get_result_fields')
+
     @staticmethod
     def get_runs_from_plans(plans):
         runs_parent_plan = []
@@ -259,7 +263,9 @@ class TestRailClient:
                 tasks.append(self.get_attachment(attachment, parent_key))
             attachments.extend(await tqdm.gather(*tasks, leave=False))
         for attachment in attachments:
-            result.update(attachment)
+            if attachment:
+                logging.debug(f'skipped attachments parent_key:{parent_key}')
+                result.update(attachment)
         return result
 
     async def get_attachment(self, attachment, parent_key, retry_count=30):

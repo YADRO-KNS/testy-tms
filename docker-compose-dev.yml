@@ -1,6 +1,7 @@
 version: '3.9'
 services:
   testy:
+    container_name: testy
     extra_hosts:
       - "host.docker.internal:host-gateway"
     build:
@@ -30,6 +31,7 @@ services:
       db:
         condition: service_healthy
   db:
+    container_name: testy_db
     image: postgres:14.5-alpine
     volumes:
       - ./pg-data:/var/lib/postgresql/data
@@ -45,14 +47,15 @@ services:
       timeout: 5s
       retries: 5
   redis:
+    container_name: testy_redis
     image: redis:alpine
-    container_name: redis
     command: redis-server --appendonly yes
     volumes:
       - "./redis_data:/data"
     ports:
       - "6380:6379"
   celery:
+    container_name: testy_celery
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: always
@@ -60,7 +63,6 @@ services:
       context: testy
       dockerfile: scripts/dev/celery/Dockerfile
     command: celery -A testy worker -l INFO
-    container_name: celery
     environment:
       - DJANGO_SETTINGS_MODULE=testy.settings.development
       - POSTGRES_NAME=${POSTGRES_NAME}

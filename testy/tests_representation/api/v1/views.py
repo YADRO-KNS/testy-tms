@@ -29,9 +29,11 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
+import permissions
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
+from filters import TestFilter, TestPlanFilter, TestResultFilter, TestyFilterBackend
 from rest_framework import mixins, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -74,8 +76,8 @@ class ParameterViewSet(ModelViewSet):
 class TestPLanListView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
     serializer_class = TestPlanOutputSerializer
     queryset = TestPlanSelector().testplan_list()
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['project']
+    filter_backends = [TestyFilterBackend]
+    filterset_class = TestPlanFilter
 
     def get_view_name(self):
         return "Test Plan List"
@@ -93,9 +95,15 @@ class TestPLanListView(mixins.ListModelMixin, mixins.CreateModelMixin, GenericVi
     def create(self, request, *args, **kwargs):
         serializer = TestPlanInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        test_plans = TestPlanService().testplan_create(serializer.validated_data)
-        return Response(TestPlanOutputSerializer(test_plans, many=True, context={'request': request}).data,
-                        status=status.HTTP_201_CREATED)
+        test_plans = []
+        if serializer.validated_data.get('parameters'):
+            test_plans = TestPlanService().testplan_bulk_create(serializer.validated_data)
+        else:
+            test_plans.append(TestPlanService().testplan_create(serializer.validated_data))
+        return Response(
+            TestPlanOutputSerializer(test_plans, many=True, context={'request': request}).data,
+            status=status.HTTP_201_CREATED
+        )
 
 
 class TestPLanStatisticsView(APIView):
@@ -114,6 +122,8 @@ class TestPLanStatisticsView(APIView):
 
 
 class TestPLanDetailView(APIView):
+    permission_classes = [permissions.IsAdminOrForbidArchiveUpdate]
+
     def get_view_name(self):
         return "Test Plan Detail"
 
@@ -130,6 +140,7 @@ class TestPLanDetailView(APIView):
 
     def patch(self, request, pk):
         test_plan = self.get_object(pk)
+        self.check_object_permissions(request, test_plan)
         serializer = TestPlanUpdateSerializer(data=request.data, instance=test_plan, context={"request": request},
                                               partial=True)
         serializer.is_valid(raise_exception=True)
@@ -146,8 +157,8 @@ class TestPLanDetailView(APIView):
 class TestListViewSet(mixins.ListModelMixin, GenericViewSet):
     queryset = TestSelector().test_list()
     serializer_class = TestSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['plan']
+    filter_backends = [TestyFilterBackend]
+    filterset_class = TestFilter
 
     def get_view_name(self):
         return "Test List"
@@ -158,6 +169,7 @@ class TestListViewSet(mixins.ListModelMixin, GenericViewSet):
 
 class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericViewSet):
     queryset = TestSelector().test_list()
+    permission_classes = [permissions.IsAdminOrForbidArchiveUpdate]
     serializer_class = TestSerializer
 
     def get_view_name(self):
@@ -166,9 +178,10 @@ class TestDetailViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Gene
 
 class TestResultViewSet(ModelViewSet):
     queryset = TestResultSelector().result_list()
+    permission_classes = [permissions.IsAdminOrForbidArchiveUpdate]
     serializer_class = TestResultSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['test']
+    filter_backends = [TestyFilterBackend]
+    filterset_class = TestResultFilter
 
     def perform_update(self, serializer: TestResultSerializer):
         serializer.instance = TestResultService().result_update(serializer.instance, serializer.validated_data)
