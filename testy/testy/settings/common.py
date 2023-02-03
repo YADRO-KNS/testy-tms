@@ -56,7 +56,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 VERSION = '0.1.0'
 
-loaded_hosts = os.environ.get('localhost:8001', [])
+loaded_hosts = os.environ.get('ALLOWED_HOSTS', [])
 
 ALLOWED_HOSTS = json.loads(loaded_hosts) if loaded_hosts else loaded_hosts
 
@@ -106,11 +106,6 @@ MIDDLEWARE = [
 ]
 
 INSTALLED_APPS, MIDDLEWARE = insert_plugins(TESTY_PLUGINS, INSTALLED_APPS, MIDDLEWARE, VERSION)
-
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://localhost:8001',
-]
 
 ROOT_URLCONF = 'testy.urls'
 
