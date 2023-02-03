@@ -163,7 +163,9 @@ const SuitesComponent = () => {
                 <div className={classes.rightGridButtons}>
                     {selectedSuiteForTreeView !== undefined &&
                     <div>
-                        <Button sx={{
+                        <Button
+                            data-cy="create-case"
+                            sx={{
                             margin: "15px 15px 0 15px",
                             minWidth: "70%",
                             height: "45%",

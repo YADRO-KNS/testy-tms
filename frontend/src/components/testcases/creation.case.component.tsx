@@ -263,7 +263,8 @@ const CreationCase: React.FC<Props> = ({
                             Название тест-кейса
                         </Typography>
                         <CustomWidthTooltip
-                            title={<Grid style={{display: "flex", flexDirection: 'row'}}><WarningAmberIcon
+                            title={<Grid data-cy="fill-field-note"
+                                         style={{display: "flex", flexDirection: 'row'}}><WarningAmberIcon
                                 sx={{fontSize: 25, marginRight: 1}}/> <Typography> Заполните это
                                 поле.</Typography></Grid>} placement="top-start" arrow
                             open={fillFieldName}>
@@ -287,7 +288,8 @@ const CreationCase: React.FC<Props> = ({
                             Описание
                         </Typography>
                         <CustomWidthTooltip
-                            title={<Grid style={{display: "flex", flexDirection: 'row'}}><WarningAmberIcon
+                            title={<Grid data-cy="fill-field-note"
+                                         style={{display: "flex", flexDirection: 'row'}}><WarningAmberIcon
                                 sx={{fontSize: 25, marginRight: 1}}/> <Typography> Заполните это
                                 поле.</Typography></Grid>} placement="top-start" arrow
                             open={fillFieldScenario}>
@@ -363,6 +365,7 @@ const CreationCase: React.FC<Props> = ({
                                 <InputLabel id="select-suite">Выберите
                                     сьюту</InputLabel>
                                 <Select
+                                    data-cy="select-parent-suite-for-case"
                                     labelId="select-suite"
                                     value={selectedSuite.name}
                                     label="Выберите сьюту"
