@@ -62,7 +62,11 @@
   "devDependencies": {
     "@cypress/code-coverage": "^3.10.0",
     "@cypress/instrument-cra": "^1.4.0",
+    "@types/react-splitter-layout": "3.0.2",
+    "babel-plugin-istanbul": "^6.1.1",
     "cypress": "^12.4.0",
+    "istanbul-lib-coverage": "^3.2.0",
+    "nyc": "^15.1.0",
     "start-server-and-test": "^1.15.3"
   }
 }
