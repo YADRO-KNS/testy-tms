@@ -132,6 +132,86 @@ describe('Testing functionality on the pages of suites and cases', () => {
         cy.contains("Дочерняя сьюта для тестирования в cy 1").should('be.visible')
     });
 
+    it('go to the suites tree by the id specified in the url', () => {
+        let suiteId: number
+        const projectId = JSON
+            .parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
+        cy.request({
+            method: 'GET',
+            url: `http://localhost:8001/api/v1/suites/?project=${projectId}&treeview=true`,
+            headers: {
+                Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                "Content-Type": "application/json"
+            }
+        }).then((response) => {
+            suiteId = response.body[0].id
+            cy.visit(`/testcases/${suiteId}`);
+        })
+        cy.get('div').contains("Сьюта для тестирования в cy")
+        cy.get('div').contains("Дочерняя сьюта для тестирования в cypress")
+    })
+
+    it('go to the suites tree by the not existed id specified in the url', () => {
+        const projectId = JSON
+            .parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
+        cy.request({
+            method: 'GET',
+            url: `http://localhost:8001/api/v1/suites/?project=${projectId}&treeview=true`,
+            headers: {
+                Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                "Content-Type": "application/json"
+            }
+        }).then(() => {
+            cy.visit(`/testcases/-1`)
+        })
+        cy.get('div').contains("Сьюта для тестирования в cy")
+        cy.get('div').contains("Количество дочерних сьют: 3")
+    })
+
+    it('try to create suite without name', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.get('[data-cy="create-suite"]').click()
+        cy.get('[data-cy="agree-to-save-suite"]').click()
+        cy.get('[data-cy="fill-field-note"]').should('have.length', 1)
+    })
+
+    it('try to create case without name/scenario', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.get('[data-cy="create-case"]').click()
+        cy.get('[data-cy="agree-to-save-case"]').click()
+        cy.get('[data-cy="fill-field-note"]').should('have.length', 2)
+
+        cy.get('input[id="nameCaseTextField"]').type(`Название`)
+            .should("have.value", `Название`)
+        cy.get('[data-cy="agree-to-save-case"]').click()
+        cy.get('[data-cy="fill-field-note"]').should('have.length', 1)
+        cy.get('input[id="nameCaseTextField"]').clear()
+
+        cy.get('textarea[id="scenarioCaseTextField"]').type(`Описание`)
+            .should("have.value", `Описание`)
+        cy.get('[data-cy="agree-to-save-case"]').click()
+        cy.get('[data-cy="fill-field-note"]').should('have.length', 1)
+    })
+
+    it('create case by main button "Create test-case"', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.get('[data-cy="create-case"]').click()
+        cy.get('input[id="nameCaseTextField"]').type(`Кейс для тестирования в cy по главной кнопке`)
+            .should("have.value", `Кейс для тестирования в cy по главной кнопке`)
+        cy.get('textarea[id="scenarioCaseTextField"]').type(`Описание для кейса для тестирования в cy по главной кнопке`)
+            .should("have.value", `Описание для кейса для тестирования в cy по главной кнопке`)
+        // cy.get('[data-cy="select-parent-suite-for-case"]').click().get("li").filter(':visible')
+        //     .contains("Дочерняя сьюта для тестирования в cypress").click()
+        cy.get('[data-cy="agree-to-save-case"]').click()
+        cy.contains('div', `Кейс для тестирования в cy по главной кнопке`)
+    })
+
     it('create cases in suite by button in tree', () => {
         let countOfCases = 0;
         cy.visit('/testcases');
@@ -441,7 +521,7 @@ describe('Testing functionality on the pages of suites and cases', () => {
         cy.contains('td', "Отредактированный кейс для тестирования в cy 1").should('not.exist')
     })
 
-    it('delete cases using checkbox', () => {
+    it('disagree to delete cases using checkbox', () => {
         cy.visit('/testcases');
         cy.get('div').contains("Сьюта для тестирования в cy").click()
 
@@ -462,8 +542,53 @@ describe('Testing functionality on the pages of suites and cases', () => {
             .first()
             .click()
         cy.get('[data-cy="delete-cases-using-checkbox"]').click()
+        cy.get('[data-cy="disagree-to-delete-using-checkbox"]').click()
+        cy.contains('td', `Кейс для тестирования в cy 2`).should('exist')
+        cy.contains('td', `Кейс для тестирования в cy 6`).should('exist')
+        cy.contains('td', `Кейс для тестирования в cy 3`).should('exist')
+    })
+
+    it('agree to delete cases using checkbox with open detailed info about case', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.contains('td', `Кейс для тестирования в cy 2`).parent()
+            .children()
+            .last()
+            .children()
+            .last()
+            .click()
+
+        cy.get('[data-cy="detailed-info-case-name"]').should('have.text', `Кейс для тестирования в cy 2`)
+        cy.get('[data-cy="detailed-info-case-scenario"]').should('have.text', `Описание для кейса для тестирования в cy 2`)
+        cy.get('[data-cy="detailed-info-case-setup"]').should('have.text', `Подготовка теста для кейса для тестирования в cy 2`)
+        cy.get('[data-cy="detailed-info-case-teardown"]').should('have.text', `Очистка после теста для кейса для тестирования в cy 2`)
+        cy.get('[data-cy="detailed-info-case-estimate"]').should('have.text', `123`)
+
+        cy.contains('td', `Кейс для тестирования в cy 2`)
+            .parent()
+            .parent()
+            .parent()
+            .children()
+            .first()
+            .children()
+            .children()
+            .first()
+            .click()
+
+        cy.contains('td', `Кейс для тестирования в cy 3`)
+            .parent()
+            .children()
+            .first()
+            .click()
+        cy.get('[data-cy="delete-cases-using-checkbox"]').click()
         cy.get('[data-cy="agree-to-delete-using-checkbox"]').click()
         cy.contains('td', `Кейс для тестирования в cy 2`).should('not.exist')
+        cy.get('[data-cy="detailed-info-case-name"]').should('not.exist')
+        cy.get('[data-cy="detailed-info-case-scenario"]').should('not.exist')
+        cy.get('[data-cy="detailed-info-case-setup"]').should('not.exist')
+        cy.get('[data-cy="detailed-info-case-teardown"]').should('not.exist')
+        cy.get('[data-cy="detailed-info-case-estimate"]').should('not.exist')
         cy.contains('td', `Кейс для тестирования в cy 6`).should('not.exist')
         cy.contains('td', `Кейс для тестирования в cy 3`).should('not.exist')
     })
@@ -514,6 +639,54 @@ describe('Testing functionality on the pages of suites and cases', () => {
         cy.contains("Отредактированная дочерняя сьюта для тестирования в cypress").parent().children().eq(2).click()
         cy.get('[data-cy="agree-to-delete"]').click()
         cy.contains("Отредактированная дочерняя сьюта для тестирования в cypress").should('not.exist')
+    });
+
+    it('delete the suite with the marked case in the checkbox', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.contains('td', `Кейс для тестирования в cy 5`)
+            .parent()
+            .children()
+            .first()
+            .click()
+
+        cy.contains("Дочерняя сьюта для тестирования в cy 0").parent().children().eq(2).click()
+        cy.get('[data-cy="agree-to-delete"]').click()
+        cy.contains("Дочерняя сьюта для тестирования в cy 0").should('not.exist')
+        cy.contains("Кейс для тестирования в cy 5").should('not.exist')
+    });
+
+    it('delete the case marked in the checkbox', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.contains('td', `Кейс для тестирования в cy 4`)
+            .parent()
+            .children()
+            .first()
+            .click()
+
+        cy.contains('td', `Кейс для тестирования в cy 4`).parent()
+            .children()
+            .last()
+            .children()
+            .first()
+            .children()
+            .first()
+            .click({force: true})
+
+        cy.get('[data-cy="agree-to-delete"]').click()
+        cy.contains("Кейс для тестирования в cy 4").should('not.exist')
+    });
+
+    it('delete the parent suite at the topmost level', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.contains("Сьюта для тестирования в cy").parent().children().eq(2).click()
+        cy.get('[data-cy="agree-to-delete"]').click()
+        cy.url().should('eq', 'http://localhost:3000/testcases')
     });
 
     it('delete project for tests', () => {

@@ -60,6 +60,7 @@ const DeletionDialogElements = (props: {
                 </DialogContentText>
                 <DialogActions style={{padding: 0}}>
                     <Button
+                        data-cy="disagree-to-delete-using-checkbox"
                         style={{
                             margin: "20px 4px 0px 5px",
                             width: "30%",
