@@ -206,8 +206,6 @@ describe('Testing functionality on the pages of suites and cases', () => {
             .should("have.value", `Кейс для тестирования в cy по главной кнопке`)
         cy.get('textarea[id="scenarioCaseTextField"]').type(`Описание для кейса для тестирования в cy по главной кнопке`)
             .should("have.value", `Описание для кейса для тестирования в cy по главной кнопке`)
-        // cy.get('[data-cy="select-parent-suite-for-case"]').click().get("li").filter(':visible')
-        //     .contains("Дочерняя сьюта для тестирования в cypress").click()
         cy.get('[data-cy="agree-to-save-case"]').click()
         cy.contains('div', `Кейс для тестирования в cy по главной кнопке`)
     })
@@ -246,6 +244,98 @@ describe('Testing functionality on the pages of suites and cases', () => {
                 cy.get('div').contains(`Кейс для тестирования в cy ${index + countOfCases}`)
             })
     });
+
+    it('find suites in folder structure panel', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.get('input[id="find-suite-folder-structure"]')
+            .should("have.value", "").type("Дочерняя сьюта для тестирования в cy")
+            .should('have.value', "Дочерняя сьюта для тестирования в cy")
+
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+    })
+
+    it('switching suites in folder structure panel', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.get('input[id="find-suite-folder-structure"]')
+            .should("have.value", "").type("Дочерняя сьюта для тестирования в cy")
+            .should('have.value', "Дочерняя сьюта для тестирования в cy")
+
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+            .eq(0).should('have.css', 'background-color', 'rgb(166, 196, 229)')
+
+        cy.get('[data-cy="go-next"]').click()
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+            .eq(0).should('not.have.css', 'background-color', 'rgb(166, 196, 229)')
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+            .eq(1).should('have.css', 'background-color', 'rgb(166, 196, 229)')
+
+        cy.get('[data-cy="go-next"]').click()
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+            .eq(1).should('not.have.css', 'background-color', 'rgb(166, 196, 229)')
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+            .eq(2).should('have.css', 'background-color', 'rgb(166, 196, 229)')
+
+        cy.get('[data-cy="go-next"]').click()
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+            .eq(2).should('not.have.css', 'background-color', 'rgb(166, 196, 229)')
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+            .eq(0).should('have.css', 'background-color', 'rgb(166, 196, 229)')
+
+        cy.get('[data-cy="go-back"]').click()
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+            .eq(0).should('not.have.css', 'background-color', 'rgb(166, 196, 229)')
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+            .eq(2).should('have.css', 'background-color', 'rgb(166, 196, 229)')
+
+        cy.get('[data-cy="go-back"]').click()
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+            .eq(2).should('not.have.css', 'background-color', 'rgb(166, 196, 229)')
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+            .eq(1).should('have.css', 'background-color', 'rgb(166, 196, 229)')
+
+        cy.get('[data-cy="go-back"]').click()
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+            .eq(1).should('not.have.css', 'background-color', 'rgb(166, 196, 229)')
+        cy.get('div').filter(".Mui-selected").should("have.length", 3)
+            .eq(0).should('have.css', 'background-color', 'rgb(166, 196, 229)')
+    })
+
+    it('navigate by suite in folder structure panel', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.get('div').contains("Дочерняя сьюта для тестирования в cy 1").should("not.be.visible")
+
+        cy.get('input[id="find-suite-folder-structure"]')
+            .should("have.value", "").type("Дочерняя сьюта для тестирования в cy 1")
+            .should('have.value', "Дочерняя сьюта для тестирования в cy 1")
+
+        cy.get('div').filter(".Mui-selected").should("have.text", "Дочерняя сьюта для тестирования в cy 1").click()
+
+        cy.get('div').contains("Дочерняя сьюта для тестирования в cy 1").should("be.visible")
+
+    })
+
+    it('search for a non-existent suite and clearing the search field in folder structure panel', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.get('input[id="find-suite-folder-structure"]')
+            .should("have.value", "").type("Не существующая дочерняя сьюта")
+            .should('have.value', "Не существующая дочерняя сьюта")
+
+        cy.get('div').filter(".Mui-selected").should("have.length", 0)
+
+        cy.get('input[id="find-suite-folder-structure"]')
+            .should("have.value", "Не существующая дочерняя сьюта").clear()
+            .type("Дочерняя сьюта для тестирования в cy 1").clear()
+
+        cy.get('div').filter(".Mui-selected").should("have.length", 0)
+    })
 
     it('open-close detailed info about case by arrow', () => {
         cy.visit('/testcases');
@@ -521,6 +611,100 @@ describe('Testing functionality on the pages of suites and cases', () => {
         cy.contains('td', "Отредактированный кейс для тестирования в cy 1").should('not.exist')
     })
 
+    it('select/unselect all using checkbox', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.contains('td', `Кейс для тестирования в cy 2`)
+            .parent()
+            .parent()
+            .parent()
+            .children()
+            .first()
+            .children()
+            .children()
+            .first()
+            .click()
+
+        cy.get('span').filter(".Mui-checked").should('have.length', 3)
+
+        cy.contains('td', `Кейс для тестирования в cy 2`)
+            .parent()
+            .parent()
+            .parent()
+            .children()
+            .first()
+            .children()
+            .children()
+            .first()
+            .click()
+
+        cy.get('span').filter(".Mui-checked").should('have.length', 0)
+    })
+
+    it('select/unselect by one using checkbox', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.contains('td', `Кейс для тестирования в cy по главной кнопке`)
+            .parent()
+            .children()
+            .first()
+            .click()
+
+        cy.contains('td', `Кейс для тестирования в cy 4`)
+            .parent()
+            .children()
+            .first()
+            .click()
+
+        cy.contains('td', `Кейс для тестирования в cy 2`)
+            .parent()
+            .children()
+            .first()
+            .click()
+
+        cy.contains('td', `Кейс для тестирования в cy 6`)
+            .parent()
+            .children()
+            .first()
+            .click()
+
+        cy.contains('td', `Кейс для тестирования в cy 3`)
+            .parent()
+            .children()
+            .first()
+            .click()
+
+        cy.contains('td', `Кейс для тестирования в cy 7`)
+            .parent()
+            .children()
+            .first()
+            .click()
+
+        cy.get('span').filter(".Mui-checked").should('have.length', 9)
+
+        cy.contains('td', `Кейс для тестирования в cy по главной кнопке`)
+            .parent()
+            .children()
+            .first()
+            .click()
+
+        cy.contains('td', `Кейс для тестирования в cy 6`)
+            .parent()
+            .children()
+            .first()
+            .click()
+
+        cy.contains('td', `Кейс для тестирования в cy 7`)
+            .parent()
+            .children()
+            .first()
+            .click()
+
+        cy.get('span').filter(".Mui-checked").should('have.length', 3)
+    })
+
     it('disagree to delete cases using checkbox', () => {
         cy.visit('/testcases');
         cy.get('div').contains("Сьюта для тестирования в cy").click()
@@ -567,11 +751,6 @@ describe('Testing functionality on the pages of suites and cases', () => {
 
         cy.contains('td', `Кейс для тестирования в cy 2`)
             .parent()
-            .parent()
-            .parent()
-            .children()
-            .first()
-            .children()
             .children()
             .first()
             .click()
@@ -583,14 +762,33 @@ describe('Testing functionality on the pages of suites and cases', () => {
             .click()
         cy.get('[data-cy="delete-cases-using-checkbox"]').click()
         cy.get('[data-cy="agree-to-delete-using-checkbox"]').click()
-        cy.contains('td', `Кейс для тестирования в cy 2`).should('not.exist')
         cy.get('[data-cy="detailed-info-case-name"]').should('not.exist')
         cy.get('[data-cy="detailed-info-case-scenario"]').should('not.exist')
         cy.get('[data-cy="detailed-info-case-setup"]').should('not.exist')
         cy.get('[data-cy="detailed-info-case-teardown"]').should('not.exist')
         cy.get('[data-cy="detailed-info-case-estimate"]').should('not.exist')
-        cy.contains('td', `Кейс для тестирования в cy 6`).should('not.exist')
+        cy.contains('td', `Кейс для тестирования в cy 2`).should('not.exist')
         cy.contains('td', `Кейс для тестирования в cy 3`).should('not.exist')
+    })
+
+    it('agree to delete cases using checkbox without open detailed info about case', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.contains('td', `Кейс для тестирования в cy 6`)
+            .parent()
+            .parent()
+            .parent()
+            .children()
+            .first()
+            .children()
+            .children()
+            .first()
+            .click()
+
+        cy.get('[data-cy="delete-cases-using-checkbox"]').click()
+        cy.get('[data-cy="agree-to-delete-using-checkbox"]').click()
+        cy.contains('td', `Кейс для тестирования в cy 6`).should('not.exist')
     })
 
     it('disagree to edit suite', () => {
@@ -661,36 +859,65 @@ describe('Testing functionality on the pages of suites and cases', () => {
         cy.visit('/testcases');
         cy.get('div').contains("Сьюта для тестирования в cy").click()
 
-        cy.contains('td', `Кейс для тестирования в cy 4`)
-            .parent()
-            .children()
-            .first()
-            .click()
+        // Create 7 cases for this test
+        for (let index = 0; index <= 6; index++) {
+            cy.get('[data-cy="create-case"]').click()
+            cy.get('input[id="nameCaseTextField"]').type(`Кейс для тестирования в cy (чекбокс) ${index}`)
+                .should("have.value", `Кейс для тестирования в cy (чекбокс) ${index}`)
+            cy.get('textarea[id="scenarioCaseTextField"]').type(`Описание для кейса для тестирования в cy (чекбокс) ${index}`)
+                .should("have.value", `Описание для кейса для тестирования в cy (чекбокс) ${index}`)
+            cy.get('[data-cy="agree-to-save-case"]').click()
+            cy.get('div').contains(`Кейс для тестирования в cy (чекбокс) ${index}`)
+        }
 
-        cy.contains('td', `Кейс для тестирования в cy 4`).parent()
-            .children()
-            .last()
-            .children()
-            .first()
-            .children()
-            .first()
-            .click({force: true})
+        for (let index = 0; index <= 6; index++) {
+            cy.contains('td', `Кейс для тестирования в cy (чекбокс) ${index}`)
+                .parent()
+                .children()
+                .first()
+                .click()
+        }
 
-        cy.get('[data-cy="agree-to-delete"]').click()
-        cy.contains("Кейс для тестирования в cy 4").should('not.exist')
+        for (let index = 0; index <= 6; index += 3) {
+            cy.contains('td', `Кейс для тестирования в cy (чекбокс) ${index}`).parent()
+                .children()
+                .last()
+                .children()
+                .first()
+                .children()
+                .first()
+                .click({force: true})
+
+            cy.get('[data-cy="agree-to-delete"]').click()
+            cy.contains(`Кейс для тестирования в cy (чекбокс) ${index}`).should('not.exist')
+        }
+    });
+
+    it('edit the parent suite at the topmost level', () => {
+        cy.visit('/testcases');
+        cy.get('div').contains("Сьюта для тестирования в cy").click()
+
+        cy.contains("Сьюта для тестирования в cy").parent().children().eq(1).click()
+        cy.get('input[id="nameTextField"]')
+            .should("have.value", "Сьюта для тестирования в cy")
+            .clear()
+            .type("Отредактированная сьюта для тестирования в cy")
+            .should("have.value", "Отредактированная сьюта для тестирования в cy")
+        cy.get('[data-cy="agree-to-save-suite"]').click()
+        cy.contains("Отредактированная сьюта для тестирования в cy")
+        cy.contains("Сьюта для тестирования в cy").should('not.exist')
     });
 
     it('delete the parent suite at the topmost level', () => {
         cy.visit('/testcases');
-        cy.get('div').contains("Сьюта для тестирования в cy").click()
+        cy.get('div').contains("Отредактированная сьюта для тестирования в cy").click()
 
-        cy.contains("Сьюта для тестирования в cy").parent().children().eq(2).click()
+        cy.contains("Отредактированная сьюта для тестирования в cy").parent().children().eq(2).click()
         cy.get('[data-cy="agree-to-delete"]').click()
         cy.url().should('eq', 'http://localhost:3000/testcases')
     });
 
     it('delete project for tests', () => {
-        JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
         cy.request({
             method: 'DELETE',
             url: 'http://localhost:8001/api/v1/projects/' +
