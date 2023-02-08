@@ -28,9 +28,37 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+import logging
 import os
 import time
+from contextlib import contextmanager
 from hashlib import md5
+
+from celery_progress.backend import ProgressRecorder
+
+
+class ProgressRecorderContext(ProgressRecorder):
+    def __init__(self, task, total, debug=False, description='Task started'):
+        self.debug = debug
+        self.current = 0
+        self.total = total
+        if self.debug:
+            return
+        super().__init__(task)
+        self.set_progress(current=self.current, total=total, description=description)
+
+    @contextmanager
+    def progress_context(self, description):
+        if self.debug:
+            logging.info(description)
+            yield
+            return
+        self.current += 1
+        self.set_progress(self.current, self.total, description)
+        yield
+
+    def clear_progress(self):
+        self.current = 0
 
 
 def get_attachments_file_path(instance, filename):
