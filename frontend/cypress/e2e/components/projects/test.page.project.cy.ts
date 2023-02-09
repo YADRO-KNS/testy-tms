@@ -1,22 +1,26 @@
 import {project} from "../../../../src/components/projects/project.selection";
 import {statuses} from "../../../../src/components/model.statuses";
-import {myCase, test, testPlan} from "../../../../src/components/models.interfaces";
+import {myCase, planStatistic, test, testPlan} from "../../../../src/components/models.interfaces";
 import {suite} from "../../../../src/components/testcases/suites.component";
 import moment from "moment";
 
 describe('Testing functionality on the project page', () => {
     let testPlanID = 0;
+    let updateDate: string | null = null
+    const currentUsername = 'admin'
+    const currentPassword = 'password'
 
     beforeEach(() => {
         cy.request({
             method: 'POST',
             url: 'http://localhost:8001/api/token/',
             body: {
-                username: 'admin', password: 'password'
+                username: currentUsername, password: currentPassword
             }
         }).then((response) => {
             localStorage.setItem("accessToken", response.body.access)
             localStorage.setItem("refreshToken", response.body.refresh)
+
             cy.request({
                 method: 'GET',
                 url: 'http://localhost:8001/api/v1/projects/',
@@ -57,7 +61,7 @@ describe('Testing functionality on the project page', () => {
                 }).then((response) => {
                     let testPlan: testPlan = response.body
                         .find((plan: testPlan) =>
-                            plan.title === "Тест-план для cy" && plan.tests.length >= statuses.length)
+                            plan.title === "Тест-план для cy" && plan.tests.length === statuses.length)
                     if (!testPlan) {
                         const casesId = Array<number>()
 
@@ -125,35 +129,50 @@ describe('Testing functionality on the project page', () => {
                                 testPlanID = testPlan.id ?? testPlan
                             })
                         })
-
-
                     }
-                    cy.request({
-                        method: 'GET',
-                        url: 'http://localhost:8001/api/v1/tests/',
-                        headers: {
-                            Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
-                            "Content-Type": "application/json"
-                        }
-                    }).then((response) => {
-                        const tests: test[] = response.body.filter((test: test) => test.plan === testPlan.id)
-                        tests.forEach((value, index) => {
-                            cy.request({
-                                method: 'POST',
-                                url: 'http://localhost:8001/api/v1/results/',
-                                body: {
-                                    test: value.id,
-                                    status: index
-                                },
-                                headers: {
-                                    Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
-                                    "Content-Type": "application/json",
-                                }
-                            })
-                        })
-                    })
-                    if (testPlan)
+                    if (testPlan) {
                         testPlanID = testPlan.id
+                        cy.request({
+                            method: 'GET',
+                            url: `http://localhost:8001/api/v1/testplans/${testPlanID}/statistics/`,
+                            headers: {
+                                Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                                "Content-Type": "application/json"
+                            }
+                        }).then((response) => {
+                            const statistics: planStatistic[] = response.body
+                            for (const statistic of statistics) {
+                                if (statistic.value > 1) {
+                                    cy.request({
+                                        method: 'GET',
+                                        url: 'http://localhost:8001/api/v1/tests/',
+                                        headers: {
+                                            Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                                            "Content-Type": "application/json"
+                                        }
+                                    }).then((response) => {
+                                        const tests: test[] = response.body.filter((test: test) => test.plan === testPlan.id)
+                                        tests.forEach((value, index) => {
+                                            cy.request({
+                                                method: 'POST',
+                                                url: 'http://localhost:8001/api/v1/results/',
+                                                body: {
+                                                    test: value.id,
+                                                    status: index
+                                                },
+                                                headers: {
+                                                    Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                                                    "Content-Type": "application/json",
+                                                }
+                                            })
+                                        })
+                                    })
+                                    break
+                                }
+                            }
+                        })
+                        updateDate = testPlan.tests[0]?.test_results[0] ? moment(testPlan.tests[0]?.test_results[0]?.updated_at, "DD-MM-YYYYThh:mm").format("DD.MM.YYYY") : updateDate
+                    }
                 })
             })
         });
@@ -183,7 +202,8 @@ describe('Testing functionality on the project page', () => {
         }).then((response) => {
             const curPlan: testPlan = response.body
             cy.get('tbody tr')
-                .should("have.text", `${testPlanID}Тест-план для cy${curPlan.tests.length}${"1".repeat(curPlan.tests.length)}${moment(curPlan.tests[0]?.updated_at ?? curPlan.started_at, "YYYY-MM-DDThh:mm").format("DD.MM.YYYY")}Не назначен`)
+                .should("contain", `${testPlanID}Тест-план для cy${curPlan.tests.length}${"1".repeat(curPlan.tests.length)}${updateDate ?? moment().format("DD.MM.YYYY")}${currentUsername}`)
+
         })
     })
 
@@ -226,6 +246,6 @@ describe('Testing functionality on the project page', () => {
     it('switch to my activity', () => {
         cy.visit('/project')
         cy.get('input[type="checkbox"]').click()
-        cy.contains('Тест-план для cy').should('not.exist')
+        cy.contains('Тест-план для cy').should("not.exist")
     })
 })

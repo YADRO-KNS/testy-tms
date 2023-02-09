@@ -16,7 +16,7 @@ export interface testResult {
     id: number;
     project: number,
     status: number;
-    status_color: {id: number, name: string, color: string};
+    status_color: { id: number, name: string, color: string };
     attachments: attachment[];
     test: number;
     user: number;
@@ -49,7 +49,7 @@ export interface test {
     project: number;
     test_results: testResult[];
     current_result: string;
-    last_status_color: {id: number, name: string, color: string};
+    last_status_color: { id: number, name: string, color: string };
     user?: number;
     username?: string;
     is_archive: boolean;
@@ -85,4 +85,10 @@ export interface user {
     last_name?: string;
     email: string;
     username: string;
+    password: string;
+}
+
+export interface planStatistic {
+    label: string,
+    value: number
 }
