@@ -318,6 +318,7 @@ const FolderSuites = (props: {
                 }}>
                     <div>
                         <TextField
+                            id="find-suite-folder-structure"
                             onChange={(content) => onChangeName(content)}
                             autoComplete="off"
                             style={{width: "95%"}}
@@ -328,11 +329,11 @@ const FolderSuites = (props: {
 
                     {currentSuiteNumber !== 0 &&
                     <div style={{display: "flex", flexDirection: "row", width: "100%", height: "35%", marginTop: 7}}>
-                        <IconButton style={{width: "8%", height: "100%"}} onClick={() => prevSuite()}>
+                        <IconButton data-cy="go-back" style={{width: "8%", height: "100%"}} onClick={() => prevSuite()}>
                             <KeyboardArrowLeftIcon/>
                         </IconButton>
                         <div style={{height: "100%"}}>{currentSuiteNumber} / {totalSuitesNumber}</div>
-                        <IconButton style={{width: "8%", height: "100%"}} onClick={() => nextSuite()}>
+                        <IconButton data-cy="go-next" style={{width: "8%", height: "100%"}} onClick={() => nextSuite()}>
                             <KeyboardArrowRightIcon/>
                         </IconButton>
                     </div>}
