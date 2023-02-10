@@ -2,7 +2,6 @@ import React from 'react';
 import Button from "@mui/material/Button";
 import {Chip, Grid, Tooltip} from "@mui/material";
 import DescriptionIcon from "@mui/icons-material/Description";
-import Typography from "@mui/material/Typography";
 import AttachmentService from "../../services/attachment.servise";
 import useStyles from "../../styles/styles";
 
@@ -17,7 +16,6 @@ const AttachmentButton: React.FC<Props> = ({setFilesSelected}) => {
         const fileList = e.target.files;
 
         if (!fileList) return;
-        console.log(Array.from(fileList))
 
         setFilesSelected(Array.from(fileList));
         setAttachments(Array.from(fileList));
@@ -60,18 +58,11 @@ const AttachmentButton: React.FC<Props> = ({setFilesSelected}) => {
             <Grid className={classes.stackTags}>
                 {attachments && attachments.map((attachment, index) => (
                     <Grid key={index} style={{marginTop: 7}}>
-                        {/*<Tooltip title={attachment.name} arrow>*/}
                         <div style={{display: 'flex', flexDirection: 'row'}}>
-                            <DescriptionIcon sx={{marginTop: "3px"}}/>
-                            {/*<Typography style={{marginLeft: 5}}>*/}
-                            {/*    {AttachmentService.filenameReduce(attachment.name)}*/}
-                            {/*</Typography>*/}
-
+                            <DescriptionIcon sx={{marginTop: "4px"}}/>
                             <Chip key={index} label={AttachmentService.filenameReduce(attachment.name)}
-                                  onDelete={() => handleDeleteFile(index)}
-                            />
+                                  onDelete={() => handleDeleteFile(index)}/>
                         </div>
-                        {/*</Tooltip>*/}
                     </Grid>
                 ))}
             </Grid>

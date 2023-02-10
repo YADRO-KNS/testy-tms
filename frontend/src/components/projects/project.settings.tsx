@@ -227,6 +227,7 @@ const ProjectSettings: React.FC<Props> = ({show, setShow}) => {
                             variant="outlined"
                             margin="normal"
                             fullWidth
+                            id="projectNameEdit"
                             value={projectName}
                             label="Изменить название проекта"
                             onChange={onChangeProjectName}
@@ -246,6 +247,7 @@ const ProjectSettings: React.FC<Props> = ({show, setShow}) => {
                             variant="outlined"
                             margin="normal"
                             fullWidth
+                            id="projectDescriptionEdit"
                             value={projectDescription}
                             label="Изменить описание проекта"
                             multiline
@@ -323,7 +325,8 @@ const ProjectSettings: React.FC<Props> = ({show, setShow}) => {
                         <Button
                             variant="contained"
                             style={{
-                                    alignSelf: "center"}}
+                                alignSelf: "center"
+                            }}
                             component="label"
                         >
                             Импортировать
@@ -402,7 +405,8 @@ const ProjectSettings: React.FC<Props> = ({show, setShow}) => {
                             >
                                 Отменить
                             </Button>
-                            <Button onClick={handlePatch} style={{
+                            <Button data-cy="button-change-project"
+                                    onClick={handlePatch} style={{
                                 margin: "0px 5px 5px 5px",
                                 minWidth: 100,
                                 width: "40%",

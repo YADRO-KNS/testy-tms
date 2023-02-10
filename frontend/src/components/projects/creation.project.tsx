@@ -3,7 +3,7 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import React from "react";
 import ProjectService from "../../services/project.service";
-import {project} from "./project.selection";
+import {project} from "../models.interfaces";
 
 interface Props {
     setProjects: (projects: project[]) => void
@@ -27,6 +27,8 @@ const CreationProject: React.FC<Props> = ({setProjects}) => {
                 ProjectService.getProjects()
                     .then((response) => {
                         setProjects(response.data)
+                        setName("")
+                        setDescription("")
                     })
             )
     }
@@ -34,11 +36,7 @@ const CreationProject: React.FC<Props> = ({setProjects}) => {
     return (
         <Card elevation={3} style={{
             borderRadius: 15,
-            marginBottom: 20,
-            marginTop: 10,
-            marginLeft: 5,
-            marginRight: 5,
-            // minWidth: 750
+            margin:"10px 5px 20px 5px"
         }}>
             <div style={{
                 alignItems: 'center',
@@ -102,7 +100,7 @@ const CreationProject: React.FC<Props> = ({setProjects}) => {
                     width: "85%"
                 }}>
                     <Button
-                        // type="submit"
+                        data-cy="button-create-project"
                         onClick={createProject}
                         variant={'contained'}
                         color={'secondary'}
