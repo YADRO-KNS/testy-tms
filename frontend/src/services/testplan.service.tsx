@@ -17,7 +17,7 @@ export default class TestPlanService {
     }
 
     static editTestPlan(testplan: { parent: null | number; child_test_plans: number[]; name: string; test_cases: number[]; due_date: string; is_archive: boolean; project: number; started_at: string; id: number; parameters: number[]; url: string }) {
-        return axiosTMS.put("api/v1/testplans/" + testplan.id, testplan)
+        return axiosTMS.patch("api/v1/testplans/" + testplan.id + "/", testplan)
     }
 
     static async deleteTestPlans(id: number[]) {

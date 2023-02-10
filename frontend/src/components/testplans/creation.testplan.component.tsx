@@ -57,6 +57,7 @@ const CreationTestplanComponent: React.FC<Props> = ({
     const [selectedTestPlan, setSelectedTestPlan] = useState<{ id: number, name: string } | null>(null)
 
     const [name, setName] = useState("")
+    const [message, setMessage] = useState("")
 
     const [startDate, setStartDate] = React.useState<Moment | null>(moment())
     const [endDate, setEndDate] = React.useState<Moment | null>(moment())
@@ -218,7 +219,8 @@ const CreationTestplanComponent: React.FC<Props> = ({
     }
 
 
-    const createTestPlan = () => {
+    const createTestPlan = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
         if (projectId) {
             let params = []
@@ -249,13 +251,16 @@ const CreationTestplanComponent: React.FC<Props> = ({
                     is_archive: isForEdit.is_archive
                 }).catch((e) => {
                     console.log(e)
+                    setMessage("Не удалось изменить тест-план")
                 })
+                window.location.reload()
             } else {
                 TestPlanService.createTestPlan(testPlan).then((response) => {
                     window.location.assign("/testplans/" + response.data[0].id)
                 })
                     .catch((e) => {
                         console.log(e);
+                        setMessage("Не удалось создать тест-план")
                     });
             }
             handleClose()
@@ -279,207 +284,226 @@ const CreationTestplanComponent: React.FC<Props> = ({
             onClose={handleClose}
             classes={{paper: classes.paperCreation}}
         >
-            <Grid container sx={{
-                position: "absolute",
-                height: "100%",
-                width: "100%"
-            }}>
-                <Grid xs={9} item sx={{padding: "20px"}}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={2}>
-                            <Typography variant="h6" sx={{padding: "25px"}}>
-                                Название
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={7}>
-                            <TextField
-                                id="nameTestPlanTextField"
-                                className={classes.textFieldTestplansAndTests}
-                                onChange={onChangeName}
-                                variant="outlined"
-                                value={name}
-                                margin="normal"
-                                autoComplete="off"
-                                required
-                                fullWidth
-                                label="Введите название тест-плана"
-                            />
-                        </Grid>
-                    </Grid>
-
-                    <Grid container spacing={2} className={classes.gridContent}>
-                        <Grid item xs={2}>
-                            <Typography variant="h6">
-                                Параметры
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={10}>
-                            <FormControl style={{minWidth: "50%"}} className={classes.textFieldTestplansAndTests}>
-                                {params ? (<CheckboxTree
-                                        nodes={nodes}
-                                        checked={paramsChecked}
-                                        expanded={paramsExpanded}
-                                        onCheck={(paramsChecked) => {
-                                            setParamsChecked(paramsChecked)
-                                            if (paramsChecked.find(x => x === 'no')) {
-                                                setDisable(true)
-                                                setParamsChecked(['no'])
-                                                setParamsExpanded([])
-                                            } else {
-                                                setDisable(false)
-                                            }
-                                        }}
-                                        onExpand={(paramsExpanded) => setParamsExpanded(paramsExpanded)}
-                                        icons={{
-                                            check: <CheckBoxOutlinedIcon className={classes.icons}/>,
-                                            uncheck: <CheckBoxOutlineBlankIcon className={classes.icons}/>,
-                                            halfCheck: <CheckBoxOutlinedIcon style={{color: 'rgba(52, 52, 52, 0.6)'}}/>,
-                                            expandClose: <KeyboardArrowRightIcon className={classes.icons}/>,
-                                            expandOpen: <KeyboardArrowUpIcon className={classes.icons}/>,
-                                            expandAll: <IndeterminateCheckBoxOutlinedIcon className={classes.icons}/>,
-                                            collapseAll: <IndeterminateCheckBoxOutlinedIcon className={classes.icons}/>,
-                                            parentClose: <FolderCopyOutlinedIcon className={classes.icons}/>,
-                                            parentOpen: <FolderCopyOutlinedIcon className={classes.icons}/>,
-                                        }}
-                                    />) :
-                                    (<CheckboxTree nodes={[{
-                                        value: 'no',
-                                        label: 'Без параметров',
-                                        disabled: true,
-                                        showCheckbox: false,
-                                        icon: <BlockIcon className={classes.icons}/>
-                                    }]}
-                                    />)
-                                }
-
-                            </FormControl>
-
-                        </Grid>
-                    </Grid>
-                    <Grid container spacing={0} className={classes.gridContent}>
-                        <Grid item xs={2}>
-                            <Typography variant="h6">
-                                Тест-кейсы
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={10}>
-                            <FormControl sx={{minWidth: "50%"}} className={classes.textFieldTestplansAndTests}>
-                                {treeSuites ? (<CheckboxTree
-                                        nodes={testsNodes(treeSuites)}
-                                        checked={testsChecked}
-                                        expanded={testsExpanded}
-                                        onCheck={(testsChecked) => {
-                                            setTestsChecked(testsChecked)
-                                        }}
-                                        onExpand={(testsExpanded) => setTestsExpanded(testsExpanded)}
-                                        showExpandAll={true}
-                                        icons={{
-                                            check: <CheckBoxOutlinedIcon className={classes.icons}/>,
-                                            uncheck: <CheckBoxOutlineBlankIcon className={classes.icons}/>,
-                                            halfCheck: <CheckBoxOutlinedIcon style={{color: 'rgba(52, 52, 52, 0.6)'}}/>,
-                                            expandClose: <KeyboardArrowRightIcon className={classes.icons}/>,
-                                            expandOpen: <KeyboardArrowUpIcon className={classes.icons}/>,
-                                            expandAll: <AddIcon className={classes.icons}/>,
-                                            collapseAll: <RemoveIcon className={classes.icons}/>,
-                                            parentClose: <FolderCopyOutlinedIcon className={classes.icons}/>,
-                                            parentOpen: <FolderCopyOutlinedIcon className={classes.icons}/>,
-                                        }}/>) :
-                                    (<CheckboxTree nodes={[{
-                                        value: 'no_tests',
-                                        label: 'Без тестов',
-                                        disabled: true,
-                                        showCheckbox: false,
-                                        icon: <BlockIcon className={classes.icons}/>
-                                    }]}
-                                    />)
-                                }
-                            </FormControl>
-                        </Grid>
-                    </Grid>
-                </Grid>
-
-                <Grid xs={3} item style={{
-                    backgroundColor: "#eeeeee", paddingTop: 26, display: "flex",
-                    flexDirection: "column", justifyContent: "space-between"
+            <form className={classes.formTestPlan}
+                  onSubmit={createTestPlan}
+            >
+                <Grid container sx={{
+                    position: "absolute",
+                    height: "100%",
+                    width: "100%"
                 }}>
-                    <Grid style={{marginLeft: 15}}>
-                        <Grid style={{marginBottom: 34}}>
-                            <Typography style={{marginBottom: 10}}>
-                                Родительский тест-план
-                            </Typography>
 
-                            <FormControl style={{minWidth: "90%"}} className={classes.textFieldTestplansAndTests}>
-                                <InputLabel id="select-test-plan">Выберите тест-план</InputLabel>
-                                <Select
-                                    labelId="select-test-plan"
-                                    value={selectedTestPlan ? selectedTestPlan.name : "Не выбрано"}
-                                    label="Выберите тест-план"
-                                    onChange={(e) => chooseTestPlan(e)}
-                                    renderValue={(selected) => <Grid>{selected}</Grid>}
-                                    MenuProps={MenuProps}
+                    <Grid xs={9} item sx={{padding: "20px"}}>
+
+                        <Grid container spacing={2}>
+
+                            <Grid item xs={2}>
+                                <Typography variant="h6" sx={{padding: "25px"}}>
+                                    Название
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={7}>
+                                <TextField
+                                    id="nameTestPlanTextField"
+                                    className={classes.textFieldTestplansAndTests}
+                                    onChange={onChangeName}
+                                    variant="outlined"
+                                    value={name}
+                                    margin="normal"
+                                    autoComplete="off"
+                                    autoFocus
+                                    required
+                                    fullWidth
+                                    label="Введите название тест-плана"
+                                />
+                            </Grid>
+
+                        </Grid>
+
+                        <Grid container spacing={2} className={classes.gridContent}>
+                            <Grid item xs={2}>
+                                <Typography variant="h6">
+                                    Параметры
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={10}>
+                                <FormControl style={{minWidth: "50%"}} className={classes.textFieldTestplansAndTests}>
+                                    {params ? (<CheckboxTree
+                                            nodes={nodes}
+                                            checked={paramsChecked}
+                                            expanded={paramsExpanded}
+                                            onCheck={(paramsChecked) => {
+                                                setParamsChecked(paramsChecked)
+                                                if (paramsChecked.find(x => x === 'no')) {
+                                                    setDisable(true)
+                                                    setParamsChecked(['no'])
+                                                    setParamsExpanded([])
+                                                } else {
+                                                    setDisable(false)
+                                                }
+                                            }}
+                                            onExpand={(paramsExpanded) => setParamsExpanded(paramsExpanded)}
+                                            icons={{
+                                                check: <CheckBoxOutlinedIcon className={classes.icons}/>,
+                                                uncheck: <CheckBoxOutlineBlankIcon className={classes.icons}/>,
+                                                halfCheck: <CheckBoxOutlinedIcon style={{color: 'rgba(52, 52, 52, 0.6)'}}/>,
+                                                expandClose: <KeyboardArrowRightIcon className={classes.icons}/>,
+                                                expandOpen: <KeyboardArrowUpIcon className={classes.icons}/>,
+                                                expandAll: <IndeterminateCheckBoxOutlinedIcon className={classes.icons}/>,
+                                                collapseAll: <IndeterminateCheckBoxOutlinedIcon className={classes.icons}/>,
+                                                parentClose: <FolderCopyOutlinedIcon className={classes.icons}/>,
+                                                parentOpen: <FolderCopyOutlinedIcon className={classes.icons}/>,
+                                            }}
+                                        />) :
+                                        (<CheckboxTree nodes={[{
+                                            value: 'no',
+                                            label: 'Без параметров',
+                                            disabled: true,
+                                            showCheckbox: false,
+                                            icon: <BlockIcon className={classes.icons}/>
+                                        }]}
+                                        />)
+                                    }
+
+                                </FormControl>
+
+                            </Grid>
+                        </Grid>
+                        <Grid container spacing={0} className={classes.gridContent}>
+                            <Grid item xs={2}>
+                                <Typography variant="h6">
+                                    Тест-кейсы
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={10}>
+                                <FormControl sx={{minWidth: "50%"}} className={classes.textFieldTestplansAndTests}>
+                                    {treeSuites ? (<CheckboxTree
+                                            nodes={testsNodes(treeSuites)}
+                                            checked={testsChecked}
+                                            expanded={testsExpanded}
+                                            onCheck={(testsChecked) => {
+                                                setTestsChecked(testsChecked)
+                                            }}
+                                            onExpand={(testsExpanded) => setTestsExpanded(testsExpanded)}
+                                            showExpandAll={true}
+                                            icons={{
+                                                check: <CheckBoxOutlinedIcon className={classes.icons}/>,
+                                                uncheck: <CheckBoxOutlineBlankIcon className={classes.icons}/>,
+                                                halfCheck: <CheckBoxOutlinedIcon style={{color: 'rgba(52, 52, 52, 0.6)'}}/>,
+                                                expandClose: <KeyboardArrowRightIcon className={classes.icons}/>,
+                                                expandOpen: <KeyboardArrowUpIcon className={classes.icons}/>,
+                                                expandAll: <AddIcon className={classes.icons}/>,
+                                                collapseAll: <RemoveIcon className={classes.icons}/>,
+                                                parentClose: <FolderCopyOutlinedIcon className={classes.icons}/>,
+                                                parentOpen: <FolderCopyOutlinedIcon className={classes.icons}/>,
+                                            }}/>) :
+                                        (<CheckboxTree nodes={[{
+                                            value: 'no_tests',
+                                            label: 'Без тестов',
+                                            disabled: true,
+                                            showCheckbox: false,
+                                            icon: <BlockIcon className={classes.icons}/>
+                                        }]}
+                                        />)
+                                    }
+                                </FormControl>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+
+                    <Grid xs={3} item style={{
+                        backgroundColor: "#eeeeee", paddingTop: 26, display: "flex",
+                        flexDirection: "column", justifyContent: "space-between"
+                    }}>
+                        <Grid style={{marginLeft: 15}}>
+                            <Grid style={{marginBottom: 34}}>
+                                <Typography style={{marginBottom: 10}}>
+                                    Родительский тест-план
+                                </Typography>
+
+                                <FormControl style={{minWidth: "90%"}} className={classes.textFieldTestplansAndTests}>
+                                    <InputLabel id="select-test-plan">Выберите тест-план</InputLabel>
+                                    <Select
+                                        data-cy="select-parent-test-plan"
+                                        labelId="select-test-plan"
+                                        value={selectedTestPlan ? selectedTestPlan.name : "Не выбрано"}
+                                        label="Выберите тест-план"
+                                        onChange={(e) => chooseTestPlan(e)}
+                                        renderValue={(selected) => <Grid>{selected}</Grid>}
+                                        MenuProps={MenuProps}
+                                    >
+                                        {testPlansForSelect.map((plan, index) => <MenuItem key={index}
+                                                                                           value={plan as any}>{plan.title}</MenuItem>)}
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid sx={{marginBottom: "10px"}}>
+                                <LocalizationProvider dateAdapter={AdapterMoment}>
+                                    <DesktopDatePicker
+                                        label="Дата начала"
+                                        inputFormat="DD/MM/YYYY"
+                                        value={startDate}
+                                        onChange={handleStartDate}
+                                        className={classes.textFieldTestplansAndTests}
+                                        renderInput={(params) => <TextField data-cy="testplan-started-at" {...params} />}
+                                    />
+                                </LocalizationProvider>
+                            </Grid>
+                            <Grid sx={{marginBottom: "34px"}}>
+                                <LocalizationProvider dateAdapter={AdapterMoment}>
+                                    <DesktopDatePicker
+                                        label="Дата окончания"
+                                        inputFormat="DD/MM/YYYY"
+                                        value={endDate}
+                                        onChange={handleEndDate}
+                                        className={classes.textFieldTestplansAndTests}
+                                        renderInput={(params) => <TextField data-cy="testplan-due-date" {...params} />}
+                                    />
+                                </LocalizationProvider>
+                            </Grid>
+                        </Grid>
+                        <Grid sx={{textAlign: "center"}}>
+                            <Grid>
+                                <Button
+                                    data-cy="disagree-to-create-testplan"
+                                    onClick={handleClose}
+                                    sx={{
+                                        margin: "0px 5px 20px 3px",
+                                        minWidth: 100,
+                                        width: "40%",
+                                        height: "45%",
+                                        backgroundColor: "#FFFFFF",
+                                        color: "#000000",
+                                    }}
                                 >
-                                    {testPlansForSelect.map((plan, index) => <MenuItem key={index}
-                                                                              value={plan as any}>{plan.title}</MenuItem>)}
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid sx={{marginBottom: "10px"}}>
-                            <LocalizationProvider dateAdapter={AdapterMoment}>
-                                <DesktopDatePicker
-                                    label="Дата начала"
-                                    inputFormat="DD/MM/YYYY"
-                                    value={startDate}
-                                    onChange={handleStartDate}
-                                    className={classes.textFieldTestplansAndTests}
-                                    renderInput={(params) => <TextField {...params} />}
-                                />
-                            </LocalizationProvider>
-                        </Grid>
-                        <Grid sx={{marginBottom: "34px"}}>
-                            <LocalizationProvider dateAdapter={AdapterMoment}>
-                                <DesktopDatePicker
-                                    label="Дата окончания"
-                                    inputFormat="DD/MM/YYYY"
-                                    value={endDate}
-                                    onChange={handleEndDate}
-                                    className={classes.textFieldTestplansAndTests}
-                                    renderInput={(params) => <TextField {...params} />}
-                                />
-                            </LocalizationProvider>
+                                    Отменить
+                                </Button>
+                                <Button
+                                    data-cy="agree-to-create-testplan"
+                                    type="submit"
+                                    sx={{
+                                        margin: "0px 3px 20px 5px",
+                                        minWidth: 100,
+                                        width: "40%",
+                                        height: "45%",
+                                        backgroundColor: "#696969",
+                                        color: "#FFFFFF",
+                                    }}
+                                >
+                                    Сохранить
+                                </Button>
+                            </Grid>
                         </Grid>
                     </Grid>
-                    <Grid sx={{textAlign: "center"}}>
-                        <Grid>
-                            <Button
-                                onClick={handleClose}
-                                sx={{
-                                    margin: "0px 5px 20px 3px",
-                                    minWidth: 100,
-                                    width: "40%",
-                                    height: "45%",
-                                    backgroundColor: "#FFFFFF",
-                                    color: "#000000",
-                                }}
-                            >
-                                Отменить
-                            </Button>
-                            <Button
-                                onClick={createTestPlan}
-                                sx={{
-                                    margin: "0px 3px 20px 5px",
-                                    minWidth: 100,
-                                    width: "40%",
-                                    height: "45%",
-                                    backgroundColor: "#696969",
-                                    color: "#FFFFFF",
-                                }}
-                            >
-                                Сохранить
-                            </Button>
-                        </Grid>
-                    </Grid>
+                    {message && (
+                        <div className="form-group">
+                            <div className="alert alert-danger" role="alert">
+                                {message}
+                            </div>
+                        </div>
+                    )}
                 </Grid>
-            </Grid>
+            </form>
         </Dialog>
     );
 }

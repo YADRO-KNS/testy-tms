@@ -7,7 +7,7 @@ export const defaultStatus = {
 export const statuses: { id: number, name: string, color: string }[] = [{
     id: 1,
     name: 'Passed',
-    color: '#24b124'
+    color: '#27e727'
 }, {
     id: 0,
     name: 'Failed',
@@ -15,11 +15,11 @@ export const statuses: { id: number, name: string, color: string }[] = [{
 }, {
     id: 2,
     name: 'Skipped',
-    color: '#c4af30'
+    color: '#ddba99'
 }, {
     id: 3,
     name: "Broken",
-    color: '#724127'
+    color: '#602c13'
 }, {
     id: 4,
     name: 'Blocked',
@@ -28,4 +28,8 @@ export const statuses: { id: number, name: string, color: string }[] = [{
     id: 5,
     name: 'Untested',
     color: '#a5a4a4'
+}, {
+    id: 6,
+    name: 'Retest',
+    color: '#ded312'
 }]
