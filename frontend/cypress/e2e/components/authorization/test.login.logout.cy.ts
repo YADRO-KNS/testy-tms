@@ -1,3 +1,4 @@
+export {}
 describe('Testing functionality of the login ang logout', () => {
     it('login', () => {
         cy.visit('/login')
@@ -15,7 +16,6 @@ describe('Testing functionality of the login ang logout', () => {
         cy.get('button[type="submit"]').click()
         cy.wait(20)
         cy.url().should('eq', Cypress.config().baseUrl + 'login')
-        // cy.get('div').contains('Введен неверный логин или пароль')
     })
 
     it('refresh of access token', () => {
@@ -50,7 +50,7 @@ describe('Testing functionality of the login ang logout', () => {
 
             cy.visit('/')
             cy.get('header button[type="button"]:last').click()
-            cy.get('[data-cy="logout]"').click()
+            cy.get('[data-cy="logout"]').click()
             cy.url().should('eq', Cypress.config().baseUrl + 'login')
         })
     })
