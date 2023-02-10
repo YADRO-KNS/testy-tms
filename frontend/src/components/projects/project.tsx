@@ -2,7 +2,7 @@ import React, {ChangeEvent, useEffect, useState} from 'react';
 import {DesktopDatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import moment, {Moment} from "moment";
 import {AdapterMoment} from "@mui/x-date-pickers/AdapterMoment";
-import {test, testPlan, user} from "../models.interfaces";
+import {planStatistic, test, testPlan, testResult, user} from "../models.interfaces";
 import ProjectService from "../../services/project.service";
 import {statuses} from "../model.statuses";
 import useStyles from "../../styles/styles";
@@ -56,10 +56,13 @@ const Project: React.FC = () => {
     };
     const [tests, setTests] = useState<test[]>([])
     const [testPlans, setTestPlans] = useState<testPlan[]>([])
+    const [idToStatistics, setIdToStatistics] = useState<Map<number, planStatistic[]>>(new Map())
+    const [testResults, setResults] = useState<testResult[]>([])
+    const [currentUsername, setCurrentUsername] = useState<string>()
     const [users, setUsers] = useState<user[]>([])
+    const [isLoaded, setIsLoaded] = useState(false)
 
     const projectValue = JSON.parse(localStorage.getItem("currentProject") ?? '')
-    const currentUsername = localStorage.getItem('currentUsername')
 
     // Collecting data to display in table.
     let dataForLineChart: test[] = []
@@ -69,21 +72,21 @@ const Project: React.FC = () => {
             "all": value.tests.length,
         }
         let editorId: number | null = null;
-        statuses.map((status) => results[status.name.toLowerCase()] = 0)
-        value.tests.sort((a, b) =>
+        idToStatistics.get(value.id)?.forEach((status) => results[status.label.toLowerCase()] = status.value)
+        const tests_ids = value.tests.map((test) => test.id)
+        testResults.sort((a, b) =>
             moment(b.updated_at, "YYYY-MM-DDThh:mm").valueOf() - moment(a.updated_at, "YYYY-MM-DDThh:mm").valueOf())
-        date = value.tests[0]?.updated_at ?? date
-        if (value.tests.length > 0) {
-            const currentTest = tests.find((test) => test.id === value.tests[0].id)
-            editorId = currentTest?.user ?? editorId
+        for (let test_result of testResults) {
+            if (tests_ids.includes(test_result.test)) {
+                editorId = test_result?.user ?? editorId
+                date = test_result?.updated_at ?? date
+                break
+            }
         }
         const editor = (editorId != null) ?
             users.find((value) => value.id === editorId) : null
         const editorName = (editor != null) ? editor.username : "Не назначен"
         dataForLineChart = dataForLineChart.concat(value.tests)
-        value.tests.forEach((test) => {
-            test.current_result ? results[String(test.current_result).toLowerCase()]++ : results["untested"]++
-        });
 
         const toReturn = [value.id, value.name, results.all]
         statuses.map((status) => toReturn.push(results[status.name.toLowerCase()]))
@@ -105,19 +108,37 @@ const Project: React.FC = () => {
             setStatusesToShow(temporaryValue)
         })
 
+        ProjectService.getMe().then((response) => {
+            const currentUser: user = response.data
+            setCurrentUsername(currentUser.username)
+        })
+
         ProjectService.getTestPlans().then((response) => {
-            const testPlansData: testPlan[] = response.data
-            setTestPlans(testPlansData.filter((value) => value.project === projectValue.id))
+            let testPlansData: testPlan[] = response.data
+            testPlansData = testPlansData.filter((value) => value.project === projectValue.id)
+            setTestPlans(testPlansData)
+            testPlansData.forEach((plan) => {
+                ProjectService.getStatistics(plan.id).then((response) => {
+                    idToStatistics.set(plan.id, response.data)
+                })
+            })
+            setIdToStatistics(idToStatistics)
 
             ProjectService.getTests().then((response) => {
                 const testsData: test[] = response.data
                 setTests(testsData.filter((value) => value.project === projectValue.id))
+
+                ProjectService.getTestResults().then((response) => {
+                    const testResultsData: testResult[] = response.data
+                    setResults(testResultsData.filter((value) => value.project === projectValue.id))
+                })
 
                 ProjectService.getUsers().then((response) => {
                     setUsers(response.data)
 
                 })
             })
+            setIsLoaded(true)
         })
             .catch((e) => {
                 console.log(e);
@@ -174,7 +195,7 @@ const Project: React.FC = () => {
                     .isBetween(startDate, endDate, undefined, "[]")) ? null :
                     (
                         // Returning table row with data
-                        <TableRow key={planIndex} style={{cursor: "pointer"}} hover={true}
+                        <TableRow id={`row-${planIndex}`} key={planIndex} style={{cursor: "pointer"}} hover={true}
                                   onClick={() => window.location.assign("/testplans/" + testplanData[0])}>
                             {testplanData.slice(0, testplanData.length - 2)
                                 .concat([moment(testplanData[testplanData.length - 2], "YYYY-MM-DDThh:mm").format("DD.MM.YYYY"),
@@ -188,7 +209,9 @@ const Project: React.FC = () => {
                                         }
                                         // Checking if status is selected in filter
                                         if (statusesShow[statuses[index - minStatusIndex].name.toLowerCase()]) {
-                                            return <TableCell key={planIndex + "." + index}>
+                                            return <TableCell
+                                                id={statuses[index - minStatusIndex].name.toLowerCase()}
+                                                key={planIndex + "." + statuses[index - minStatusIndex].name.toLowerCase()}>
                                                 <Typography align={'center'}>{value}</Typography>
                                             </TableCell>
                                         }
@@ -199,6 +222,8 @@ const Project: React.FC = () => {
         )}
     </TableBody>
 
+    if (!isLoaded)
+        return <></>
     return (
         <div style={{display: "flex", flexDirection: "column"}}>
             <Grid

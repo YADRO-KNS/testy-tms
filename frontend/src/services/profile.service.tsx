@@ -9,4 +9,8 @@ export default class ProfileService {
     static getUser(id: number) {
         return axiosTMS.get("api/v1/users/" + id)
     }
+
+    static getMe() {
+        return axiosTMS.get("api/v1/users/me")
+    }
 }

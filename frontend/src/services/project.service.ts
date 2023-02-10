@@ -14,6 +14,18 @@ export default class ProjectService {
         return axiosTMS.get("api/v1/tests/")
     }
 
+    static getTestResults() {
+        return axiosTMS.get("api/v1/results/")
+    }
+
+    static getStatistics(id: number) {
+        return axiosTMS.get(`api/v1/testplans/${id}/statistics/`)
+    }
+
+    static getMe() {
+        return axiosTMS.get(`api/v1/users/me/`)
+    }
+
     static getUsers() {
         return axiosTMS.get("api/v1/users/")
     }

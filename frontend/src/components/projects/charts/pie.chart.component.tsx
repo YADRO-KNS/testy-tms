@@ -25,7 +25,7 @@ const PieChartComponent = (props: {
                     <Cell fill={"#d99292"}/>
                 </Pie>
                 <Legend/>
-                <Tooltip formatter={(value, name) => ["Тестов назначено -- " + value, name]}/>
+                <Tooltip formatter={(value, name) => ["Тестов: " + value, name]}/>
             </PieChart>
         </ResponsiveContainer>
     );
