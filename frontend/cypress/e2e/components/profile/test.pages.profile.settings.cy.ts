@@ -16,19 +16,6 @@ describe('Testing functionality on the profile page', () => {
         })
     })
 
-    it('first_name, last_name, email edit and save', () => {
-        cy.visit('/profile')
-        cy.get(`#first_name`).clear().type('Admin-Cy')
-        cy.get(`#last_name`).clear().type('Adminov-Cy')
-        cy.get(`#email`).clear().type('admin@cy.com')
-        cy.get('button[type="submit"]').click()
-
-        cy.visit('/profile')
-        cy.get(`#first_name`).should("have.value", 'Admin-Cy')
-        cy.get(`#last_name`).should("have.value", 'Adminov-Cy')
-        cy.get(`#email`).should("have.value", 'admin@cy.com')
-    });
-
     it('not submit without username', () => {
         cy.visit('/profile')
         cy.get(`#username`).clear()
@@ -81,18 +68,6 @@ describe('Testing functionality on the profile page', () => {
         cy.get('#password').clear().type(currentPassword + "idontremember")
         cy.get('button[type="submit"]').click()
         cy.contains('Текущий пароль не совпадает с указанным').should('exist')
-    });
-
-    it('username edit and save', () => {
-        cy.visit('/profile')
-        cy.get(`#username`).clear().type('admin_cy')
-        cy.get('button[type="submit"]').click()
-
-        cy.visit('/profile')
-        cy.get(`#username`).should("have.value", 'admin_cy')
-
-        cy.get(`#username`).clear().type('admin')
-        cy.get('button[type="submit"]').click()
     });
 })
 

@@ -12,6 +12,7 @@ import Button from "@mui/material/Button";
 import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
+import AuthService from "../services/Authorization/auth.service";
 
 const Profile: React.FC = () => {
     const classes = useStyles()
@@ -21,6 +22,7 @@ const Profile: React.FC = () => {
         setNewPassword("")
         setRepeatNewPassword("")
         setPassword("")
+        setPasswordProfile("")
         setMessage("")
         setRepeatError(false)
         setPasswordError(false)
@@ -35,6 +37,9 @@ const Profile: React.FC = () => {
     const [firstName, setFirstName] = useState<string>("")
     const [lastName, setLastName] = useState<string>()
     const [email, setEmail] = useState<string>()
+    const [passwordProfile, setPasswordProfile] = useState<string>("")
+    const [passwordProfileError, setPasswordProfileError] = useState(false)
+    const [passwordProfileHelperText, setPasswordProfileHelperText] = useState<string>("")
 
     const [newPassword, setNewPassword] = useState<string>("")
     const [repeatNewPassword, setRepeatNewPassword] = useState<string>("")
@@ -45,12 +50,11 @@ const Profile: React.FC = () => {
     const [passwordHelperText, setPasswordHelperText] = useState<string>("")
     const [message, setMessage] = useState<string>("")
 
-    let currentPassword = localStorage.getItem('currentPassword')
-
     const handleChangeUsername = (event: ChangeEvent<HTMLInputElement>) => setUsername(event.target.value)
     const handleChangeFirstName = (event: ChangeEvent<HTMLInputElement>) => setFirstName(event.target.value)
     const handleChangeLastName = (event: ChangeEvent<HTMLInputElement>) => setLastName(event.target.value)
     const handleChangeEmail = (event: ChangeEvent<HTMLInputElement>) => setEmail(event.target.value)
+    const handleChangePasswordProfile = (event: ChangeEvent<HTMLInputElement>) => setPasswordProfile(event.target.value)
 
     const handleChangeNewPassword = (event: ChangeEvent<HTMLInputElement>) => setNewPassword(event.target.value)
     const handleChangeRepeatNewPassword = (event: ChangeEvent<HTMLInputElement>) => setRepeatNewPassword(event.target.value)
@@ -58,19 +62,26 @@ const Profile: React.FC = () => {
 
     const handleOnSavePersonalData = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        if (currentUser && currentPassword) {
-            ProfileService.changeUser(currentUser?.id, {
-                username: username,
-                password: currentPassword,
-                first_name: firstName,
-                last_name: lastName,
-                email: email
-            }).then(() => setMessage("Изменения успешно сохранены"))
-                .catch((error) => {
-                    setMessage("Пожалуйста, проверьте введенные данные")
-                    console.log(error)
-                })
-        }
+        AuthService.login(currentUsername, passwordProfile).then(() => {
+            setPasswordProfileHelperText("")
+            setPasswordProfileError(false)
+            if (currentUser) {
+                ProfileService.changeUser(currentUser?.id, {
+                    username: username,
+                    password: passwordProfile,
+                    first_name: firstName,
+                    last_name: lastName,
+                    email: email
+                }).then(() => setMessage("Изменения успешно сохранены"))
+                    .catch((error) => {
+                        setMessage("Пожалуйста, проверьте введенные данные")
+                        console.log(error)
+                    })
+            }
+        }).catch(() => {
+            setPasswordProfileHelperText("Текущий пароль не совпадает с указанным")
+            setPasswordProfileError(true)
+        })
     }
     const handleOnSavePassword = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -81,29 +92,26 @@ const Profile: React.FC = () => {
         }
         setRepeatHelperText("")
         setRepeatError(false)
-        if (password !== currentPassword) {
+        AuthService.login(currentUsername, password).then(() => {
+            setPasswordHelperText("")
+            setPasswordError(false)
+            if (currentUser && currentUsername) {
+                setMessage("")
+                ProfileService.changeUser(currentUser?.id, {
+                    username: currentUsername,
+                    password: newPassword,
+                }).then(() => {
+                    setMessage("Изменения успешно сохранены")
+                })
+                    .catch((error) => {
+                        setMessage("Пожалуйста, проверьте введенные данные")
+                        console.log(error)
+                    })
+            }
+        }).catch(() => {
             setPasswordHelperText("Текущий пароль не совпадает с указанным")
             setPasswordError(true)
-            return;
-        }
-        setPasswordHelperText("")
-        setPasswordError(false)
-        if (currentUser && currentUsername) {
-            setMessage("")
-            ProfileService.changeUser(currentUser?.id, {
-                username: currentUsername,
-                password: newPassword,
-            }).then(() => {
-                setMessage("Изменения успешно сохранены")
-                currentPassword = newPassword
-                localStorage.removeItem("currentPassword")
-                localStorage.setItem("currentPassword", newPassword)
-            })
-                .catch((error) => {
-                    setMessage("Пожалуйста, проверьте введенные данные")
-                    console.log(error)
-                })
-        }
+        })
     }
 
     useEffect(() => {
@@ -172,6 +180,13 @@ const Profile: React.FC = () => {
                                    label={'Адрес электронной почты'}
                                    style={{margin: '10px 10px 10px 10px'}}
                                    value={email} onChange={handleChangeEmail}/>
+                        <TextField id={"passwordProfile"} className={classes.centeredField} variant={"outlined"}
+                                   required
+                                   error={passwordProfileError} type={"password"}
+                                   label={'Текущий пароль'}
+                                   style={{margin: '10px 10px 10px 10px'}}
+                                   value={passwordProfile} onChange={handleChangePasswordProfile}
+                                   helperText={passwordProfileHelperText}/>
 
                         <Button type="submit" variant={"contained"}
                                 sx={{margin: '10px 10px 10px 10px'}}>Сохранить</Button>
