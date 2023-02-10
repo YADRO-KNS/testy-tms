@@ -1,9 +1,9 @@
 import React from 'react';
 import Button from "@mui/material/Button";
-import {Grid, Tooltip} from "@mui/material";
+import {Chip, Grid, Tooltip} from "@mui/material";
 import DescriptionIcon from "@mui/icons-material/Description";
-import Typography from "@mui/material/Typography";
 import AttachmentService from "../../services/attachment.servise";
+import useStyles from "../../styles/styles";
 
 interface Props {
     setFilesSelected: (files: File[]) => void;
@@ -16,12 +16,20 @@ const AttachmentButton: React.FC<Props> = ({setFilesSelected}) => {
         const fileList = e.target.files;
 
         if (!fileList) return;
-        console.log(Array.from(fileList))
 
         setFilesSelected(Array.from(fileList));
         setAttachments(Array.from(fileList));
     };
 
+    const handleDeleteFile = (index: number) => {
+        if (attachments) {
+            let copyAttach = attachments.slice()
+            copyAttach.splice(index, 1)
+            setFilesSelected(copyAttach);
+            setAttachments(copyAttach);
+        }
+    }
+    const classes = useStyles()
     return (
         <div style={{display: 'flex', flexDirection: 'column'}}>
             <label style={{marginBottom: 5}} htmlFor="fileSelection">
@@ -47,18 +55,17 @@ const AttachmentButton: React.FC<Props> = ({setFilesSelected}) => {
                     Прикрепить файл
                 </Button>
             </label>
-            {attachments && attachments.map((attachment, index) => (
-                <Grid key={index} style={{marginTop: 5}}>
-                    <Tooltip title={attachment.name} arrow>
+            <Grid className={classes.stackTags}>
+                {attachments && attachments.map((attachment, index) => (
+                    <Grid key={index} style={{marginTop: 7}}>
                         <div style={{display: 'flex', flexDirection: 'row'}}>
-                            <DescriptionIcon/>
-                            <Typography style={{marginLeft: 5}}>
-                                {AttachmentService.filenameReduce(attachment.name)}
-                            </Typography>
+                            <DescriptionIcon sx={{marginTop: "4px"}}/>
+                            <Chip key={index} label={AttachmentService.filenameReduce(attachment.name)}
+                                  onDelete={() => handleDeleteFile(index)}/>
                         </div>
-                    </Tooltip>
-                </Grid>
-            ))}
+                    </Grid>
+                ))}
+            </Grid>
         </div>
     );
 }

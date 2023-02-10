@@ -67,7 +67,6 @@ const Login: React.FC = () => {
                         />
                         <Button
                             type="submit"
-                            // onClick={handleLogin}
                             fullWidth
                             variant="contained"
                             color="primary"

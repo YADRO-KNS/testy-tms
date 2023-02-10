@@ -260,7 +260,8 @@ const Project: React.FC = () => {
                             <Button variant="contained"
                                     style={{marginLeft: '10px', backgroundColor: "#696969"}}
                                     onClick={handleOnOpenFilter}>Фильтр</Button>
-                            <Button variant="contained"
+                            <Button data-cy="openProjectSettingsPage"
+                                    variant="contained"
                                     style={{marginLeft: '10px', backgroundColor: "#696969"}}
                                     onClick={handleShowProjectSettings}
                             >Настройки</Button>

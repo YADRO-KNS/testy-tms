@@ -1,3 +1,9 @@
+export interface project {
+    id: number;
+    name: string;
+    description: string;
+}
+
 export interface attachment {
     project: number;
     comment: string;
