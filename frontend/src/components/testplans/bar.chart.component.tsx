@@ -7,10 +7,11 @@ interface Props {
     failed: number;
     blocked: number;
     untested: number;
-    broken: number
+    broken: number;
+    retest: number
 }
 
-const BarChartComponent: React.FC<Props> = ({passed, skipped, failed, blocked, untested, broken}) => {
+const BarChartComponent: React.FC<Props> = ({passed, skipped, failed, blocked, untested, broken, retest}) => {
     const data = [
         {
             passed: passed,
@@ -18,7 +19,8 @@ const BarChartComponent: React.FC<Props> = ({passed, skipped, failed, blocked, u
             failed: failed,
             blocked: blocked,
             untested: untested,
-            broken: broken
+            broken: broken,
+            retest: retest
         },
     ];
 
@@ -28,12 +30,13 @@ const BarChartComponent: React.FC<Props> = ({passed, skipped, failed, blocked, u
                 <XAxis hide type="number"/>
                 <YAxis hide dataKey="name" reversed type="category"/>
                 <Tooltip wrapperStyle={{zIndex: 100}} isAnimationActive={false}/>
-                <Bar legendType="star" label="passed" dataKey="passed" barSize={20} stackId="a" fill="#24b124"/>
-                <Bar legendType="star" label="skipped" dataKey="skipped" stackId="a" fill="#c4af30"/>
+                <Bar legendType="star" label="passed" dataKey="passed" barSize={20} stackId="a" fill="#27e727"/>
+                <Bar legendType="star" label="skipped" dataKey="skipped" stackId="a" fill="#ddba99"/>
                 <Bar legendType="star" label="failed" dataKey="failed" stackId="a" fill="#bd2828"/>
                 <Bar legendType="star" label="blocked" dataKey="blocked" stackId="a" fill="#6c6c6c"/>
                 <Bar legendType="star" label="untested" dataKey="untested" stackId="a" fill="#a5a4a4"/>
-                <Bar legendType="star" label="broken" dataKey="broken" stackId="a" fill="#724127"/>
+                <Bar legendType="star" label="broken" dataKey="broken" stackId="a" fill="#602c13"/>
+                <Bar legendType="star" label="retest" dataKey="retest" stackId="a" fill="#ded312"/>
             </BarChart>
         </ResponsiveContainer>
     );

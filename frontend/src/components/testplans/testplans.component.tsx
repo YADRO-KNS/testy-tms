@@ -170,7 +170,7 @@ const TestplansComponent: React.FC = () => {
                             </tr>
                             <tr>
                                 <td>
-                                    <Breadcrumbs aria-label="breadcrumb">
+                                    <Breadcrumbs data-cy="breadcrumbs" aria-label="breadcrumb">
                                         {breadcrumbs?.map((breadcrumb, index) =>
                                             index === breadcrumbs.length - 1 ?
                                                 (<Link
@@ -223,7 +223,7 @@ const TestplansComponent: React.FC = () => {
             </div>
             <div className={classes.rightGrid}>
                 <div className={classes.rightGridButton}>
-                    <Button sx={{
+                    <Button data-cy="create-testplan" sx={{
                         margin: "15px",
                         minWidth: "70%",
                         height: "45%",

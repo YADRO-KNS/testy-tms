@@ -100,5 +100,7 @@ export default makeStyles({
             margin: 0
         }
     },
-
+    formTestPlan: {
+        width: '100%',
+    },
 })

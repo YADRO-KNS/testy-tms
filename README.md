@@ -24,4 +24,4 @@ For testing, you can use the following commands:
 To run the application in the docker containers, you can run the following command in the root 
 of the testy-tms directory:
 
-`docker-compose up`
+`docker-compose -f docker-compose-dev.yml up`
