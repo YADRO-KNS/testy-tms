@@ -1,4 +1,4 @@
-import {project} from "../../../../src/components/projects/project.selection";
+import {project} from "../../../../src/components/models.interfaces";
 
 describe('Testing functionality on the pages of suites and cases', () => {
     beforeEach(() => {

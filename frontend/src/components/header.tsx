@@ -170,7 +170,7 @@ const Header: React.FC = () => {
                         </React.Fragment>
                     </Box>
 
-                    <Box sx={{flexGrow: 0}}>
+                    {window.location.pathname !== '/login' && <Box sx={{flexGrow: 0}}>
                         <Tooltip title="Уведомления">
                             <IconButton>
                                 <NotificationsActive sx={{mr: 2, color: 'white'}}/>
@@ -208,6 +208,7 @@ const Header: React.FC = () => {
                             </MenuItem>
                             <MenuItem key={"Выйти"} onClick={handleLogout}>
                                 <Typography
+                                    data-cy="logout"
                                     textAlign="center"
                                     component="a"
                                     href={"/login"}
@@ -218,7 +219,7 @@ const Header: React.FC = () => {
                                 > Выход </Typography>
                             </MenuItem>
                         </Menu>
-                    </Box>
+                    </Box>}
                 </Toolbar>
             </Container>
         </AppBar>
