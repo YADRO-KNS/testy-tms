@@ -168,7 +168,7 @@ const FolderSuites = (props: {
         const suitesIdArray: string[] = []
         if (selectedSuiteForTreeView) {
             const fillExpandedSuite = (childrenSuitesArr: treeSuite[]) => {
-                childrenSuitesArr.map((suite) => {
+                childrenSuitesArr.forEach((suite) => {
                     if (suite.children.length > 0) {
                         fillExpandedSuite(suite.children)
                     }
@@ -186,7 +186,7 @@ const FolderSuites = (props: {
             const query = e.target.value.toLowerCase()
             const foundSuites: treeSuite[] = []
             const findSuitesByName = (childrenSuitesArr: treeSuite[]) => {
-                childrenSuitesArr.map((suite) => {
+                childrenSuitesArr.forEach((suite) => {
                     if (suite.name.toLowerCase().includes(query)) {
                         foundSuites.push(suite)
                     }
@@ -252,7 +252,7 @@ const FolderSuites = (props: {
     }
 
     const nextSuite = () => {
-        if (currentSuiteNumber != totalSuitesNumber) {
+        if (currentSuiteNumber !== totalSuitesNumber) {
             if (suitesHtmlElmArrayLocal[currentSuiteNumber].getBoundingClientRect().bottom > window.innerHeight) {
                 suitesHtmlElmArrayLocal[currentSuiteNumber].scrollIntoView({
                     block: "center",
@@ -318,6 +318,7 @@ const FolderSuites = (props: {
                 }}>
                     <div>
                         <TextField
+                            id="find-suite-folder-structure"
                             onChange={(content) => onChangeName(content)}
                             autoComplete="off"
                             style={{width: "95%"}}
@@ -326,13 +327,13 @@ const FolderSuites = (props: {
                         />
                     </div>
 
-                    {currentSuiteNumber != 0 &&
+                    {currentSuiteNumber !== 0 &&
                     <div style={{display: "flex", flexDirection: "row", width: "100%", height: "35%", marginTop: 7}}>
-                        <IconButton style={{width: "8%", height: "100%"}} onClick={() => prevSuite()}>
+                        <IconButton data-cy="go-back" style={{width: "8%", height: "100%"}} onClick={() => prevSuite()}>
                             <KeyboardArrowLeftIcon/>
                         </IconButton>
                         <div style={{height: "100%"}}>{currentSuiteNumber} / {totalSuitesNumber}</div>
-                        <IconButton style={{width: "8%", height: "100%"}} onClick={() => nextSuite()}>
+                        <IconButton data-cy="go-next" style={{width: "8%", height: "100%"}} onClick={() => nextSuite()}>
                             <KeyboardArrowRightIcon/>
                         </IconButton>
                     </div>}

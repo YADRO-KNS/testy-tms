@@ -179,7 +179,8 @@ const CreationSuite: React.FC<Props> = ({
                             </Typography>
 
                             <CustomWidthTooltip
-                                title={<Grid style={{display: "flex", flexDirection: 'row'}}><WarningAmberIcon
+                                title={<Grid data-cy="fill-field-note"
+                                             style={{display: "flex", flexDirection: 'row'}}><WarningAmberIcon
                                     sx={{fontSize: 25, marginRight: 1}}/> <Typography> Заполните это
                                     поле.</Typography></Grid>} placement="top-start" arrow
                                 open={fillFieldName}>
