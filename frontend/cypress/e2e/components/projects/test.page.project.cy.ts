@@ -7,6 +7,7 @@ import moment from "moment";
 describe('Testing functionality on the project page', () => {
     let testPlanID = 0;
     let updateDate: string | null = null
+    let currentStatistics: planStatistic[] | null = null
     const currentUsername = 'admin'
     const currentPassword = 'password'
 
@@ -141,6 +142,7 @@ describe('Testing functionality on the project page', () => {
                             }
                         }).then((response) => {
                             const statistics: planStatistic[] = response.body
+                            currentStatistics = statistics
                             for (const statistic of statistics) {
                                 if (statistic.value > 1) {
                                     cy.request({
@@ -158,7 +160,7 @@ describe('Testing functionality on the project page', () => {
                                                 url: 'http://localhost:8001/api/v1/results/',
                                                 body: {
                                                     test: value.id,
-                                                    status: index
+                                                    status: Array.from(statuses.values())[index].id
                                                 },
                                                 headers: {
                                                     Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
@@ -167,11 +169,14 @@ describe('Testing functionality on the project page', () => {
                                             })
                                         })
                                     })
+                                    currentStatistics = null
                                     break
                                 }
                             }
                         })
-                        updateDate = testPlan.tests[0]?.test_results[0] ? moment(testPlan.tests[0]?.test_results[0]?.updated_at, "DD-MM-YYYYThh:mm").format("DD.MM.YYYY") : updateDate
+                        updateDate = testPlan.tests[0]?.test_results[0] ?
+                            moment(testPlan.tests[0]?.test_results[0]?.updated_at, "DD-MM-YYYYThh:mm")
+                                .format("DD.MM.YYYY") : updateDate
                     }
                 })
             })
@@ -201,8 +206,19 @@ describe('Testing functionality on the project page', () => {
             }
         }).then((response) => {
             const curPlan: testPlan = response.body
-            cy.get('tbody tr')
-                .should("contain", `${testPlanID}Тест-план для cy${curPlan.tests.length}${"1".repeat(curPlan.tests.length)}${updateDate ?? moment().format("DD.MM.YYYY")}${currentUsername}`)
+            if (currentStatistics == null)
+                cy.get('tbody tr')
+                    .should("contain", `${testPlanID}Тест-план для cy${curPlan.tests.length}${"1".repeat(curPlan.tests.length)}${updateDate ?? moment().format("DD.MM.YYYY")}${currentUsername}`)
+            else {
+                let planStatusesValues = ""
+                statuses.forEach((status) => {
+                    planStatusesValues +=
+                        currentStatistics?.find((stat) => stat.label == status.name.toUpperCase())?.value.toString() ?? ""
+                })
+
+                cy.get('tbody tr')
+                    .should("contain", `${testPlanID}Тест-план для cy${curPlan.tests.length}${planStatusesValues}${updateDate ?? moment().format("DD.MM.YYYY")}${currentUsername}`)
+            }
 
         })
     })
