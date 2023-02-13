@@ -28,46 +28,43 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-import logging
-import os
-import time
-from contextlib import contextmanager
-from hashlib import md5
+from django_filters import rest_framework as filters
+from tests_representation.models import Test, TestPlan, TestResult
 
-from celery_progress.backend import ProgressRecorder
+from utils import parse_bool_from_str
 
 
-class ProgressRecorderContext(ProgressRecorder):
-    def __init__(self, task, total, debug=False, description='Task started'):
-        self.debug = debug
-        self.current = 0
-        self.total = total
-        if self.debug:
-            return
-        super().__init__(task)
-        self.set_progress(current=self.current, total=total, description=description)
-
-    @contextmanager
-    def progress_context(self, description):
-        if self.debug:
-            logging.info(description)
-            yield
-            return
-        self.current += 1
-        self.set_progress(self.current, self.total, description)
-        yield
-
-    def clear_progress(self):
-        self.current = 0
+class TestyFilterBackend(filters.DjangoFilterBackend):
+    def get_filterset_kwargs(self, request, queryset, view):
+        kwargs = super().get_filterset_kwargs(request, queryset, view)
+        kwargs.update({'action': view.action})
+        return kwargs
 
 
-def get_attachments_file_path(instance, filename):
-    _, extension = os.path.splitext(filename)
-    filename = f'{md5(str(time.time()).encode()).hexdigest()}{extension}'
-    return f'attachments/{filename[0:2]}/{filename}'
+class ArchiveFilter(filters.FilterSet):
+    def __init__(self, *args, action=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.action = action
+
+    def filter_queryset(self, queryset):
+        if not parse_bool_from_str(self.data.get('is_archive')) and self.action == 'list':
+            queryset = queryset.filter(is_archive=False)
+        return super().filter_queryset(queryset)
 
 
-def parse_bool_from_str(value):
-    if str(value).lower() in ['1', 'yes', 'true']:
-        return True
-    return False
+class TestPlanFilter(ArchiveFilter):
+    class Meta:
+        model = TestPlan
+        fields = ('project',)
+
+
+class TestFilter(ArchiveFilter):
+    class Meta:
+        model = Test
+        fields = ('plan',)
+
+
+class TestResultFilter(ArchiveFilter):
+    class Meta:
+        model = TestResult
+        fields = ('test',)

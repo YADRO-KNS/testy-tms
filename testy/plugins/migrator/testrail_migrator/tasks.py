@@ -30,14 +30,12 @@
 # <http://www.gnu.org/licenses/>.
 import json
 import logging
-from contextlib import contextmanager
 from copy import deepcopy
 from datetime import datetime
 from typing import Dict
 
 import redis
 from celery import shared_task
-from celery_progress.backend import ProgressRecorder
 from django.conf import settings
 from testrail_migrator.migrator_lib import TestRailClient, TestrailConfig, TestyCreator
 from testrail_migrator.migrator_lib.migrator_service import MigratorService
@@ -48,29 +46,7 @@ from tests_description.models import TestCase
 from tests_representation.models import TestResult
 from tests_representation.services.results import TestResultService
 
-
-class ProgressRecorderContext(ProgressRecorder):
-    def __init__(self, task, total, debug=False, description='Task started'):
-        self.debug = debug
-        self.current = 0
-        self.total = total
-        if self.debug:
-            return
-        super().__init__(task)
-        self.set_progress(current=self.current, total=total, description=description)
-
-    @contextmanager
-    def progress_context(self, description):
-        if self.debug:
-            logging.info(description)
-            yield
-            return
-        self.current += 1
-        self.set_progress(self.current, self.total, description)
-        yield
-
-    def clear_progress(self):
-        self.current = 0
+from utils import ProgressRecorderContext
 
 
 # TODO: переделать чтобы соблюдался принцип DRY
