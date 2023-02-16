@@ -33,6 +33,7 @@ import os
 import time
 from contextlib import contextmanager
 from hashlib import md5
+from typing import List
 
 from celery_progress.backend import ProgressRecorder
 
@@ -71,3 +72,11 @@ def parse_bool_from_str(value):
     if str(value).lower() in ['1', 'yes', 'true']:
         return True
     return False
+
+
+def form_tree_prefetch_query(nested_prefetch_field: str, prefetch_field: str, tree_depth) -> List[str]:
+    queries = [prefetch_field]
+    for count in range(1, tree_depth + 1):
+        query = '__'.join([nested_prefetch_field for _ in range(count)]) + '__' + prefetch_field
+        queries.append(query)
+    return queries
