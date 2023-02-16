@@ -53,6 +53,7 @@ export interface treeSuite {
 }
 
 export interface suite {
+    test_cases: myCase[];
     id: number;
     name: string;
     parent: null | number;
@@ -83,6 +84,7 @@ const SuitesComponent = () => {
     const stop = 100
     const step = 5
     const classesGlobal = useStylesGlobal()
+    const [filesSelected, setFilesSelected] = React.useState<File[]>()
 
 
     useEffect(() => {
@@ -157,36 +159,36 @@ const SuitesComponent = () => {
                                                                         setTreeSuites={setTreeSuites}
                 />}
                 {selectedSuiteForTreeView === undefined &&
-                <PaginationSuitesComponent countOfSuitesOnPage={countOfSuitesOnPage} treeSuites={treeSuites}/>}
+                    <PaginationSuitesComponent countOfSuitesOnPage={countOfSuitesOnPage} treeSuites={treeSuites}/>}
             </div>
             <div className={classes.rightGrid}>
                 <div className={classes.rightGridButtons}>
                     {selectedSuiteForTreeView !== undefined &&
-                    <div>
-                        <Button
-                            data-cy="create-case"
-                            sx={{
-                            margin: "15px 15px 0 15px",
-                            minWidth: "70%",
-                            height: "45%",
-                            backgroundColor: "#FFFFFF",
-                            color: "#000000",
-                            "&:hover": {
-                                backgroundColor: "#fffafa",
-                            }
-                        }} onClick={handleShowCreationCase}>Создать
-                            тест-кейс</Button>
-                        <CreationCase show={showCreationCase} setShow={setShowCreationCase}
-                                      selectedSuiteCome={selectedSuiteCome} setTreeSuites={setTreeSuites}
-                                      infoCaseForEdit={infoCaseForEdit}
-                                      setInfoCaseForEdit={setInfoCaseForEdit}
-                                      setDetailedCaseInfo={setDetailedCaseInfo}
-                                      detailedCaseInfo={detailedCaseInfo}
-                                      setLastEditCase={setLastEditCase}
-                                      setSelectedSuiteForTreeView={setSelectedSuiteForTreeView}
-                                      selectedSuiteForTreeView={selectedSuiteForTreeView}
-                        />
-                    </div>}
+                        <div>
+                            <Button
+                                data-cy="create-case"
+                                sx={{
+                                    margin: "15px 15px 0 15px",
+                                    minWidth: "70%",
+                                    height: "45%",
+                                    backgroundColor: "#FFFFFF",
+                                    color: "#000000",
+                                    "&:hover": {
+                                        backgroundColor: "#fffafa",
+                                    }
+                                }} onClick={handleShowCreationCase}>Создать
+                                тест-кейс</Button>
+                            <CreationCase show={showCreationCase} setShow={setShowCreationCase}
+                                          selectedSuiteCome={selectedSuiteCome} setTreeSuites={setTreeSuites}
+                                          infoCaseForEdit={infoCaseForEdit}
+                                          setInfoCaseForEdit={setInfoCaseForEdit}
+                                          setDetailedCaseInfo={setDetailedCaseInfo}
+                                          detailedCaseInfo={detailedCaseInfo}
+                                          setLastEditCase={setLastEditCase}
+                                          setSelectedSuiteForTreeView={setSelectedSuiteForTreeView}
+                                          selectedSuiteForTreeView={selectedSuiteForTreeView}
+                            />
+                        </div>}
                     <Button data-cy="create-suite" sx={{
                         marginTop: "15px",
                         minWidth: "70%",
@@ -207,26 +209,26 @@ const SuitesComponent = () => {
                     />
                 </div>
                 {selectedSuiteForTreeView === undefined &&
-                <div>
-                    <FormControl sx={{minWidth: "90%", margin: "25px 0px 0px 15px"}}
-                                 className={classesGlobal.textFieldSelectCreationCaseSuite}>
-                        <InputLabel>Количество сьют на одной странице</InputLabel>
-                        <Select
-                            value={countOfSuitesOnPage}
-                            label="Количество сьют на одной странице"
-                            onChange={(e) => onChangeSuitesOnPage(e)}
-                            MenuProps={MenuProps}
-                        >
-                            {Array.from({length: (stop - start) / step + 1}, (_, i) => start + i * step).map((num, index) =>
-                                <MenuItem key={index}
-                                          value={num}>{num}</MenuItem>)}
-                        </Select>
-                    </FormControl>
-                </div>}
+                    <div>
+                        <FormControl sx={{minWidth: "90%", margin: "25px 0px 0px 15px"}}
+                                     className={classesGlobal.textFieldSelectCreationCaseSuite}>
+                            <InputLabel>Количество сьют на одной странице</InputLabel>
+                            <Select
+                                value={countOfSuitesOnPage}
+                                label="Количество сьют на одной странице"
+                                onChange={(e) => onChangeSuitesOnPage(e)}
+                                MenuProps={MenuProps}
+                            >
+                                {Array.from({length: (stop - start) / step + 1}, (_, i) => start + i * step).map((num, index) =>
+                                    <MenuItem key={index}
+                                              value={num}>{num}</MenuItem>)}
+                            </Select>
+                        </FormControl>
+                    </div>}
                 {selectedSuiteForTreeView !== undefined &&
-                <div className={classes.mainGridFolderStructure}>
-                    {memoizedValueFolderStructureOfSuites}
-                </div>}
+                    <div className={classes.mainGridFolderStructure}>
+                        {memoizedValueFolderStructureOfSuites}
+                    </div>}
             </div>
         </div>
     )
