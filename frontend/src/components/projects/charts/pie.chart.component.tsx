@@ -1,17 +1,21 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import {Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip} from "recharts";
 import {test} from "../../models.interfaces";
 
 const PieChartComponent = (props: {
     tests: test[]
 }) => {
-    let nTestsWithoutUser = 0
+    let nTestsWithoutUser = useMemo(() => {
+        let temp = 0
+        props.tests.forEach((test) => {
+            if (test.user == null) {
+                temp++
+            }
+        })
+        return temp
+    }, [])
     // Counting tests with assigned user
-    props.tests.forEach((test) => {
-        if (test.user == null) {
-            nTestsWithoutUser++
-        }
-    })
+
     const pieData = [
         {name: 'Назначено', value: props.tests.length - nTestsWithoutUser},
         {name: 'Не назначено', value: nTestsWithoutUser},
