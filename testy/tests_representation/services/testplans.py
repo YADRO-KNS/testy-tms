@@ -28,7 +28,6 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-
 from typing import Any, Dict, List
 
 from django.db import transaction
@@ -42,38 +41,33 @@ class TestPlanService:
         'name', 'parent', 'started_at', 'due_date', 'finished_at', 'is_archive', 'project', 'description'
     )
 
-    def _make_testplan_model(self, data, parameters=None):
-        testplan = TestPlan.model_create(
-            fields=self.non_side_effect_fields,
-            data=data,
-            commit=False
-        )
-        testplan.lft = 0
-        testplan.rght = 0
-        testplan.tree_id = 0
-        testplan.level = 0
-
-        if parameters is not None:
-            testplan.parameters = parameters
-
-        return testplan
-
     @transaction.atomic
     def testplan_create(self, data=Dict[str, Any]) -> List[TestPlan]:
-        testplan_objects = []
+        test_plan = TestPlan.model_create(fields=self.non_side_effect_fields, data=data)
+        if test_cases := data.get('test_cases', []):
+            TestService().bulk_test_create([test_plan], test_cases)
+        parent = data.get('parent') if data.get('parent') else test_plan
+        TestPlan.objects.partial_rebuild(parent.tree_id)
+        return test_plan
 
-        if parameters := data.get('parameters', []):
-            for combine_parameter in combination_parameters(parameters):
-                testplan_objects.append(self._make_testplan_model(data, combine_parameter))
-        else:
-            testplan_objects.append(self._make_testplan_model(data))
-
-        test_plans = TestPlan.objects.bulk_create(testplan_objects)
-        TestPlan.objects.rebuild()
+    @transaction.atomic
+    def testplan_bulk_create(self, data=Dict[str, Any]) -> List[TestPlan]:
+        parameters = data.get('parameters')
+        test_plans = []
+        for combine_parameter in combination_parameters(parameters):
+            test_plan_object = TestPlan.model_create(fields=self.non_side_effect_fields, data=data, commit=False)
+            test_plan_object.parameters = combine_parameter
+            test_plan_object.save()
+            test_plans.append(test_plan_object)
 
         if test_cases := data.get('test_cases', []):
             TestService().bulk_test_create(test_plans, test_cases)
 
+        if parent := data.get('parent'):
+            TestPlan.objects.partial_rebuild(parent.tree_id)
+        else:
+            for test_plan in test_plans:
+                TestPlan.objects.partial_rebuild(test_plan.tree_id)
         return test_plans
 
     @transaction.atomic
@@ -95,7 +89,7 @@ class TestPlanService:
             if create_test_case_ids := new_test_case_ids - old_test_case_ids:
                 cases = [tc for tc in data['test_cases'] if tc.id in create_test_case_ids]
                 TestService().bulk_test_create((test_plan,), cases)
-
+        TestPlan.objects.partial_rebuild(test_plan.tree_id)
         return test_plan
 
     def testplan_delete(self, *, test_plan) -> None:

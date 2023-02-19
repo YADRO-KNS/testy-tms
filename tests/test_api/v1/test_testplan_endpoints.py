@@ -28,16 +28,16 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
-import copy
 import json
 from http import HTTPStatus
 
 import pytest
 from tests_description.models import TestCase
-from tests_representation.models import Test, TestPlan, TestResult
+from tests_representation.models import Test, TestPlan
 
 from tests import constants
 from tests.commons import RequestType
+from tests.error_messages import PERMISSION_ERR_MSG
 
 
 @pytest.mark.django_db
@@ -112,10 +112,6 @@ class TestPlanEndpoints:
             reverse_kwargs={'pk': pk}
         )
         assert Test.objects.count() == number_of_tests - 1, 'More then one test was deleted by updating'
-        test_ids = []
-        for plan in test_plans:
-            test_ids.extend(test.get('id')for test in plan.get('tests'))
-        assert len(set(test_ids)) == len(test_ids), 'Test ids from testplans were not unique.'
 
     @pytest.mark.parametrize(
         'slice_num, expected_number, err_msg',
@@ -148,41 +144,6 @@ class TestPlanEndpoints:
         )
         assert Test.objects.count() == expected_number, err_msg
 
-    def test_plan_behaviour_on_update(self, api_client, authorized_superuser, test_case_factory, parameter_factory,
-                                      test_result_factory, project):
-        number_of_cases = 5
-        case_ids = [test_case_factory().id for _ in range(number_of_cases)]
-        parameters = [parameter_factory(group_name='os').id for _ in range(3)]
-        testplan_dict = {
-            'name': 'Test plan',
-            'due_date': constants.DATE,
-            'started_at': constants.DATE,
-            'parameters': parameters,
-            'test_cases': case_ids,
-            'project': project.id
-        }
-        response = api_client.send_request(self.view_name_list, testplan_dict, HTTPStatus.CREATED, RequestType.POST)
-        test_plans = json.loads(response.content)
-        test_ids = copy.deepcopy(test_plans[0].get('tests'))
-        result_ids = [test_result_factory(test_id=test_ids[0]['id']).id for _ in range(3)]
-        expected_number_of_tests = Test.objects.count()
-        update_dict = {
-            'test_cases': case_ids
-        }
-        response = api_client.send_request(
-            self.view_name_detail,
-            update_dict,
-            HTTPStatus.OK,
-            RequestType.PATCH,
-            reverse_kwargs={'pk': test_plans[0].get('id')}
-        )
-        plan = json.loads(response.content)
-        actual_results = []
-        for res in TestResult.objects.filter(test=plan.get('tests')[0]['id']):
-            actual_results.append(res.id)
-        assert actual_results == result_ids, f'Results changed for test with id: {plan.get("tests")[0]["id"]}'
-        assert Test.objects.count() == expected_number_of_tests, 'After update number of tests should not change'
-
     def test_delete(self, api_client, authorized_superuser, test_plan):
         assert TestPlan.objects.count() == 1, 'Test case was not created'
         api_client.send_request(
@@ -192,3 +153,15 @@ class TestPlanEndpoints:
             reverse_kwargs={'pk': test_plan.pk}
         )
         assert not TestPlan.objects.count(), f'Test plan with id "{test_plan.id}" was not deleted.'
+
+    def test_archived_editable_for_admin_only(self, api_client, authorized_superuser, test_plan_factory, user):
+        api_client.force_login(user)
+        plan = test_plan_factory(is_archive=True)
+        response = api_client.send_request(
+            self.view_name_detail,
+            reverse_kwargs={'pk': plan.pk},
+            request_type=RequestType.PATCH,
+            expected_status=HTTPStatus.FORBIDDEN,
+            data={}
+        )
+        assert json.loads(response.content)['detail'] == PERMISSION_ERR_MSG

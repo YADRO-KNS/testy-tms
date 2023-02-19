@@ -30,13 +30,12 @@
 # <http://www.gnu.org/licenses/>.
 import json
 import logging
-from contextlib import contextmanager
+from copy import deepcopy
 from datetime import datetime
 from typing import Dict
 
 import redis
 from celery import shared_task
-from celery_progress.backend import ProgressRecorder
 from django.conf import settings
 from testrail_migrator.migrator_lib import TestRailClient, TestrailConfig, TestyCreator
 from testrail_migrator.migrator_lib.migrator_service import MigratorService
@@ -47,29 +46,7 @@ from tests_description.models import TestCase
 from tests_representation.models import TestResult
 from tests_representation.services.results import TestResultService
 
-
-class ProgressRecorderContext(ProgressRecorder):
-    def __init__(self, task, total, debug=False, description='Task started'):
-        self.debug = debug
-        self.current = 0
-        self.total = total
-        if self.debug:
-            return
-        super().__init__(task)
-        self.set_progress(current=self.current, total=total, description=description)
-
-    @contextmanager
-    def progress_context(self, description):
-        if self.debug:
-            logging.info(description)
-            yield
-            return
-        self.current += 1
-        self.set_progress(self.current, self.total, description)
-        yield
-
-    def clear_progress(self):
-        self.current = 0
+from utils import ProgressRecorderContext
 
 
 # TODO: переделать чтобы соблюдался принцип DRY
@@ -82,6 +59,10 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     redis_client = redis.StrictRedis(settings.REDIS_HOST, settings.REDIS_PORT)
     logging.info('redis started')
     backup = json.loads(redis_client.get(backup_name))
+
+    custom_fields_multi_select = parse_multi_select_from_tr(backup['custom_result_fields'])
+    custom_fields_labels = parse_labels_from_tr_fields(backup['custom_result_fields'])
+
     creator = TestyCreator(service_user_login, testy_attachment_url)
 
     mappings = {}
@@ -123,6 +104,8 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     with progress_recorder.progress_context('Creating results with plan as parent'):
         mappings['results_parent_plan'] = creator.create_results(
             backup['results_parent_plan'],
+            custom_fields_multi_select,
+            custom_fields_labels,
             mappings['tests_parent_plan'],
             mappings['users']
         )
@@ -143,6 +126,8 @@ def upload_task(self, backup_name, config_dict, upload_root_runs: bool, service_
     with progress_recorder.progress_context('Creating runs with mile as parent'):
         mappings['results_parent_mile'] = creator.create_results(
             backup['results_parent_mile'],
+            custom_fields_multi_select,
+            custom_fields_labels,
             mappings['tests_parent_mile'],
             mappings['users'],
         )
@@ -208,7 +193,8 @@ def download_task(self, project_id: int, config_dict: Dict, download_attachments
     testrail_client = TestRailClient(TestrailConfig(**config_dict))
     with progress_recorder.progress_context('Getting users'):
         resulting_data['users'] = testrail_client.get_users()
-
+    with progress_recorder.progress_context('Getting custom fields for results '):
+        resulting_data['custom_result_fields'] = testrail_client.get_custom_result_fields()
     with progress_recorder.progress_context('Getting project'):
         resulting_data['project'] = testrail_client.get_project(project_id)
     with progress_recorder.progress_context('Getting suites'):
@@ -218,7 +204,7 @@ def download_task(self, project_id: int, config_dict: Dict, download_attachments
     with progress_recorder.progress_context('Getting sections'):
         resulting_data['sections'] = testrail_client.get_sections(project_id, resulting_data['suites'])
 
-    query_params = {'is_completed': 0 if ignore_completed else 1}
+    query_params = {'is_completed': 0} if ignore_completed else None
     with progress_recorder.progress_context('Getting configs'):
         resulting_data['configs'] = testrail_client.get_configs(project_id)
     with progress_recorder.progress_context('Getting milestones'):
@@ -276,3 +262,26 @@ def save_results_to_redis(results, backup_filename):
 
     if not redis_client.get(backup_name):
         logging.debug('REDIS CLIENT GOT NOTHING')
+
+
+def parse_multi_select_from_tr(testrail_custom_fields):
+    custom_fields = {}
+    tr_multiselect_id = 12  # Multiselect type id in testrail
+    for custom_field in testrail_custom_fields:
+        if custom_field['type_id'] != tr_multiselect_id:
+            continue
+        key_to_value = {}
+        for config in custom_field['configs']:
+            field_contents = config['options']['items'].split('\n')
+            for content in field_contents:
+                key, value = content.split(', ')
+                key_to_value[key] = value
+        custom_fields[custom_field['system_name']] = deepcopy(key_to_value)
+    return custom_fields
+
+
+def parse_labels_from_tr_fields(testrail_custom_fields):
+    system_name_to_label = {}
+    for custom_field in testrail_custom_fields:
+        system_name_to_label[custom_field['system_name']] = custom_field['label']
+    return system_name_to_label

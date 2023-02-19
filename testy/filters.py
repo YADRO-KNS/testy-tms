@@ -28,43 +28,43 @@
 # if any, to sign a "copyright disclaimer" for the program, if necessary.
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
+from django_filters import rest_framework as filters
+from tests_representation.models import Test, TestPlan, TestResult
 
-from django.db.models import QuerySet
-from tests_description.models import TestSuite
-
-from testy.selectors import MPTTSelector
-from utils import form_tree_prefetch_query
+from utils import parse_bool_from_str
 
 
-class TestSuiteSelector:
-    def suite_list(self) -> QuerySet[TestSuite]:
-        return (
-            TestSuite.objects.all()
-            .order_by("name")
-            .prefetch_related(
-                *form_tree_prefetch_query(
-                    "child_test_suites",
-                    "test_cases",
-                    MPTTSelector.model_max_level(TestSuite),
-                )
-            )
-        )
+class TestyFilterBackend(filters.DjangoFilterBackend):
+    def get_filterset_kwargs(self, request, queryset, view):
+        kwargs = super().get_filterset_kwargs(request, queryset, view)
+        kwargs.update({'action': view.action})
+        return kwargs
 
-    def suite_without_parent(self) -> QuerySet[TestSuite]:
-        return (
-            QuerySet(model=TestSuite)
-            .filter(parent=None)
-            .order_by("name")
-            .prefetch_related(
-                *form_tree_prefetch_query(
-                    "child_test_suites",
-                    "child_test_suites",
-                    MPTTSelector.model_max_level(TestSuite),
-                ),
-                *form_tree_prefetch_query(
-                    "child_test_suites",
-                    "test_cases",
-                    MPTTSelector.model_max_level(TestSuite),
-                )
-            )
-        )
+
+class ArchiveFilter(filters.FilterSet):
+    def __init__(self, *args, action=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.action = action
+
+    def filter_queryset(self, queryset):
+        if not parse_bool_from_str(self.data.get('is_archive')) and self.action == 'list':
+            queryset = queryset.filter(is_archive=False)
+        return super().filter_queryset(queryset)
+
+
+class TestPlanFilter(ArchiveFilter):
+    class Meta:
+        model = TestPlan
+        fields = ('project',)
+
+
+class TestFilter(ArchiveFilter):
+    class Meta:
+        model = Test
+        fields = ('plan',)
+
+
+class TestResultFilter(ArchiveFilter):
+    class Meta:
+        model = TestResult
+        fields = ('test',)

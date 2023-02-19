@@ -29,42 +29,11 @@
 # For more information on this, and how to apply and follow the GNU AGPL, see
 # <http://www.gnu.org/licenses/>.
 
-from django.db.models import QuerySet
-from tests_description.models import TestSuite
-
-from testy.selectors import MPTTSelector
-from utils import form_tree_prefetch_query
+from django.db.models import Max
 
 
-class TestSuiteSelector:
-    def suite_list(self) -> QuerySet[TestSuite]:
-        return (
-            TestSuite.objects.all()
-            .order_by("name")
-            .prefetch_related(
-                *form_tree_prefetch_query(
-                    "child_test_suites",
-                    "test_cases",
-                    MPTTSelector.model_max_level(TestSuite),
-                )
-            )
-        )
-
-    def suite_without_parent(self) -> QuerySet[TestSuite]:
-        return (
-            QuerySet(model=TestSuite)
-            .filter(parent=None)
-            .order_by("name")
-            .prefetch_related(
-                *form_tree_prefetch_query(
-                    "child_test_suites",
-                    "child_test_suites",
-                    MPTTSelector.model_max_level(TestSuite),
-                ),
-                *form_tree_prefetch_query(
-                    "child_test_suites",
-                    "test_cases",
-                    MPTTSelector.model_max_level(TestSuite),
-                )
-            )
-        )
+class MPTTSelector:
+    @staticmethod
+    def model_max_level(model_class) -> int:
+        max_level = model_class.objects.all().aggregate(Max('level')).get('level__max')
+        return max_level if max_level else 0
