@@ -62,7 +62,6 @@ class TestCaseViewSet(ModelViewSet):
 
 
 class TestSuiteViewSet(ModelViewSet):
-    queryset = TestSuiteSelector().suite_list()
     serializer_class = TestSuiteSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['project']
@@ -81,4 +80,4 @@ class TestSuiteViewSet(ModelViewSet):
     def get_queryset(self):
         if get_boolean(self.request, 'treeview'):
             return TestSuiteSelector().suite_without_parent()
-        return super().get_queryset()
+        return TestSuiteSelector().suite_list()
