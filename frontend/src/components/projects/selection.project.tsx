@@ -12,8 +12,11 @@ import ProjectService from "../../services/project.service";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {project} from "../models.interfaces";
 import DeletionDialogProject from "./deletion.dialog.project.component";
+import {useDispatch} from "react-redux";
+import {put} from "../../features/currentProject/currentProjectSlice";
 
 const SelectionProject: React.FC = () => {
+    const dispatch = useDispatch()
     const classes = useStyles();
     const [expanded, setExpanded] = useState(false);
     const [projects, setProjects] = useState<project[]>([]);
@@ -28,6 +31,7 @@ const SelectionProject: React.FC = () => {
     }, []);
 
     const loginToProject = (project: project) => {
+        dispatch(put(project))
         localStorage.setItem("currentProject", JSON.stringify(project));
         window.location.assign("/project");
     }

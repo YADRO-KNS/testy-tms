@@ -27,6 +27,8 @@ import TableHead from "@mui/material/TableHead";
 import LineChartComponent from "./charts/line.chart.component";
 import PieChartComponent from "./charts/pie.chart.component";
 import {useNavigate} from "react-router-dom";
+import {useSelector} from "react-redux";
+import {RootState} from "../../app/store";
 
 const Project: React.FC = () => {
     const classes = useStyles();
@@ -64,7 +66,12 @@ const Project: React.FC = () => {
         setStatusesToShow({...statusesShow, [status]: !statusesShow[status]})
     };
 
-    const projectValue = JSON.parse(localStorage.getItem("currentProject") ?? '')
+    const projectValue = useSelector((state: RootState) => state.currentProject.value)
+    if (!projectValue) {
+        console.log("Redux state currentProject is empty")
+        useEffect(() => navigate("/"))
+        return <></>
+    }
 
     // Collecting data to display in table.
 
