@@ -1,11 +1,11 @@
 import {configureStore} from '@reduxjs/toolkit'
 import {currentProjectReducer} from "../features/currentProject/currentProjectSlice";
-import storageSession from 'redux-persist/lib/storage/session';
+import storage from 'redux-persist/lib/storage/session';
 import {persistReducer, persistStore} from 'redux-persist'
 
 const persistConfig = {
     key: 'root',
-    storage: storageSession,
+    storage: storage,
 }
 
 const persistedReducer = persistReducer(persistConfig, currentProjectReducer)
