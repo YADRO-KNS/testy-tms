@@ -10,7 +10,7 @@ import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import SuiteCaseService from "../../services/suite.case.service";
-import {CustomWidthTooltip, treeSuite} from "./suites.component";
+import {CustomWidthTooltip, mainFieldInSuite, treeSuite} from "./suites.component";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 
@@ -21,8 +21,8 @@ interface Props {
     setTreeSuites: (treeSuites: treeSuite[]) => void
     setSelectedSuiteForTreeView: (suite: treeSuite | undefined) => void,
     selectedSuiteForTreeView: treeSuite | undefined,
-    infoSuiteForEdit: { id: number, name: string } | null;
-    setInfoSuiteForEdit: (suite: { id: number, name: string } | null) => void,
+    infoSuiteForEdit: mainFieldInSuite | null;
+    setInfoSuiteForEdit: (suite: mainFieldInSuite | null) => void,
     treeSuites: treeSuite []
 }
 
@@ -40,6 +40,7 @@ const CreationSuite: React.FC<Props> = ({
     const classes = useStyles()
     const [selectedSuite, setSelectedSuite] = useState<{ id: number; name: string } | null>(selectedSuiteCome)
     const [name, setName] = useState("")
+    const [description, setDescription] = useState("")
     const [namePresence, setNamePresence] = useState(false)
     const [fillFieldName, setFillFieldName] = useState(false)
     const [suitesForSelect, setSuitesForSelect] = useState<{ id: number, name: string }[] | treeSuite[]>([])
@@ -47,6 +48,7 @@ const CreationSuite: React.FC<Props> = ({
     const handleClose = () => {
         setShow(false)
         setName("")
+        setDescription("")
         setNamePresence(false)
         setFillFieldName(false)
         setInfoSuiteForEdit(null)
@@ -72,6 +74,7 @@ const CreationSuite: React.FC<Props> = ({
         }
         if (infoSuiteForEdit) {
             setName(infoSuiteForEdit.name)
+            setDescription(infoSuiteForEdit.description)
             setNamePresence(true)
         }
     }, [selectedSuiteCome, infoSuiteForEdit, treeSuites])
@@ -87,6 +90,7 @@ const CreationSuite: React.FC<Props> = ({
                 name: name,
                 parent: selectedSuite?.id ?? null,
                 project: projectId,
+                description: description
             }
 
             if (infoSuiteForEdit) {
@@ -135,14 +139,18 @@ const CreationSuite: React.FC<Props> = ({
 
     const onChangeName = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         let str = e.target.value.trimStart()
+        setName(str)
         if (str.length > 0) {
-            setName(str)
             setNamePresence(true)
             setFillFieldName(false)
         } else {
-            setName(str)
             setNamePresence(false)
         }
+    }
+
+    const onChangeDescription = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        let str = e.target.value.trimStart()
+        setDescription(str)
     }
 
     const MenuProps = {
@@ -197,6 +205,26 @@ const CreationSuite: React.FC<Props> = ({
                                     label="Введите название сьюты"
                                 />
                             </CustomWidthTooltip>
+                        </Grid>
+                        <Grid className={classes.gridContent}>
+                            <Typography variant="h6">
+                                Описание
+                            </Typography>
+
+                            <TextField
+                                id="suiteDescription"
+                                className={classes.textFieldSelectCreationCaseSuite}
+                                onChange={(content) => onChangeDescription(content)}
+                                variant="outlined"
+                                value={description}
+                                margin="normal"
+                                fullWidth
+                                label="Введите описание тест-кейса"
+                                autoComplete="off"
+                                multiline
+                                minRows={2}
+                                maxRows={3}
+                            />
                         </Grid>
                     </Grid>
                     <Grid xs={3} item style={{

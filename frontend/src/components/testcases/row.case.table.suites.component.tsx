@@ -10,7 +10,7 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 
 function RowCase(props: {
     row: treeSuite, setShowCreationCase: (show: boolean) => void,
-    setSelectedSuiteCome: (selectedSuite: { id: number, name: string } | null) => void,
+    setSelectedSuiteCome: (selectedSuite: { id: number, name: string, description: string } | null) => void,
     setDetailedCaseInfo: (myCase: { show: boolean, myCase: myCase }) => void,
     detailedCaseInfo: { show: boolean, myCase: myCase }, setInfoCaseForEdit: (myCase: myCase) => void,
     onecase: myCase,
@@ -82,7 +82,7 @@ function RowCase(props: {
                     </IconButton>
                     <IconButton size={"small"} onClick={() => {
                         setShowCreationCase(true)
-                        setSelectedSuiteCome({id: row.id, name: row.name})
+                        setSelectedSuiteCome({id: row.id, name: row.name, description: row.description})
                         setInfoCaseForEdit(onecase)
                     }}>
                         <EditIcon fontSize={"small"}/>

@@ -43,13 +43,22 @@ const DetailedCaseInfo: React.FC<Props> = ({myCase, setDetailedCaseInfo}) => {
             </Grid>
             <Grid>
                 <Typography variant="h6">
-                    Описание
+                    Сценарий
                 </Typography>
                 <Grid data-cy="detailed-info-case-scenario">
                     {myCase.scenario}
                 </Grid>
                 <Divider style={{margin: "10px 0px 10px 0px"}}/>
             </Grid>
+            {myCase.description && <Grid>
+                <Typography variant="h6">
+                    Описание
+                </Typography>
+                <Grid data-cy="detailed-info-case-setup">
+                    {myCase.description}
+                </Grid>
+                <Divider style={{margin: "10px 0px 10px 0px"}}/>
+            </Grid>}
             {myCase.setup && <Grid>
                 <Typography variant="h6">
                     Подготовка теста

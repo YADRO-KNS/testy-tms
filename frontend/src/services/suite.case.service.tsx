@@ -85,6 +85,7 @@ export default class SuiteCaseService {
                 name: "",
                 suite: -1,
                 scenario: "",
+                description: "",
                 project: -1,
                 setup: "",
                 teardown: "",

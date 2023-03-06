@@ -60,6 +60,7 @@ const CreationCase: React.FC<Props> = ({
     const [fillFieldName, setFillFieldName] = useState(false)
     const [fillFieldScenario, setFillFieldScenario] = useState(false)
 
+    const [description, setDescription] = useState("")
     const [setup, setSetup] = useState("")
     const [teardown, setTeardown] = useState("")
 
@@ -87,6 +88,7 @@ const CreationCase: React.FC<Props> = ({
             setName(infoCaseForEdit.name)
             setNamePresence(true)
             setScenario(infoCaseForEdit.scenario)
+            setDescription(infoCaseForEdit.description)
             setScenarioPresence(true)
             setSetup(infoCaseForEdit.setup)
             setTeardown(infoCaseForEdit.teardown)
@@ -100,6 +102,7 @@ const CreationCase: React.FC<Props> = ({
     const handleClose = () => {
         setShow(false)
         setName("")
+        setDescription("")
         setNamePresence(false)
         setScenario("")
         setScenarioPresence(false)
@@ -124,47 +127,27 @@ const CreationCase: React.FC<Props> = ({
         }
     }
 
-    const onChangeName = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+
+    const onChangeRequiredField = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+                                   setField: (value: string) => void,
+                                   setFieldPresence: (value: boolean) => void,
+                                   setFillField: (value: boolean) => void) => {
         let str = e.target.value.trimStart()
         if (str.length > 0) {
-            setName(str)
-            setNamePresence(true)
-            setFillFieldName(false)
+            setField(str)
+            setFieldPresence(true)
+            setFillField(false)
         } else {
-            setName(str)
-            setNamePresence(false)
+            setField(str)
+            setFieldPresence(false)
         }
     }
 
-    const onChangeScenario = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        let str = e.target.value.trimStart()
-        if (str.length > 0) {
-            setScenario(str)
-            setScenarioPresence(true)
-            setFillFieldScenario(false)
-        } else {
-            setScenario(str)
-            setScenarioPresence(false)
-        }
-    }
-
-    const onChangeSetup = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const onChangeNonRequiredField = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, setField: (value: string) => void) => {
         let str = e.target.value
-        if (str.length > 0) {
-            setSetup(str)
-        } else {
-            setSetup(str)
-        }
+        setField(str)
     }
 
-    const onChangeTeardown = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        let str = e.target.value
-        if (str.length > 0) {
-            setTeardown(str)
-        } else {
-            setTeardown(str)
-        }
-    }
     const createCase = () => {
         const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
         if (namePresence && scenarioPresence && projectId) {
@@ -175,6 +158,7 @@ const CreationCase: React.FC<Props> = ({
                 scenario: scenario,
                 estimate: estimateNumber,
                 teardown: teardown,
+                description: description,
                 setup: setup,
                 attachments: []
             }
@@ -271,7 +255,7 @@ const CreationCase: React.FC<Props> = ({
                             <TextField
                                 id="nameCaseTextField"
                                 className={classes.textFieldSelectCreationCaseSuite}
-                                onChange={(content) => onChangeName(content)}
+                                onChange={(content) => onChangeRequiredField(content, setName, setNamePresence, setFillFieldName)}
                                 variant="outlined"
                                 value={name}
                                 margin="normal"
@@ -285,7 +269,7 @@ const CreationCase: React.FC<Props> = ({
 
                     <Grid className={classes.gridContent}>
                         <Typography variant="h6">
-                            Описание
+                            Сценарий
                         </Typography>
                         <CustomWidthTooltip
                             title={<Grid data-cy="fill-field-note"
@@ -296,19 +280,39 @@ const CreationCase: React.FC<Props> = ({
                             <TextField
                                 id="scenarioCaseTextField"
                                 className={classes.textFieldSelectCreationCaseSuite}
-                                onChange={(content) => onChangeScenario(content)}
+                                onChange={(content) => onChangeRequiredField(content, setScenario, setScenarioPresence, setFillFieldScenario)}
                                 variant="outlined"
                                 value={scenario}
                                 margin="normal"
                                 fullWidth
                                 required
-                                label="Введите описание тест-кейса"
+                                label="Введите сценарий тест-кейса"
                                 autoComplete="off"
                                 multiline
-                                minRows={4}
-                                maxRows={5}
+                                minRows={2}
+                                maxRows={3}
                             />
                         </CustomWidthTooltip>
+                    </Grid>
+                    <Grid className={classes.gridContent}>
+                        <Typography variant="h6">
+                            Описание
+                        </Typography>
+
+                        <TextField
+                            id="caseDescription"
+                            className={classes.textFieldSelectCreationCaseSuite}
+                            onChange={(content) => onChangeNonRequiredField(content, setDescription)}
+                            variant="outlined"
+                            value={description}
+                            margin="normal"
+                            fullWidth
+                            label="Введите описание тест-кейса"
+                            autoComplete="off"
+                            multiline
+                            minRows={2}
+                            maxRows={3}
+                        />
                     </Grid>
                     <Grid className={classes.gridContent}>
                         <Typography variant="h6">
@@ -318,7 +322,7 @@ const CreationCase: React.FC<Props> = ({
                         <TextField
                             id="case-setup"
                             className={classes.textFieldSelectCreationCaseSuite}
-                            onChange={(content) => onChangeSetup(content)}
+                            onChange={(content) => onChangeNonRequiredField(content, setSetup)}
                             variant="outlined"
                             value={setup}
                             margin="normal"
@@ -337,7 +341,7 @@ const CreationCase: React.FC<Props> = ({
                         <TextField
                             id="case-teardown"
                             className={classes.textFieldSelectCreationCaseSuite}
-                            onChange={(content) => onChangeTeardown(content)}
+                            onChange={(content) => onChangeNonRequiredField(content, setTeardown)}
                             variant="outlined"
                             value={teardown}
                             margin="normal"

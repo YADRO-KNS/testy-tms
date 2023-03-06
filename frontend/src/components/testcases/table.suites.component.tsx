@@ -2,7 +2,7 @@ import IconButton from "@mui/material/IconButton";
 import Link from "@mui/material/Link";
 import Box from "@mui/material/Box";
 import React, {useEffect, useMemo, useState} from "react";
-import {treeSuite} from "./suites.component";
+import {mainFieldInSuite, treeSuite} from "./suites.component";
 import {myCase} from "../models.interfaces";
 import DetailedCaseInfo from "./detailed.case.info.component";
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -17,8 +17,8 @@ import Row from "./row.table.suites.component";
 const TableSuites = (props: {
     selected: readonly string[], setSelected: (array: readonly string[]) => void,
     setShowCreationCase: (show: boolean) => void, setShowCreationSuite: (show: boolean) => void,
-    setSelectedSuiteCome: (selectedSuite: { id: number, name: string } | null) => void,
-    setInfoCaseForEdit: (myCase: myCase) => void, setInfoSuiteForEdit: (suite: { id: number, name: string }) => void,
+    setSelectedSuiteCome: (selectedSuite: mainFieldInSuite | null) => void,
+    setInfoCaseForEdit: (myCase: myCase) => void, setInfoSuiteForEdit: (suite: mainFieldInSuite) => void,
     setDetailedCaseInfo: (myCase: { show: boolean, myCase: myCase }) => void,
     detailedCaseInfo: { show: boolean, myCase: myCase }, lastEditCase: number,
     setLastEditCase: (id: number) => void,

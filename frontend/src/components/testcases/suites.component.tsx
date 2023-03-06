@@ -48,6 +48,7 @@ export interface treeSuite {
     level: number;
     name: string;
     children: treeSuite[];
+    description: string;
     test_cases: myCase [];
     descendant_count: number;
 }
@@ -58,7 +59,14 @@ export interface suite {
     name: string;
     parent: null | number;
     project: number;
+    description: string;
     url: string;
+}
+
+export interface mainFieldInSuite {
+    id: number;
+    name: string;
+    description: string;
 }
 
 
@@ -69,9 +77,9 @@ const SuitesComponent = () => {
     const [selected, setSelected] = React.useState<readonly string[]>([]);
     const [treeSuites, setTreeSuites] = useState<treeSuite[]>([])
     const [infoCaseForEdit, setInfoCaseForEdit] = useState<myCase | null>(null)
-    const [infoSuiteForEdit, setInfoSuiteForEdit] = useState<{ id: number, name: string } | null>(null)
+    const [infoSuiteForEdit, setInfoSuiteForEdit] = useState<mainFieldInSuite | null>(null)
     const [lastEditCase, setLastEditCase] = useState<number>(-1)
-    const [selectedSuiteCome, setSelectedSuiteCome] = useState<{ id: number, name: string } | null>(null)
+    const [selectedSuiteCome, setSelectedSuiteCome] = useState<mainFieldInSuite | null>(null)
     const [detailedCaseInfo, setDetailedCaseInfo] = useState<{ show: boolean, myCase: myCase }>(SuiteCaseService.getEmptyDetailedCaseInfo())
     const {selectedSuiteId} = useParams()
     const [selectedSuiteForTreeView, setSelectedSuiteForTreeView] = useState<treeSuite | undefined>(undefined)
@@ -84,7 +92,6 @@ const SuitesComponent = () => {
     const stop = 100
     const step = 5
     const classesGlobal = useStylesGlobal()
-    const [filesSelected, setFilesSelected] = React.useState<File[]>()
 
 
     useEffect(() => {
@@ -114,14 +121,20 @@ const SuitesComponent = () => {
     const handleShowCreationCase = () => {
         if (selectedSuiteForTreeView !== undefined) {
             setShowCreationCase(true)
-            setSelectedSuiteCome({id: selectedSuiteForTreeView.id, name: selectedSuiteForTreeView.name})
+            setSelectedSuiteCome({
+                id: selectedSuiteForTreeView.id, name: selectedSuiteForTreeView.name,
+                description: selectedSuiteForTreeView.description
+            })
         }
     }
 
     const handleShowCreationSuite = () => {
         setShowCreationSuite(true)
         if (selectedSuiteForTreeView !== undefined) {
-            setSelectedSuiteCome({id: selectedSuiteForTreeView.id, name: selectedSuiteForTreeView.name})
+            setSelectedSuiteCome({
+                id: selectedSuiteForTreeView.id, name: selectedSuiteForTreeView.name,
+                description: selectedSuiteForTreeView.description
+            })
         } else {
             setSelectedSuiteCome(null)
         }

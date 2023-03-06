@@ -42,7 +42,7 @@ export default makeStyles({
         },
     },
     mainGridFolderStructure: {
-        height: "60%"
+        height: "55%"
     },
     tableRow: {
         "& div[id=gridEditDelete]": {

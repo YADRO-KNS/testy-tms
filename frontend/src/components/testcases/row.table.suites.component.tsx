@@ -1,4 +1,4 @@
-import {treeSuite} from "./suites.component";
+import {mainFieldInSuite, treeSuite} from "./suites.component";
 import {myCase} from "../models.interfaces";
 import React, {useEffect, useMemo} from "react";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -15,13 +15,13 @@ import RowCase from "./row.case.table.suites.component";
 
 function Row(props: {
     row: treeSuite, setShowCreationCase: (show: boolean) => void, setShowCreationSuite: (show: boolean) => void,
-    setSelectedSuiteCome: (selectedSuite: { id: number, name: string } | null) => void, treeSuitesOpenMap: Map<number, boolean>,
+    setSelectedSuiteCome: (selectedSuite: mainFieldInSuite | null) => void, treeSuitesOpenMap: Map<number, boolean>,
     setTreeSuitesOpenMap: (newMap: (prev: Map<number, boolean>) => any) => void, setDetailedCaseInfo: (myCase: { show: boolean, myCase: myCase }) => void,
     detailedCaseInfo: { show: boolean, myCase: myCase }, setInfoCaseForEdit: (myCase: myCase) => void,
     setTreeSuites: (treeSuites: treeSuite[]) => void, selectedCases: number[], setSelectedCases: (cases: number[]) => void,
     setOpenDialogDeletion: (show: boolean) => void,
     setComponentForDeletion: (component: myCase | treeSuite) => void,
-    classesTableSuitesCases: any, setInfoSuiteForEdit: (suite: { id: number, name: string }) => void,
+    classesTableSuitesCases: any, setInfoSuiteForEdit: (suite: mainFieldInSuite) => void,
 }) {
     const {
         row,
@@ -99,7 +99,10 @@ function Row(props: {
                             SuiteCaseService.getSuiteById(row.id).then((response) => {
                                 if (response.data.parent) {
                                     SuiteCaseService.getSuiteById(response.data.parent).then((response) => {
-                                        setSelectedSuiteCome({id: response.data.id, name: response.data.name})
+                                        setSelectedSuiteCome({
+                                            id: response.data.id, name: response.data.name, description:
+                                            response.data.description
+                                        })
                                         setShowCreationSuite(true)
                                     }).catch((e) => {
                                         console.log(e)
@@ -111,7 +114,7 @@ function Row(props: {
                             }).catch((e) => {
                                 console.log(e)
                             })
-                            setInfoSuiteForEdit({id: row.id, name: row.name})
+                            setInfoSuiteForEdit({id: row.id, name: row.name, description: row.description})
                         }}>
                             <EditIcon fontSize={"small"}/>
                         </IconButton>
@@ -174,7 +177,7 @@ function Row(props: {
                                               data-cy="add-case-in-suite"
                                               onClick={() => {
                                                   setShowCreationCase(true)
-                                                  setSelectedSuiteCome({id: row.id, name: row.name})
+                                                  setSelectedSuiteCome({id: row.id, name: row.name, description: row.description})
                                               }}>
                                             Добавить тест-кейс
                                         </Link>
@@ -183,7 +186,7 @@ function Row(props: {
                                               data-cy="add-suite-in-parent"
                                               onClick={() => {
                                                   setShowCreationSuite(true)
-                                                  setSelectedSuiteCome({id: row.id, name: row.name})
+                                                  setSelectedSuiteCome({id: row.id, name: row.name, description: row.description})
                                               }}>
                                             Добавить сьюту
                                         </Link>
