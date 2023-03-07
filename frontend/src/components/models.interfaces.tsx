@@ -55,7 +55,7 @@ export interface test {
     plan: number;
     project: number;
     test_results: testResult[];
-    current_result: string;
+    last_status: string;
     last_status_color: { id: number, name: string, color: string };
     user?: number;
     username?: string;

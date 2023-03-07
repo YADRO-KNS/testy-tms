@@ -1,6 +1,5 @@
-import {project} from "../../../../src/components/projects/project.selection";
 import {statuses} from "../../../../src/components/model.statuses";
-import {myCase, planStatistic, test, testPlan} from "../../../../src/components/models.interfaces";
+import {myCase, planStatistic, test, testPlan, project, testResult} from "../../../../src/components/models.interfaces";
 import {suite} from "../../../../src/components/testcases/suites.component";
 import moment from "moment";
 
@@ -54,33 +53,82 @@ describe('Testing functionality on the project page', () => {
                 }
                 cy.request({
                     method: 'GET',
-                    url: 'http://localhost:8001/api/v1/testplans/',
+                    url: 'http://localhost:8001/api/v1/tests/',
                     headers: {
                         Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
                         "Content-Type": "application/json"
                     }
                 }).then((response) => {
-                    let testPlan: testPlan = response.body
-                        .find((plan: testPlan) =>
-                            plan.title === "Тест-план для cy" && plan.tests.length === statuses.length)
-                    if (!testPlan) {
-                        const casesId = Array<number>()
+                    const tests: test[] = response.body.filter((test: test) => test.project == project.id)
 
-                        cy.request({
-                            method: 'GET',
-                            url: 'http://localhost:8001/api/v1/cases/',
-                            headers: {
-                                Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
-                                "Content-Type": "application/json"
-                            }
-                        }).then((response) => {
-                            const cases: myCase[] = response.body.filter((value: myCase) => value.project === project.id)
-                            if (cases.length < statuses.length) {
+                    cy.request({
+                        method: 'GET',
+                        url: 'http://localhost:8001/api/v1/testplans/',
+                        headers: {
+                            Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                            "Content-Type": "application/json"
+                        }
+                    }).then((response) => {
+                        let testPlan = response.body
+                            .find((plan: testPlan) => plan.title === "Тест-план для cy" &&
+                                tests.filter((test) => test.plan == plan.id).length === statuses.length
+                            )
+                        if (!testPlan) {
+                            const casesId = Array<number>()
+
+                            cy.request({
+                                method: 'GET',
+                                url: 'http://localhost:8001/api/v1/cases/',
+                                headers: {
+                                    Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                                    "Content-Type": "application/json"
+                                }
+                            }).then((response) => {
+                                const cases: myCase[] = response.body.filter((value: myCase) => value.project === project.id)
+                                if (cases.length < statuses.length) {
+                                    cy.request({
+                                        method: 'POST',
+                                        url: 'http://localhost:8001/api/v1/suites/',
+                                        body: {
+                                            name: "Сьюта для cy",
+                                            project: project.id,
+                                        },
+                                        headers: {
+                                            Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                                            "Content-Type": "application/json",
+                                        }
+                                    }).then((response) => {
+                                        const suite: suite = response.body
+                                        statuses.map((status, index) => {
+                                            cy.request({
+                                                method: 'POST',
+                                                url: 'http://localhost:8001/api/v1/cases/',
+                                                body: {
+                                                    name: `Кейс ${index} для cy`,
+                                                    project: project.id,
+                                                    suite: suite.id,
+                                                    scenario: "Описание для cy"
+                                                },
+                                                headers: {
+                                                    Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                                                    "Content-Type": "application/json",
+                                                }
+                                            }).then((response) => {
+                                                const curCase: myCase = response.body
+                                                casesId.push(curCase.id)
+                                            })
+                                        })
+                                    })
+                                }
+
                                 cy.request({
                                     method: 'POST',
-                                    url: 'http://localhost:8001/api/v1/suites/',
+                                    url: 'http://localhost:8001/api/v1/testplans/',
                                     body: {
-                                        name: "Сьюта для cy",
+                                        name: "Тест-план для cy",
+                                        started_at: "2023-01-31T12:02:31.903Z",
+                                        test_cases: casesId,
+                                        due_date: "2023-01-31T12:02:31.903Z",
                                         project: project.id,
                                     },
                                     headers: {
@@ -88,73 +136,27 @@ describe('Testing functionality on the project page', () => {
                                         "Content-Type": "application/json",
                                     }
                                 }).then((response) => {
-                                    const suite: suite = response.body
-                                    statuses.map((status, index) => {
-                                        cy.request({
-                                            method: 'POST',
-                                            url: 'http://localhost:8001/api/v1/cases/',
-                                            body: {
-                                                name: `Кейс ${index} для cy`,
-                                                project: project.id,
-                                                suite: suite.id,
-                                                scenario: "Описание для cy"
-                                            },
-                                            headers: {
-                                                Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
-                                                "Content-Type": "application/json",
-                                            }
-                                        }).then((response) => {
-                                            const curCase: myCase = response.body
-                                            casesId.push(curCase.id)
-                                        })
-                                    })
+                                    testPlan = response.body
+                                    testPlanID = testPlan.id ?? testPlanID
                                 })
-                            }
-
+                            })
+                        }
+                        if (testPlan) {
+                            testPlanID = testPlan.id
+                            const currentTests: test[] = tests.filter((test: test) => test.plan === testPlan.id)
                             cy.request({
-                                method: 'POST',
-                                url: 'http://localhost:8001/api/v1/testplans/',
-                                body: {
-                                    name: "Тест-план для cy",
-                                    started_at: "2023-01-31T12:02:31.903Z",
-                                    test_cases: casesId,
-                                    due_date: "2023-01-31T12:02:31.903Z",
-                                    project: project.id,
-                                },
+                                method: 'GET',
+                                url: `http://localhost:8001/api/v1/testplans/${testPlanID}/statistics/`,
                                 headers: {
                                     Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
-                                    "Content-Type": "application/json",
+                                    "Content-Type": "application/json"
                                 }
                             }).then((response) => {
-                                testPlan = response.body
-                                testPlanID = testPlan.id ?? testPlan
-                            })
-                        })
-                    }
-                    if (testPlan) {
-                        testPlanID = testPlan.id
-                        cy.request({
-                            method: 'GET',
-                            url: `http://localhost:8001/api/v1/testplans/${testPlanID}/statistics/`,
-                            headers: {
-                                Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
-                                "Content-Type": "application/json"
-                            }
-                        }).then((response) => {
-                            const statistics: planStatistic[] = response.body
-                            currentStatistics = statistics
-                            for (const statistic of statistics) {
-                                if (statistic.value > 1) {
-                                    cy.request({
-                                        method: 'GET',
-                                        url: 'http://localhost:8001/api/v1/tests/',
-                                        headers: {
-                                            Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
-                                            "Content-Type": "application/json"
-                                        }
-                                    }).then((response) => {
-                                        const tests: test[] = response.body.filter((test: test) => test.plan === testPlan.id)
-                                        tests.forEach((value, index) => {
+                                const statistics: planStatistic[] = response.body
+                                currentStatistics = statistics
+                                for (const statistic of statistics) {
+                                    if (statistic.value > 1) {
+                                        currentTests.forEach((value, index) => {
                                             cy.request({
                                                 method: 'POST',
                                                 url: 'http://localhost:8001/api/v1/results/',
@@ -168,16 +170,30 @@ describe('Testing functionality on the project page', () => {
                                                 }
                                             })
                                         })
-                                    })
-                                    currentStatistics = null
-                                    break
+                                        currentStatistics = null
+                                        break
+                                    }
                                 }
-                            }
-                        })
-                        updateDate = testPlan.tests[0]?.test_results[0] ?
-                            moment(testPlan.tests[0]?.test_results[0]?.updated_at, "DD-MM-YYYYThh:mm")
-                                .format("DD.MM.YYYY") : updateDate
-                    }
+                            })
+                            cy.request({
+                                method: 'GET',
+                                url: 'http://localhost:8001/api/v1/results/',
+                            }).then(() => {
+                                const results: testResult[] = response.body.filter((result: testResult) => result.project == project.id)
+                                const tests_ids = currentTests.map((test) => test.id)
+                                results.sort((a, b) =>
+                                    moment(b.updated_at, "YYYY-MM-DDThh:mm").valueOf() - moment(a.updated_at, "YYYY-MM-DDThh:mm").valueOf())
+                                for (let test_result of results) {
+                                    if (tests_ids.includes(test_result.test)) {
+                                        updateDate = test_result?.updated_at ?
+                                            moment(test_result?.updated_at, "DD-MM-YYYYThh:mm")
+                                                .format("DD.MM.YYYY") : updateDate
+                                        break
+                                    }
+                                }
+                            })
+                        }
+                    })
                 })
             })
         });
@@ -199,16 +215,16 @@ describe('Testing functionality on the project page', () => {
         cy.visit('/project')
         cy.request({
             method: 'GET',
-            url: `http://localhost:8001/api/v1/testplans/${testPlanID}`,
+            url: `http://localhost:8001/api/v1/tests/`,
             headers: {
                 Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
                 "Content-Type": "application/json"
             }
         }).then((response) => {
-            const curPlan: testPlan = response.body
+            const curTests: test[] = response.body.filter((test: test) => test.plan == testPlanID)
             if (currentStatistics == null)
                 cy.get('tbody tr')
-                    .should("contain", `${testPlanID}Тест-план для cy${curPlan.tests.length}${"1".repeat(curPlan.tests.length)}${updateDate ?? moment().format("DD.MM.YYYY")}${currentUsername}`)
+                    .should("contain", `${testPlanID}Тест-план для cy${curTests.length}${"1".repeat(curTests.length)}${updateDate ?? moment().format("DD.MM.YYYY")}${currentUsername}`)
             else {
                 let planStatusesValues = ""
                 statuses.forEach((status) => {
@@ -217,7 +233,7 @@ describe('Testing functionality on the project page', () => {
                 })
 
                 cy.get('tbody tr')
-                    .should("contain", `${testPlanID}Тест-план для cy${curPlan.tests.length}${planStatusesValues}${updateDate ?? moment().format("DD.MM.YYYY")}${currentUsername}`)
+                    .should("contain", `${testPlanID}Тест-план для cy${curTests.length}${planStatusesValues}${updateDate ?? moment().format("DD.MM.YYYY")}${currentUsername}`)
             }
 
         })
@@ -262,6 +278,6 @@ describe('Testing functionality on the project page', () => {
     it('switch to my activity', () => {
         cy.visit('/project')
         cy.get('input[type="checkbox"]').click()
-        cy.contains('Тест-план для cy').should("not.exist")
+        cy.contains('Тест-план для cy').should("exist")
     })
 })
