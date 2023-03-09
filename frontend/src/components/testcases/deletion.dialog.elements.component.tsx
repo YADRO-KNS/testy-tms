@@ -8,24 +8,27 @@ import SuiteCaseService from "../../services/suite.case.service";
 import {treeSuite} from "./suites.component";
 import {myCase} from "../models.interfaces";
 
-const DeletionDialogElements = (props: {
-    openDialogDeletion: boolean, setOpenDialogDeletion: (show: boolean) => void,
-    selectedForDeletion: number[], setSelectedForDeletion: (idCases: number[]) => void
-    setTreeSuites: (treeSuites: treeSuite[]) => void,
+interface Props {
+    openDialogDeletion: boolean,
+    setOpenDialogDeletion: (show: boolean) => void,
+    selectedForDeletion: number[],
+    setSelectedForDeletion: (idCases: number[]) => void
     selectedSuiteForTreeView: treeSuite,
     setSelectedSuiteForTreeView: (treeSuite: treeSuite) => void,
     setDetailedCaseInfo: (myCase: { show: boolean, myCase: myCase }) => void,
     detailedCaseInfo: { show: boolean, myCase: myCase }
-}) => {
-    const {
-        openDialogDeletion,
-        setOpenDialogDeletion,
-        selectedForDeletion,
-        setSelectedForDeletion,
-        setSelectedSuiteForTreeView, selectedSuiteForTreeView,
-        setDetailedCaseInfo, detailedCaseInfo
-    } = props
+}
 
+const DeletionDialogElements: React.FC<Props> = ({
+                                                     openDialogDeletion,
+                                                     setOpenDialogDeletion,
+                                                     selectedForDeletion,
+                                                     setSelectedForDeletion,
+                                                     selectedSuiteForTreeView,
+                                                     setSelectedSuiteForTreeView,
+                                                     setDetailedCaseInfo,
+                                                     detailedCaseInfo
+                                                 }) => {
 
     function disagreeToDelete() {
         setOpenDialogDeletion(false)

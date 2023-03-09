@@ -12,15 +12,43 @@ describe('Testing functionality on the profile page', () => {
         }).then((response) => {
             localStorage.setItem("accessToken", response.body.access)
             localStorage.setItem("refreshToken", response.body.refresh)
-            localStorage.setItem("currentPassword", currentPassword)
         })
     })
+
+    it('change first_name, last_name, email', () => {
+        cy.visit('/profile')
+        cy.get(`#first_name`).clear().type('Admin_Cy')
+        cy.get(`#last_name`).clear().type('Adminov_CY')
+        cy.get(`#email`).clear().type('admin@cy.com')
+        cy.get('#passwordProfile').clear().type(currentPassword)
+        cy.get('button[type="submit"]').click()
+        cy.contains('Изменения успешно сохранены')
+
+        cy.visit('/profile')
+        cy.get(`#first_name`).should('have.value', 'Admin_Cy')
+        cy.get(`#last_name`).should('have.value', 'Adminov_CY')
+        cy.get(`#email`).should('have.value', 'admin@cy.com')
+    });
 
     it('not submit without username', () => {
         cy.visit('/profile')
         cy.get(`#username`).clear()
+        cy.get('#passwordProfile').clear().type(currentPassword)
         cy.get('button[type="submit"]').click()
         cy.contains('Изменения успешно сохранены').should('not.exist')
+    });
+
+    it('not submit profile change without current password', () => {
+        cy.visit('/profile')
+        cy.get('button[type="submit"]').click()
+        cy.contains('Изменения успешно сохранены').should('not.exist')
+    });
+
+    it('show alert when current password is wrong', () => {
+        cy.visit('/profile')
+        cy.get('#passwordProfile').clear().type(currentPassword + "idontremember")
+        cy.get('button[type="submit"]').click()
+        cy.contains('Текущий пароль не совпадает с указанным').should('exist')
     });
 
     it('not submit password change with all fields empty', () => {
@@ -68,6 +96,22 @@ describe('Testing functionality on the profile page', () => {
         cy.get('#password').clear().type(currentPassword + "idontremember")
         cy.get('button[type="submit"]').click()
         cy.contains('Текущий пароль не совпадает с указанным').should('exist')
+    });
+
+    it('change username', () => {
+        cy.visit('/profile')
+        cy.get(`#username`).clear().type('admin_cy')
+        cy.get('#passwordProfile').clear().type(currentPassword)
+        cy.get('button[type="submit"]').click()
+        cy.contains('Изменения успешно сохранены')
+
+        cy.visit('/profile')
+        cy.get(`#username`).should("have.value", "admin_cy")
+
+        cy.get(`#username`).clear().type(currentUsername)
+        cy.get('#passwordProfile').clear().type(currentPassword)
+        cy.get('button[type="submit"]').click()
+        cy.contains('Изменения успешно сохранены')
     });
 })
 

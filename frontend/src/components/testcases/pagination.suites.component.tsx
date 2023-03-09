@@ -5,8 +5,12 @@ import React, {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 import useStylesTestCases from "./styles.testcases"
 
-const PaginationSuitesComponent = (props: { treeSuites: treeSuite[], countOfSuitesOnPage: number }) => {
-    const {treeSuites, countOfSuitesOnPage} = props;
+interface Props {
+    treeSuites: treeSuite[],
+    countOfSuitesOnPage: number
+}
+
+const PaginationSuitesComponent: React.FC<Props> = ({treeSuites, countOfSuitesOnPage}) => {
     const [page, setPage] = useState(1);
     const classes = useStylesTestCases()
     const [foundSuites, setFoundSuites] = useState<treeSuite[]>(treeSuites)

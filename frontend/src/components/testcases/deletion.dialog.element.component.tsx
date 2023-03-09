@@ -8,21 +8,30 @@ import SuiteCaseService from "../../services/suite.case.service";
 import {treeSuite} from "./suites.component";
 import {myCase} from "../models.interfaces";
 
-const DeletionDialogElement = (props: {
-    openDialogDeletion: boolean, setOpenDialogDeletion: (show: boolean) => void,
+interface Props {
+    openDialogDeletion: boolean,
+    setOpenDialogDeletion: (show: boolean) => void,
     componentForDeletion: myCase | treeSuite | undefined,
-    setTreeSuites: (treeSuites: treeSuite[]) => void,
-    selectedForDeletion: number[], setSelectedForDeletion: (idCases: number[]) => void,
+    selectedForDeletion: number[],
+    setSelectedForDeletion: (idCases: number[]) => void,
     selectedSuiteForTreeView: treeSuite,
     setSelectedSuiteForTreeView: (treeSuite: treeSuite) => void,
     setDetailedCaseInfo: (myCase: { show: boolean, myCase: myCase }) => void,
     detailedCaseInfo: { show: boolean, myCase: myCase }
-}) => {
-    const {
-        openDialogDeletion, setOpenDialogDeletion, componentForDeletion,
-        selectedForDeletion, setSelectedForDeletion, setSelectedSuiteForTreeView, selectedSuiteForTreeView,
-        setDetailedCaseInfo, detailedCaseInfo
-    } = props
+}
+
+const DeletionDialogElement: React.FC<Props> = ({
+                                                    openDialogDeletion,
+                                                    setOpenDialogDeletion,
+                                                    componentForDeletion,
+                                                    selectedForDeletion,
+                                                    setSelectedForDeletion,
+                                                    selectedSuiteForTreeView,
+                                                    setSelectedSuiteForTreeView,
+                                                    setDetailedCaseInfo,
+                                                    detailedCaseInfo
+                                                }) => {
+
 
     function disagreeToDelete() {
         setOpenDialogDeletion(false)

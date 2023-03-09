@@ -1,48 +1,7 @@
-import {project} from "../../../../src/components/models.interfaces";
+export {}
 
 describe('Testing functionality on the pages of suites and cases', () => {
-    beforeEach(() => {
-        cy.request({
-            method: 'POST',
-            url: 'http://localhost:8001/api/token/',
-            body: {
-                username: 'admin', password: 'password'
-            }
-        }).then((response) => {
-            localStorage.setItem("accessToken", response.body.access)
-            localStorage.setItem("refreshToken", response.body.refresh)
-            cy.request({
-                method: 'GET',
-                url: 'http://localhost:8001/api/v1/projects/',
-                headers: {
-                    Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
-                    "Content-Type": "application/json"
-                }
-            }).then((response) => {
-                const project = response.body
-                    .find((project: project) =>
-                        project.description === "Проект для тестирования в cy")
-                if (project) {
-                    localStorage.setItem("currentProject", JSON.stringify(project))
-                } else {
-                    cy.request({
-                        method: 'POST',
-                        url: 'http://localhost:8001/api/v1/projects/',
-                        body: {
-                            name: "Проект для тестирования в cy",
-                            description: "Проект для тестирования в cy"
-                        },
-                        headers: {
-                            Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
-                            "Content-Type": "application/json",
-                        }
-                    }).then((response) => {
-                        localStorage.setItem("currentProject", JSON.stringify(response.body))
-                    })
-                }
-            })
-        });
-    });
+    beforeEach(() => cy.loginAndCreateProject());
 
     it('disagree to create suite on upper level', () => {
         cy.visit('/testcases');

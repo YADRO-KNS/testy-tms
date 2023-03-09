@@ -1,3 +1,4 @@
+export {}
 describe('Testing functionality of the login ang logout', () => {
     it('login', () => {
         cy.visit('/login')
@@ -50,7 +51,7 @@ describe('Testing functionality of the login ang logout', () => {
 
             cy.visit('/')
             cy.get('header button[type="button"]:last').click()
-            cy.get('[data-cy="logout]"').click()
+            cy.get('[data-cy="logout"]').click()
             cy.url().should('eq', Cypress.config().baseUrl + 'login')
         })
     })

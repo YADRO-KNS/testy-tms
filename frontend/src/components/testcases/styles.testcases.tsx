@@ -6,7 +6,7 @@ export default makeStyles({
         marginTop: 0,
         position: "absolute",
         display: "flex",
-        height: "95%",
+        height: "91.5%",
         width: "100%"
     },
     leftGrid: {
@@ -42,7 +42,7 @@ export default makeStyles({
         },
     },
     mainGridFolderStructure: {
-        height: "67%"
+        height: "55%"
     },
     tableRow: {
         "& div[id=gridEditDelete]": {
