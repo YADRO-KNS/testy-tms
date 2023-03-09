@@ -69,8 +69,6 @@ const Project: React.FC = () => {
     const projectValue = useSelector((state: RootState) => state.currentProject.value)
     if (!projectValue) {
         console.log("Redux state currentProject is empty")
-        useEffect(() => navigate("/"))
-        return <></>
     }
 
     // Collecting data to display in table.
@@ -113,6 +111,10 @@ const Project: React.FC = () => {
     const personalTableData = projectTableData.filter((value) => value[value.length - 1] === currentUsername)
 
     useEffect(() => {
+        if (!projectValue) {
+            navigate("/")
+            return
+        }
         ProjectService.getMe().then((response) => {
             const currentUser: user = response.data
             setCurrentUsername(currentUser.username)
