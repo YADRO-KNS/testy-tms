@@ -1,5 +1,6 @@
 import axiosTMS from "./axiosTMS";
 import {testPlan} from "../components/models.interfaces";
+import localStorageTMS from "./localStorageTMS";
 
 export default class TestPlanService {
     static getAllTestPlans() {
@@ -31,7 +32,7 @@ export default class TestPlanService {
     }
 
     static getTreeTestPlans() {
-        const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
+        const projectId = localStorageTMS.getCurrentProject().id
         if (projectId) {
             return axiosTMS.get("api/v1/projects/" + projectId + "/testplans/")
         } else {
@@ -40,7 +41,7 @@ export default class TestPlanService {
     }
 
     static getParameters() {
-        const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
+        const projectId = localStorageTMS.getCurrentProject().id
         if (projectId) {
             return axiosTMS.get("api/v1/parameters/?project=" + projectId)
         } else {

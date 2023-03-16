@@ -2,6 +2,7 @@ import {statuses} from "../../../../src/components/model.statuses";
 import {myCase, planStatistic, test, testPlan, project, testResult} from "../../../../src/components/models.interfaces";
 import {suite} from "../../../../src/components/testcases/suites.component";
 import moment from "moment";
+import localStorageTMS from "../../../../src/services/localStorageTMS";
 
 describe('Testing functionality on the project page', () => {
     let testPlanID = 0;
@@ -18,14 +19,14 @@ describe('Testing functionality on the project page', () => {
                 username: currentUsername, password: currentPassword
             }
         }).then((response) => {
-            localStorage.setItem("accessToken", response.body.access)
-            localStorage.setItem("refreshToken", response.body.refresh)
+            localStorageTMS.setAccessToken(response.body.access)
+            localStorageTMS.setRefreshToken(response.body.refresh)
 
             cy.request({
                 method: 'GET',
                 url: 'http://localhost:8001/api/v1/projects/',
                 headers: {
-                    Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                    Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                     "Content-Type": "application/json"
                 }
             }).then((response) => {
@@ -33,7 +34,7 @@ describe('Testing functionality on the project page', () => {
                     .find((project: project) =>
                         project.description === "Проект для тестирования в cy")
                 if (project) {
-                    localStorage.setItem("currentProject", JSON.stringify(project))
+                    localStorageTMS.setCurrentProject(project)
                 } else {
                     cy.request({
                         method: 'POST',
@@ -43,19 +44,19 @@ describe('Testing functionality on the project page', () => {
                             description: "Проект для тестирования в cy"
                         },
                         headers: {
-                            Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                            Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                             "Content-Type": "application/json",
                         }
                     }).then((response) => {
                         project = response.body
-                        localStorage.setItem("currentProject", JSON.stringify(project))
+                        localStorageTMS.setCurrentProject(project)
                     })
                 }
                 cy.request({
                     method: 'GET',
                     url: 'http://localhost:8001/api/v1/tests/',
                     headers: {
-                        Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                        Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                         "Content-Type": "application/json"
                     }
                 }).then((response) => {
@@ -65,7 +66,7 @@ describe('Testing functionality on the project page', () => {
                         method: 'GET',
                         url: 'http://localhost:8001/api/v1/testplans/',
                         headers: {
-                            Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                            Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                             "Content-Type": "application/json"
                         }
                     }).then((response) => {
@@ -80,7 +81,7 @@ describe('Testing functionality on the project page', () => {
                                 method: 'GET',
                                 url: 'http://localhost:8001/api/v1/cases/',
                                 headers: {
-                                    Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                                    Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                                     "Content-Type": "application/json"
                                 }
                             }).then((response) => {
@@ -94,7 +95,7 @@ describe('Testing functionality on the project page', () => {
                                             project: project.id,
                                         },
                                         headers: {
-                                            Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                                            Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                                             "Content-Type": "application/json",
                                         }
                                     }).then((response) => {
@@ -110,7 +111,7 @@ describe('Testing functionality on the project page', () => {
                                                     scenario: "Описание для cy"
                                                 },
                                                 headers: {
-                                                    Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                                                    Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                                                     "Content-Type": "application/json",
                                                 }
                                             }).then((response) => {
@@ -132,7 +133,7 @@ describe('Testing functionality on the project page', () => {
                                         project: project.id,
                                     },
                                     headers: {
-                                        Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                                        Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                                         "Content-Type": "application/json",
                                     }
                                 }).then((response) => {
@@ -148,7 +149,7 @@ describe('Testing functionality on the project page', () => {
                                 method: 'GET',
                                 url: `http://localhost:8001/api/v1/testplans/${testPlanID}/statistics/`,
                                 headers: {
-                                    Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                                    Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                                     "Content-Type": "application/json"
                                 }
                             }).then((response) => {
@@ -165,7 +166,7 @@ describe('Testing functionality on the project page', () => {
                                                     status: Array.from(statuses.values())[index].id
                                                 },
                                                 headers: {
-                                                    Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                                                    Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                                                     "Content-Type": "application/json",
                                                 }
                                             })
@@ -217,7 +218,7 @@ describe('Testing functionality on the project page', () => {
             method: 'GET',
             url: `http://localhost:8001/api/v1/tests/`,
             headers: {
-                Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                 "Content-Type": "application/json"
             }
         }).then((response) => {

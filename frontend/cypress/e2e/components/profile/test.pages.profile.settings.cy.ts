@@ -1,3 +1,5 @@
+import localStorageTMS from "../../../../src/services/localStorageTMS";
+
 describe('Testing functionality on the profile page', () => {
     const currentUsername = 'admin'
     const currentPassword = 'password'
@@ -10,8 +12,8 @@ describe('Testing functionality on the profile page', () => {
                 username: currentUsername, password: currentPassword
             }
         }).then((response) => {
-            localStorage.setItem("accessToken", response.body.access)
-            localStorage.setItem("refreshToken", response.body.refresh)
+            localStorageTMS.setAccessToken(response.body.access)
+            localStorageTMS.setRefreshToken(response.body.refresh)
         })
     })
 

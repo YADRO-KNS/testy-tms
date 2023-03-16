@@ -12,12 +12,12 @@ import ProjectService from "../../services/project.service";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {project} from "../models.interfaces";
 import DeletionDialogProject from "./deletion.dialog.project.component";
-import {useDispatch} from "react-redux";
-import {put} from "../../features/currentProject/currentProjectSlice";
+import localStorageTMS from "../../services/localStorageTMS";
+import {useNavigate} from "react-router-dom";
 
 const SelectionProject: React.FC = () => {
-    const dispatch = useDispatch()
     const classes = useStyles();
+    const navigate = useNavigate();
     const [expanded, setExpanded] = useState(false);
     const [projects, setProjects] = useState<project[]>([]);
     const [openDialogDeletion, setOpenDialogDeletion] = useState(false);
@@ -31,9 +31,8 @@ const SelectionProject: React.FC = () => {
     }, []);
 
     const loginToProject = (project: project) => {
-        dispatch(put(project))
-        localStorage.setItem("currentProject", JSON.stringify(project));
-        window.location.assign("/project");
+        localStorageTMS.setCurrentProject(project);
+        navigate("/project");
     }
 
     return (

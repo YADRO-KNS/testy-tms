@@ -1,6 +1,9 @@
+import localStorageTMS from "../../../../src/services/localStorageTMS";
+
 export {}
 
 describe('Testing functionality on the pages of testplans', () => {
+    // @ts-ignore
     beforeEach(() => cy.loginAndCreateProject());
 
     it('disagree to create test plan', () => {
@@ -166,13 +169,12 @@ describe('Testing functionality on the pages of testplans', () => {
     });
 
     it('delete project for tests', () => {
-        JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
         cy.request({
             method: 'DELETE',
             url: 'http://localhost:8001/api/v1/projects/' +
-                JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id + "/",
+                localStorageTMS.getCurrentProject().id + "/",
             headers: {
-                Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                 "Content-Type": "application/json"
             }
         })

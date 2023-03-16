@@ -1,5 +1,6 @@
 import axiosTMS from "./axiosTMS";
 import axios from "axios";
+import localStorageTMS from "./localStorageTMS";
 
 export default class AttachmentService {
     static filenameReduce = (filename: string) => {
@@ -13,9 +14,9 @@ export default class AttachmentService {
 
     private static postAttachment(file: File, objectId: number, contentType: number, token: string | null) {
         const formData = new FormData();
-        const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : 1}').id;
+        const projectId = localStorageTMS.getCurrentProject().id;
 
-        formData.append("project", projectId);
+        formData.append("project", projectId.toString());
         formData.append("comment", "");
         formData.append("content_type", contentType.toString());
         formData.append("object_id", objectId.toString());
@@ -33,7 +34,7 @@ export default class AttachmentService {
     static postAttachments(filesSelected: File[] | undefined, objectId: number, contentType: number) {
         if (!filesSelected) return new Promise<void>((resolve) => {resolve()});
 
-        const token = localStorage.getItem("accessToken");
+        const token = localStorageTMS.getAccessToken();
         return new Promise<void>(async (resolve) => {
             await Promise.all(filesSelected.map(async (file) => {
                 await this.postAttachment(file, objectId, contentType, token)

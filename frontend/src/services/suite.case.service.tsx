@@ -1,10 +1,11 @@
 import axiosTMS from "./axiosTMS";
 import {myCase} from "../components/models.interfaces";
+import localStorageTMS from "./localStorageTMS";
 
 export default class SuiteCaseService {
 
     static getSuites() {
-        const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
+        const projectId = localStorageTMS.getCurrentProject().id
         if (projectId) {
             return axiosTMS.get("api/v1/suites/?project=" + projectId)
         } else {
@@ -17,7 +18,7 @@ export default class SuiteCaseService {
     }
 
     static getCases() {
-        const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
+        const projectId = localStorageTMS.getCurrentProject().id
         if (projectId) {
             return axiosTMS.get("api/v1/cases/?project=" + projectId)
         } else {
@@ -30,7 +31,7 @@ export default class SuiteCaseService {
     }
 
     static getTreeBySetSuite(id: number) {
-        const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
+        const projectId = localStorageTMS.getCurrentProject().id
         if (projectId) {
             return axiosTMS.get("api/v1/suites/" + id + "/?project=" + projectId + "&treeview=true")
         } else {
@@ -39,7 +40,7 @@ export default class SuiteCaseService {
     }
 
     static getTreeSuites() {
-        const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
+        const projectId = localStorageTMS.getCurrentProject().id
         if (projectId) {
             return axiosTMS.get("api/v1/suites/?project=" + projectId + "&treeview=true")
         } else {

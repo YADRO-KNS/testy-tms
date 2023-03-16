@@ -16,6 +16,7 @@ testrail_migrator/migrations/0002_rename_dumpfile_path_testrailsettings_testy_at
 testrail_migrator/migrations/__init__.py
 testrail_migrator/migrator_lib/__init__.py
 testrail_migrator/migrator_lib/config.py
+testrail_migrator/migrator_lib/migrator_service.py
 testrail_migrator/migrator_lib/testrail.py
 testrail_migrator/migrator_lib/testy.py
 testrail_migrator/migrator_lib/utils.py
