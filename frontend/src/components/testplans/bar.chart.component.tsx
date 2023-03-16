@@ -1,42 +1,30 @@
 import React from 'react';
 import {BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer} from 'recharts';
+import {statuses} from "../model.statuses";
 
-interface Props {
-    passed: number;
-    skipped: number;
-    failed: number;
-    blocked: number;
-    untested: number;
-    broken: number;
-    retest: number
-}
+const BarChartComponent = (props: { statistics: { label: string, value: number }[] }) => {
+    const {statistics} = props
+    let dataRecord: Record<string, number> = {}
+    for (const i of statistics) {
+        i.label = i.label.toLowerCase()
+        dataRecord[i.label] = i.value
+    }
+    let data = [dataRecord]
 
-const BarChartComponent: React.FC<Props> = ({passed, skipped, failed, blocked, untested, broken, retest}) => {
-    const data = [
-        {
-            passed: passed,
-            skipped: skipped,
-            failed: failed,
-            blocked: blocked,
-            untested: untested,
-            broken: broken,
-            retest: retest
-        },
-    ];
+    const fill = (label: string) => {
+        return statuses.find(status => status.name.toLowerCase() === label)?.color
+    }
 
     return (
-        <ResponsiveContainer width="100%" aspect={4.0 / 1.3}>
+        <ResponsiveContainer width="100%" aspect={4.0 / 1.1} data-cy="bar-chart">
             <BarChart data={data} layout="vertical">
                 <XAxis hide type="number"/>
                 <YAxis hide dataKey="name" reversed type="category"/>
                 <Tooltip wrapperStyle={{zIndex: 100}} isAnimationActive={false}/>
-                <Bar legendType="star" label="passed" dataKey="passed" barSize={20} stackId="a" fill="#27e727"/>
-                <Bar legendType="star" label="skipped" dataKey="skipped" stackId="a" fill="#ddba99"/>
-                <Bar legendType="star" label="failed" dataKey="failed" stackId="a" fill="#bd2828"/>
-                <Bar legendType="star" label="blocked" dataKey="blocked" stackId="a" fill="#6c6c6c"/>
-                <Bar legendType="star" label="untested" dataKey="untested" stackId="a" fill="#a5a4a4"/>
-                <Bar legendType="star" label="broken" dataKey="broken" stackId="a" fill="#602c13"/>
-                <Bar legendType="star" label="retest" dataKey="retest" stackId="a" fill="#ded312"/>
+                {statistics.map((tests, index) =>
+                    (<Bar textAnchor={tests.label} key={index} legendType="star" label={tests.label}
+                          dataKey={tests.label} stackId="a" barSize={20} fill={fill(tests.label)}/>)
+                )}
             </BarChart>
         </ResponsiveContainer>
     );
