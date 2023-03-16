@@ -10,6 +10,8 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
+import localStorageTMS from "../../services/localStorageTMS";
+import {project} from "../models.interfaces";
 
 interface Props {
     show: boolean;
@@ -39,7 +41,7 @@ const ProjectSettings: React.FC<Props> = ({show, setShow}) => {
     const [link, setLink] = useState("")
     const [links, setLinks] = useState<string []>([])
     const [linkPresence, setLinkPresence] = useState(false)
-    const projectValue = JSON.parse(localStorage.getItem("currentProject") ?? '')
+    const projectValue = localStorageTMS.getCurrentProject()
     const [projectName, setProjectName] = useState(projectValue.name)
 
     const [projectDescription, setProjectDescription] = React.useState(projectValue.description)
@@ -53,6 +55,8 @@ const ProjectSettings: React.FC<Props> = ({show, setShow}) => {
     }
 
     const handleClose = () => {
+        setProjectName(projectValue.name)
+        setProjectDescription(projectValue.description)
         setStatus("")
         setStatusInput("")
         setStatuses([])
@@ -65,7 +69,8 @@ const ProjectSettings: React.FC<Props> = ({show, setShow}) => {
 
     const handlePatch = () => {
         ProjectService.patchProject({name: projectName, description: projectDescription}, projectValue.id)
-            .then(r => {});
+            .then(r => {
+            });
         setStatus("")
         setStatusInput("")
         setStatuses([])

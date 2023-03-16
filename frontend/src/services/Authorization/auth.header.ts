@@ -1,5 +1,7 @@
+import localStorageTMS from "../localStorageTMS";
+
 const authHeader = () => {
-    const token = localStorage.getItem("accessToken");
+    const token = localStorageTMS.getAccessToken();
 
     if (token) {
         return {Authorization: 'Bearer ' + token, "Content-Type": "application/json"};

@@ -1,4 +1,4 @@
-export {}
+import localStorageTMS from "../../../../src/services/localStorageTMS";
 
 describe('Testing functionality on the pages of suites and cases', () => {
     beforeEach(() => cy.loginAndCreateProject());
@@ -93,13 +93,12 @@ describe('Testing functionality on the pages of suites and cases', () => {
 
     it('go to the suites tree by the id specified in the url', () => {
         let suiteId: number
-        const projectId = JSON
-            .parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
+        const projectId = localStorageTMS.getCurrentProject().id
         cy.request({
             method: 'GET',
             url: `http://localhost:8001/api/v1/suites/?project=${projectId}&treeview=true`,
             headers: {
-                Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                 "Content-Type": "application/json"
             }
         }).then((response) => {
@@ -111,13 +110,12 @@ describe('Testing functionality on the pages of suites and cases', () => {
     })
 
     it('go to the suites tree by the not existed id specified in the url', () => {
-        const projectId = JSON
-            .parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
+        const projectId = localStorageTMS.getCurrentProject().id
         cy.request({
             method: 'GET',
             url: `http://localhost:8001/api/v1/suites/?project=${projectId}&treeview=true`,
             headers: {
-                Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                 "Content-Type": "application/json"
             }
         }).then(() => {
@@ -880,9 +878,9 @@ describe('Testing functionality on the pages of suites and cases', () => {
         cy.request({
             method: 'DELETE',
             url: 'http://localhost:8001/api/v1/projects/' +
-                JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id + "/",
+                localStorageTMS.getCurrentProject().id + "/",
             headers: {
-                Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                 "Content-Type": "application/json"
             }
         })

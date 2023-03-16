@@ -29,6 +29,7 @@ import PieChartComponent from "./charts/pie.chart.component";
 import {useNavigate} from "react-router-dom";
 import {useSelector} from "react-redux";
 import {RootState} from "../../app/store";
+import localStorageTMS from "../../services/localStorageTMS";
 
 const Project: React.FC = () => {
     const classes = useStyles();
@@ -66,7 +67,7 @@ const Project: React.FC = () => {
         setStatusesToShow({...statusesShow, [status]: !statusesShow[status]})
     };
 
-    const projectValue = useSelector((state: RootState) => state.currentProject.value)
+    const projectValue = localStorageTMS.getCurrentProject()
     if (!projectValue) {
         console.log("Redux state currentProject is empty")
     }

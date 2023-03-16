@@ -10,19 +10,19 @@ interface Props {
 }
 
 const Attachments: React.FC<Props> = ({attachments}) => {
+    console.log(attachments)
     return (
         <div style={{display: 'flex', flexDirection: 'column'}}>
             {attachments && attachments.map((attachment, index) => (
-                <Grid key={index}
-                      style={{
-                          marginTop: 5,
-                          color: 'inherit',
-                          textDecoration: 'none'
-                      }}
-                      component="a"
-                      href={attachment.file}
-                      target="_blank"
-                      download>
+                <a key={index}
+                   style={{
+                       marginTop: 5,
+                       color: 'inherit',
+                       textDecoration: 'none'
+                   }}
+                   href={attachment.link}
+                   target="_blank"
+                   download>
                     <Tooltip title={attachment.filename} arrow>
                         <div style={{display: 'flex', flexDirection: 'row'}}>
                             <DescriptionIcon/>
@@ -31,7 +31,7 @@ const Attachments: React.FC<Props> = ({attachments}) => {
                             </Typography>
                         </div>
                     </Tooltip>
-                </Grid>
+                </a>
             ))}
         </div>
     );

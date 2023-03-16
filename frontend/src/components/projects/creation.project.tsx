@@ -30,13 +30,15 @@ const CreationProject: React.FC<Props> = ({setProjects}) => {
                         setName("")
                         setDescription("")
                     })
-            )
+            ).catch((e) => {
+                console.log(e);
+            });
     }
 
     return (
         <Card elevation={3} style={{
             borderRadius: 15,
-            margin:"10px 5px 20px 5px"
+            margin: "10px 5px 20px 5px"
         }}>
             <div style={{
                 alignItems: 'center',
@@ -85,7 +87,6 @@ const CreationProject: React.FC<Props> = ({setProjects}) => {
                         multiline
                         minRows={6}
                         maxRows={12}
-                        required
                         fullWidth
                         id="projectDescription"
                         name="projectDescription"

@@ -1,17 +1,9 @@
 import {project} from "../../../../src/components/models.interfaces";
+import localStorageTMS from "../../../../src/services/localStorageTMS";
 
 describe('Testing functionality on the pages of suites and cases', () => {
     beforeEach(() => {
-        cy.request({
-            method: 'POST',
-            url: 'http://localhost:8001/api/token/',
-            body: {
-                username: 'admin', password: 'password'
-            }
-        }).then((response) => {
-            localStorage.setItem("accessToken", response.body.access)
-            localStorage.setItem("refreshToken", response.body.refresh)
-        })
+        cy.login()
     })
 
     afterEach(() => {
@@ -19,12 +11,12 @@ describe('Testing functionality on the pages of suites and cases', () => {
             method: 'GET',
             url: 'http://localhost:8001/api/v1/projects/',
             headers: {
-                Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                 "Content-Type": "application/json"
             }
         }).then((response) => {
             const project = response.body.find((project: project) => (
-                project.name === "Тестовый проект для cypress" || project.name === "Отредактированный тестовый проект для cypress"
+                project.name === "Проект для тестирования в cy" || project.name === "Отредактированный Проект для тестирования в cy"
             ))
             if (project) {
                 console.log(project)
@@ -32,23 +24,13 @@ describe('Testing functionality on the pages of suites and cases', () => {
                     method: 'DELETE',
                     url: 'http://localhost:8001/api/v1/projects/' + project.id + '/',
                     headers: {
-                        Authorization: 'Bearer ' + localStorage.getItem("accessToken"),
+                        Authorization: 'Bearer ' + localStorageTMS.getAccessToken(),
                         "Content-Type": "application/json"
                     }
                 })
             }
         })
     })
-
-    const createProject = () => {
-        cy.visit('/');
-        cy.get('[data-cy="project-creation"]').click()
-        cy.get('input[id="projectName"]').type("Тестовый проект для cypress")
-            .should("have.value", "Тестовый проект для cypress")
-        cy.get('textarea[id="projectDescription"]').type("Проект для тестирования в cypress")
-            .should("have.value", "Проект для тестирования в cypress")
-        cy.get('[data-cy="button-create-project"]').click()
-    }
 
     it('open and close creation project form', () => {
         cy.visit('/');
@@ -66,33 +48,42 @@ describe('Testing functionality on the pages of suites and cases', () => {
     })
 
     it('create project', () => {
-        createProject()
-        cy.get('div').contains("Тестовый проект для cypress")
-        cy.get('div').contains("Проект для тестирования в cypress")
+        cy.visit('/');
+        cy.get('[data-cy="project-creation"]').click()
+        cy.get('input[id="projectName"]').type("Проект для тестирования в cy")
+            .should("have.value", "Проект для тестирования в cy")
+        cy.get('textarea[id="projectDescription"]').type("Проект для тестирования в cy")
+            .should("have.value", "Проект для тестирования в cy")
+        cy.get('[data-cy="button-create-project"]').click()
+        cy.get('div').contains("Проект для тестирования в cy")
+        cy.get('div').contains("Проект для тестирования в cy")
     })
 
     it('agree to delete project', () => {
-        createProject()
+        cy.createProject()
+        cy.visit('/');
         cy.get('button svg[data-testid=DeleteIcon]:first').parent().click()
         cy.get('button').contains("Да").click()
-        cy.get('div').contains("Тестовый проект для cypress", {matchCase: false})
-        cy.get('div').contains("Проект для тестирования в cypress", {matchCase: false})
+        cy.get('div').contains("Проект для тестирования в cy", {matchCase: false})
+        cy.get('div').contains("Проект для тестирования в cy", {matchCase: false})
     })
 
     it('disagree to delete project', () => {
-        createProject()
+        cy.createProject()
+        cy.visit('/');
         cy.get('button svg[data-testid=DeleteIcon]:first').parent().click()
         cy.get('button').contains("Нет").click()
-        cy.get('div').contains("Тестовый проект для cypress")
-        cy.get('div').contains("Проект для тестирования в cypress")
+        cy.get('div').contains("Проект для тестирования в cy")
+        cy.get('div').contains("Проект для тестирования в cy")
     })
 
     it('change project name and description', () => {
-        let oldName = "Тестовый проект для cypress"
-        let oldDescription = "Проект для тестирования в cypress"
-        let newName = "Отредактированный тестовый проект для cypress"
-        let newDescription = "Отредактированный проект для тестирования в cypress"
-        createProject()
+        let oldName = "Проект для тестирования в cy"
+        let oldDescription = "Проект для тестирования в cy"
+        let newName = "Отредактированный Проект для тестирования в cy"
+        let newDescription = "Отредактированный Проект для тестирования в cy"
+        cy.createProject()
+        cy.visit('/');
         cy.contains(oldName).click()
         cy.get('[data-cy="openProjectSettingsPage"]').click()
         cy.get('input[id="projectNameEdit"]')
