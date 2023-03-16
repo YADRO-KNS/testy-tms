@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import BarChartComponent from "./bar.chart.component";
 import {treeTestPlan} from "./testplans.component";
 import TestPlanService from "../../services/testplan.service";
-import {testPlan} from "../models.interfaces";
+import {planStatistic, testPlan} from "../models.interfaces";
 import useStyles from "./styles.testplans";
 
 const TableTestPlans = (props: {
@@ -17,6 +17,8 @@ const TableTestPlans = (props: {
     const classes = useStyles()
     const {testplan, selected, setSelected} = props;
     const [currentTestPlan, setCurrentTestPlan] = useState<testPlan>()
+    const [testPlanStatistics, setTestPlanStatistics] = useState<{ label: string, value: number }[]>()
+    const [testNumber, setTestNumber] = useState<number>()
 
     useEffect(() => {
         if (!currentTestPlan) {
@@ -29,39 +31,18 @@ const TableTestPlans = (props: {
         }
     }, [currentTestPlan, testplan.id])
 
-    const getTestsResults = (currentTestPlan: testPlan | undefined) => {
-        const testsResults: { passed: number, skipped: number, failed: number, blocked: number, untested: number, broken: number, retest: number } = {
-            passed: 0,
-            skipped: 0,
-            failed: 0,
-            blocked: 0,
-            untested: 0,
-            broken: 0,
-            retest: 0
+    useEffect(() => {
+        if (!testPlanStatistics) {
+            TestPlanService.getStatistics(testplan.id).then((response) => {
+                setTestPlanStatistics(response.data)
+                const number = response.data.reduce((sum: number, current: planStatistic) => sum + current.value, 0)
+                setTestNumber(number)
+            })
+                .catch((e) => {
+                    console.log(e);
+                });
         }
-        if (currentTestPlan?.tests) {
-            for (const cur_test of currentTestPlan?.tests) {
-                if (cur_test.current_result === "Passed") {
-                    testsResults.passed++
-                } else if (cur_test.current_result === "Skipped") {
-                    testsResults.skipped++
-                } else if (cur_test.current_result === "Failed") {
-                    testsResults.failed++
-                } else if (cur_test.current_result === "Blocked") {
-                    testsResults.blocked++
-                } else if (cur_test.current_result === "Untested") {
-                    testsResults.untested++
-                } else if (cur_test.current_result === "Broken") {
-                    testsResults.broken++
-                } else if (cur_test.current_result === "Retest") {
-                    testsResults.retest++
-                } else {
-                    testsResults.untested++
-                }
-            }
-        }
-        return testsResults
-    }
+    }, [testPlanStatistics, testplan.id])
 
     const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
         const selectedIndex = selected.indexOf(id);
@@ -110,18 +91,14 @@ const TableTestPlans = (props: {
 
                             </div>
                             <div>
-                                {"Количество дочерних тест-планов: " + testplan.children.length + ". Количество тестов: " + currentTestPlan?.tests?.length}
+                                {"Количество дочерних тест-планов: " + testplan.children.length + ". Количество тестов: " + testNumber}
                             </div>
                         </td>
+
                         <TableCell align="right" style={{width: "25%"}}>
-                            <BarChartComponent passed={getTestsResults(currentTestPlan).passed}
-                                               skipped={getTestsResults(currentTestPlan).skipped}
-                                               failed={getTestsResults(currentTestPlan).failed}
-                                               blocked={getTestsResults(currentTestPlan).blocked}
-                                               untested={getTestsResults(currentTestPlan).untested}
-                                               broken={getTestsResults(currentTestPlan).broken}
-                                               retest={getTestsResults(currentTestPlan).retest}/>
+                            {testPlanStatistics && <BarChartComponent statistics={testPlanStatistics}/>}
                         </TableCell>
+
                     </tr>
                     </tbody>}
                 </Table>

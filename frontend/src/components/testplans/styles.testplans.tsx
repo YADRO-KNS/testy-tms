@@ -53,9 +53,17 @@ export default makeStyles({
         minHeight: "93%"
     },
     icons: {
-        width: '1em',
-        textAlign: 'center',
         color: 'primary',
+    },
+    nodes: {
+        margin: '0px',
+        fontSize: 17,
+        "& label": {
+            marginTop: 0
+        },
+        "& .rct-title": {
+            marginTop: '50px'
+        }
     },
     paperCreation: {
         minWidth: "94%",
@@ -102,5 +110,13 @@ export default makeStyles({
     },
     formTestPlan: {
         width: '100%',
+    },
+    editor: {
+        " .toastui-editor-md-tab-container .tab-item": {
+            fontSize: "inherit",
+        },
+        "& .toastui-editor-toolbar": {
+            height: "25px",
+        },
     },
 })
