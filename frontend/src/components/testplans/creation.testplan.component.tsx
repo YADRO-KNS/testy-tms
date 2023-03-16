@@ -27,6 +27,7 @@ import BlockIcon from '@mui/icons-material/Block';
 import {treeSuite} from "../testcases/suites.component";
 import {param, testPlan} from "../models.interfaces";
 import SuiteCaseService from "../../services/suite.case.service";
+import localStorageTMS from "../../services/localStorageTMS";
 
 interface Props {
     show: boolean;
@@ -107,7 +108,7 @@ const CreationTestplanComponent: React.FC<Props> = ({
     }, [isForEdit, testPlans])
 
     useEffect(() => {
-        const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
+        const projectId = localStorageTMS.getCurrentProject().id
         if (projectId) {
             const newTestPlansForSelect: testPlan[] = []
             testPlans.forEach(testPlan => {
@@ -221,7 +222,7 @@ const CreationTestplanComponent: React.FC<Props> = ({
 
     const createTestPlan = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
+        const projectId = localStorageTMS.getCurrentProject().id
         if (projectId) {
             let params = []
             if (!paramsChecked.includes('no') && paramsChecked.length !== 0) {

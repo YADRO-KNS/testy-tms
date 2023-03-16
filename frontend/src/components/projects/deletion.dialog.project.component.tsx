@@ -29,7 +29,9 @@ const DeletionDialogProject: React.FC<Props> = ({
                 ProjectService.getProjects().then((response) => {
                     setProjects(response.data)
                 })
-            })
+            }).catch((e) => {
+                console.log(e);
+            });
             setOpenDialogDeletion(false)
         }
     }

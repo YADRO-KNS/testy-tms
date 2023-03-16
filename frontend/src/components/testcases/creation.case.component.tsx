@@ -15,6 +15,7 @@ import {myCase} from "../models.interfaces";
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import AttachmentButton from "../attachment/attachment_button";
 import AttachmentService from "../../services/attachment.servise";
+import localStorageTMS from "../../services/localStorageTMS";
 
 interface Props {
     show: boolean;
@@ -149,7 +150,7 @@ const CreationCase: React.FC<Props> = ({
     }
 
     const createCase = () => {
-        const projectId = JSON.parse(localStorage.getItem("currentProject") ?? '{"id" : null}').id
+        const projectId = localStorageTMS.getCurrentProject().id
         if (namePresence && scenarioPresence && projectId) {
             const myCase = {
                 name: name,

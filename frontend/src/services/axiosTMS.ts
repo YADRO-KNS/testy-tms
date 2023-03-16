@@ -1,6 +1,7 @@
 import axios from "axios";
 import authHeader from "./Authorization/auth.header";
 import AuthService from "./Authorization/auth.service";
+import localStorageTMS from "./localStorageTMS";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -27,8 +28,8 @@ axiosTMS.interceptors.response
             try {
                 if (error.response.status === 401) {
                     if (error.config.url === "api/token/refresh/") {
-                        localStorage.removeItem("accessToken");
-                        localStorage.removeItem("refreshToken");
+                        localStorageTMS.removeAccessToken();
+                        localStorageTMS.removeRefreshToken();
                         window.location.assign(loginUrl);
                         return Promise.reject(error);
                     }
