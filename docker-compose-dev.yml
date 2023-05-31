@@ -1,5 +1,12 @@
 version: '3.9'
 services:
+  testy-frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    container_name: testy-frontend
+    ports:
+      - "3000:3000"
   testy:
     container_name: testy
     extra_hosts:
