@@ -36,6 +36,12 @@ const PaginationSuitesComponent: React.FC<Props> = ({treeSuites, countOfSuitesOn
                 placeholder="Поиск..."
                 variant={"outlined"}
             />
+            <Pagination
+                count={Math.ceil(foundSuites.length / countOfSuitesOnPage)}
+                page={page}
+                onChange={(_, num) => setPage(num)}
+                sx={{marginY: 1, marginX: 1}}
+            />
             <div data-cy="list-of-suites">
                 {foundSuites.slice(page * countOfSuitesOnPage - countOfSuitesOnPage,
                     page * countOfSuitesOnPage)

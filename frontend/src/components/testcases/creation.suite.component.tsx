@@ -220,7 +220,7 @@ const CreationSuite: React.FC<Props> = ({
                                 value={description}
                                 margin="normal"
                                 fullWidth
-                                label="Введите описание тест-кейса"
+                                label="Введите описание сьюты"
                                 autoComplete="off"
                                 multiline
                                 minRows={2}

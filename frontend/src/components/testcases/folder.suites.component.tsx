@@ -308,60 +308,68 @@ const FolderSuites = (props: {
             height: "100%"
         }}>
             {selectedSuiteForTreeView !== undefined &&
-            <div style={{
-                height: "100%"
-            }}>
                 <div style={{
-                    height: "15%",
-                    minHeight: "max-content",
-                    margin: "15px 0px 0px 20px",
+                    height: "100%"
                 }}>
-                    <div>
-                        <TextField
-                            id="find-suite-folder-structure"
-                            onChange={(content) => onChangeName(content)}
-                            autoComplete="off"
-                            style={{width: "95%"}}
-                            placeholder="Поиск..."
-                            variant={"outlined"}
-                        />
-                    </div>
+                    <div style={{
+                        height: "15%",
+                        minHeight: "max-content",
+                        margin: "15px 0px 0px 20px",
+                    }}>
+                        <div>
+                            <TextField
+                                id="find-suite-folder-structure"
+                                onChange={(content) => onChangeName(content)}
+                                autoComplete="off"
+                                style={{width: "95%"}}
+                                placeholder="Поиск..."
+                                variant={"outlined"}
+                            />
+                        </div>
 
-                    {currentSuiteNumber !== 0 &&
-                    <div style={{display: "flex", flexDirection: "row", width: "100%", height: "35%", marginTop: 7}}>
-                        <IconButton data-cy="go-back" style={{width: "8%", height: "100%"}} onClick={() => prevSuite()}>
-                            <KeyboardArrowLeftIcon/>
-                        </IconButton>
-                        <div style={{height: "100%"}}>{currentSuiteNumber} / {totalSuitesNumber}</div>
-                        <IconButton data-cy="go-next" style={{width: "8%", height: "100%"}} onClick={() => nextSuite()}>
-                            <KeyboardArrowRightIcon/>
-                        </IconButton>
-                    </div>}
-                </div>
-                <div style={{
-                    backgroundColor: "white", borderRadius: 10, margin: "13px 13px 13px 13px ",
-                    height: "100%", overflowY: "auto", overflowX: "auto"
-                }}>
-                    <TreeView
-                        aria-label="customized"
-                        expanded={expanded}
-                        selected={selected}
-                        defaultCollapseIcon={<MinusSquare/>}
-                        defaultExpandIcon={<PlusSquare/>}
-                        defaultEndIcon={<CloseSquare/>}
-                        onNodeToggle={handleToggle}
-                        sx={{
-                            flexGrow: 1,
-                            margin: 1,
-                            textAlign: "left",
-                        }}
-                    >
-                        <Suite key={selectedSuiteForTreeView.id} row={selectedSuiteForTreeView}
-                               nodeId={selectedSuiteForTreeView.id}
-                        />
-                    </TreeView>
-                </div>
-            </div>}
+                        {currentSuiteNumber !== 0 &&
+                            <div style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                width: "100%",
+                                height: "35%",
+                                marginTop: 7
+                            }}>
+                                <IconButton data-cy="go-back" style={{width: "8%", height: "100%"}}
+                                            onClick={() => prevSuite()}>
+                                    <KeyboardArrowLeftIcon/>
+                                </IconButton>
+                                <div style={{height: "100%"}}>{currentSuiteNumber} / {totalSuitesNumber}</div>
+                                <IconButton data-cy="go-next" style={{width: "8%", height: "100%"}}
+                                            onClick={() => nextSuite()}>
+                                    <KeyboardArrowRightIcon/>
+                                </IconButton>
+                            </div>}
+                    </div>
+                    <div style={{
+                        backgroundColor: "white", borderRadius: 10, margin: "38px 13px 13px 13px ",
+                        height: "100%", overflowY: "auto", overflowX: "auto"
+                    }}>
+                        <TreeView
+                            aria-label="customized"
+                            expanded={expanded}
+                            selected={selected}
+                            defaultCollapseIcon={<MinusSquare/>}
+                            defaultExpandIcon={<PlusSquare/>}
+                            defaultEndIcon={<CloseSquare/>}
+                            onNodeToggle={handleToggle}
+                            sx={{
+                                flexGrow: 1,
+                                margin: 1,
+                                textAlign: "left",
+                            }}
+                        >
+                            <Suite key={selectedSuiteForTreeView.id} row={selectedSuiteForTreeView}
+                                   nodeId={selectedSuiteForTreeView.id}
+                            />
+                        </TreeView>
+                    </div>
+                </div>}
         </div>
     );
 }

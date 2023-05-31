@@ -1,7 +1,6 @@
 import React, {useEffect} from "react";
 import {myCase} from "../models.interfaces";
 import Divider from "@mui/material/Divider";
-import Grid from "@mui/material/Grid";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import CloseIcon from '@mui/icons-material/Close';
@@ -25,9 +24,9 @@ const DetailedCaseInfo: React.FC<Props> = ({myCase, setDetailedCaseInfo}) => {
     }, [myCase])
 
     return (
-        <Grid style={{padding: 20, wordBreak: "break-word"}}>
-            <Grid>
-                <Grid style={{display: "flex", justifyContent: "space-between"}}>
+        <div style={{padding: 20, wordBreak: "break-word"}}>
+            <div>
+                <div style={{display: "flex", justifyContent: "space-between"}}>
                     <Typography variant="h6">
                         Название
                     </Typography>
@@ -35,67 +34,67 @@ const DetailedCaseInfo: React.FC<Props> = ({myCase, setDetailedCaseInfo}) => {
                                 onClick={() => setDetailedCaseInfo(SuiteCaseService.getEmptyDetailedCaseInfo())}>
                         <CloseIcon/>
                     </IconButton>
-                </Grid>
-                <Grid data-cy="detailed-info-case-name">
+                </div>
+                <div data-cy="detailed-info-case-name">
                     {myCase.name}
-                </Grid>
+                </div>
                 <Divider style={{margin: "10px 0px 10px 0px"}}/>
-            </Grid>
-            <Grid>
+            </div>
+            <div>
                 <Typography variant="h6">
                     Сценарий
                 </Typography>
-                <Grid data-cy="detailed-info-case-scenario">
+                <div data-cy="detailed-info-case-scenario">
                     {myCase.scenario}
-                </Grid>
+                </div>
                 <Divider style={{margin: "10px 0px 10px 0px"}}/>
-            </Grid>
-            {myCase.description && <Grid>
+            </div>
+            {myCase.description && <div>
                 <Typography variant="h6">
                     Описание
                 </Typography>
-                <Grid data-cy="detailed-info-case-setup">
+                <div data-cy="detailed-info-case-setup">
                     {myCase.description}
-                </Grid>
+                </div>
                 <Divider style={{margin: "10px 0px 10px 0px"}}/>
-            </Grid>}
-            {myCase.setup && <Grid>
+            </div>}
+            {myCase.setup && <div>
                 <Typography variant="h6">
                     Подготовка теста
                 </Typography>
-                <Grid data-cy="detailed-info-case-setup">
+                <div data-cy="detailed-info-case-setup">
                     {myCase.setup}
-                </Grid>
+                </div>
                 <Divider style={{margin: "10px 0px 10px 0px"}}/>
-            </Grid>}
-            {myCase.teardown && <Grid>
+            </div>}
+            {myCase.teardown && <div>
                 <Typography variant="h6">
                     Очистка после теста
                 </Typography>
-                <Grid data-cy="detailed-info-case-teardown">
+                <div data-cy="detailed-info-case-teardown">
                     {myCase.teardown}
-                </Grid>
+                </div>
                 <Divider style={{margin: "10px 0px 10px 0px"}}/>
-            </Grid>}
-            {myCase.estimate && <Grid>
+            </div>}
+            {myCase.estimate && <div>
                 <Typography variant="h6">
                     Время выполнения
                 </Typography>
-                <Grid data-cy="detailed-info-case-estimate">
+                <div data-cy="detailed-info-case-estimate">
                     {myCase.estimate}
-                </Grid>
+                </div>
                 <Divider style={{margin: "10px 0px 10px 0px"}}/>
-            </Grid>}
-            {myCase.attachments && myCase.attachments?.length !== 0 && <Grid>
+            </div>}
+            {myCase.attachments && myCase.attachments?.length !== 0 && <div>
                 <Typography variant="h6">
                     Прикрепленные файлы
                 </Typography>
-                <Grid>
+                <div>
                     <Attachments attachments={myCase.attachments}/>
-                </Grid>
+                </div>
                 <Divider style={{margin: "10px 0px 10px 0px"}}/>
-            </Grid>}
-        </Grid>
+            </div>}
+        </div>
     )
 }
 
